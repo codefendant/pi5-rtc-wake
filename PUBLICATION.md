@@ -2,6 +2,8 @@
 
 The public source repository is **codefendant/pi5-rtc-wake**. Version 0.6.0-rc.1 was tested by the maintainer on their Pi and published with a matching public image. Version 0.7.0-rc.1 adds opt-in phone messages and schema 7 while retaining the existing Calendar/UPS behavior. Real phone delivery requires a separate check; the earlier Pi report does not validate this new feature.
 
+Version [0.7.0-rc.1](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.1) is published. [Run 38035745972](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38035745972) passed all checks, including anonymous arm64 download and production imports. The pushed/pulled digest is `sha256:ee68f1cb446e1b47b31d666d3cead9c006e0a160b672e44225cae559d3cb102c`. See VALIDATION.md for the exact commit and remaining physical checks.
+
 ## Publish a preview
 
 1. Commit the intended preview to `main` with the exact first line **`[release] 0.7.0-rc.1`** (use the actual version for later previews). Alternatively, use **Actions → Verify and build Pi Wake & Sleep → Run workflow**, choose `main`, and enable **publish**. Ordinary main commits and pull requests run checks without publishing.

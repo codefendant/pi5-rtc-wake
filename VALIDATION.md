@@ -6,7 +6,15 @@ The 0.7 preview adds optional phone wake/status messages. The maintainer's succe
 
 Local verification passes **301 Python unittest cases**, including 42 new phone cases, expanded DOM interaction checks, and JavaScript syntax. Phone tests cover current/legacy action contracts, discovery and native visibility/area metadata, explicit phone/send consent, safe field selection, draft preview, schedule/UPS message semantics, actual host uptime, current-boot/restored/unavailable observations, bounded waiting, persistent claims before I/O, ambiguous delivery, failed persistence, app restart deduplication, schema-6 preservation, and a blocked phone request while the shutdown worker completes. All phone deliveries and Pi operations in these tests are simulated.
 
-The browser smoke script now covers phone discovery, field selection, preview without sending, saving, send confirmation, simulated delivery, reload persistence, and mobile width. Hosted Chromium, arm64 build, and anonymous production-image verification are pending for this source version until recorded below.
+The browser smoke script covers phone discovery, field selection, preview without sending, saving, send confirmation, simulated delivery, reload persistence, and mobile width. Hosted verification and publication succeeded:
+
+- Candidate [38035569821](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38035569821) passed all backend/DOM/JavaScript/ABI checks, Chromium, and the arm64 build for feature head `17f08678fce74e992dadc18e9e569b4283e1f8d9`. It did not publish.
+- Publishing [38035745972](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38035745972) passed the same checks, built/pushed the image, verified its anonymous arm64 download and production imports, and created the preview release.
+- Release [v0.7.0-rc.1](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.1) is non-draft and marked pre-release. Its tag was read back at publishing commit `f8a4f0ba0e3ef1486784bb89651b6bee22e96c51`, whose source tree is `60b2a12c686f4d2890d19c38582c5ec381565122`, identical to the verified candidate tree.
+- Image `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.7.0-rc.1` was pushed and pulled anonymously with matching digest `sha256:ee68f1cb446e1b47b31d666d3cead9c006e0a160b672e44225cae559d3cb102c`.
+- The separate anonymous job used a fresh Docker configuration without registry login, checked arm64, imported production `server`/`websocket` (including the new message module), and verified `server.VERSION == 0.7.0-rc.1`.
+- The previously published 0.6 tag was read back unchanged at `890427491b8311616e74df8f6058e0251357c337`.
+- Neither workflow contacted a real phone or performed a real Pi/UPS power operation. A fresh HAOS app-store install/update is still unobserved.
 
 New files are standard-library code plus documentation/tests; production dependencies, ingress authorization, RTC preflight, UPS policy, Calendar ownership, and native firmware handling are unchanged. Schema 7 retains schema-6 settings and introduces disabled phone preferences plus historical boot-attempt metadata. No future phone/schedule dates are persisted outside Calendar.
 
