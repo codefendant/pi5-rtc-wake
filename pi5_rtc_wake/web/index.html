@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pi Wake &amp; Sleep</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<main>
+  <header><div class="brand" aria-hidden="true">⏻</div><div><p class="eyebrow">HOME ASSISTANT · RASPBERRY PI 5</p><h1>Pi Wake &amp; Sleep</h1><p>Choose when your Home Assistant Pi rests and wakes.</p></div></header>
+  <div class="release">Preview release · Physical Pi testing is still required before public release.</div>
+  <div id="connection" class="notice" role="status" hidden>Connecting to Home Assistant…</div>
+  <div id="feedback" class="notice" role="status"><strong id="feedback-text">Checking this Pi…</strong><p id="feedback-action"></p></div>
+  <section id="countdown" class="card countdown" aria-live="polite" hidden>
+    <p class="eyebrow">SHUTDOWN COUNTDOWN</p><h2 id="countdown-title"></h2><p id="countdown-wake"></p>
+    <button id="cancel" class="primary">Keep Pi awake</button>
+  </section>
+  <nav class="view-nav" aria-label="App sections">
+    <button id="nav-overview" type="button" aria-controls="view-overview" aria-pressed="false">Overview</button>
+    <button id="nav-calendar" type="button" aria-controls="view-calendar" aria-pressed="false">Calendar</button>
+    <button id="nav-ups" type="button" aria-controls="view-ups" aria-pressed="false">UPS</button>
+    <button id="nav-setup" type="button" aria-controls="view-setup" aria-pressed="false">Setup</button>
+  </nav>
+  <div class="daily-actions"><a class="calendar-link" href="/calendar" target="_blank" rel="noopener noreferrer">Open Home Assistant Calendar ↗</a><button id="review-setup" type="button" hidden>Review Pi setup</button></div>
+  <section id="view-overview" aria-label="Overview" hidden>
+    <div class="overview-status" aria-live="polite">
+      <div><span>Pi wake setup</span><strong id="overview-pi">Checking…</strong></div>
+      <div><span>Calendar</span><strong id="overview-calendar">Off</strong></div>
+      <div><span>UPS power</span><strong id="overview-power">Not selected</strong><span id="overview-charge"></span></div>
+      <div><span>Emergency protection</span><strong id="overview-protection">Off</strong><span id="overview-retry"></span></div>
+    </div>
+    <section class="card schedule-card" aria-label="Upcoming schedule">
+      <section class="saved-schedule" aria-labelledby="saved-heading" aria-live="polite">
+        <div class="section-top"><h3 id="saved-heading">Saved schedule</h3><span id="schedule-badge" class="badge">Off</span></div>
+        <ul id="saved-times" class="saved-times"></ul>
+        <div id="calendar-periods" hidden><h4>Upcoming off periods</h4><p class="hint">Next 31 days. Changes made in Home Assistant appear here within a minute.</p><ol id="periods-list" class="periods"></ol><p id="periods-empty" class="hint"></p></div>
+      </section>
+      <p id="next-sleep" class="next"></p>
+    </section>
+  </section>
+  <section id="view-calendar" aria-label="Calendar" hidden><div class="grid">
+    <section class="card schedule-card" aria-labelledby="schedule-heading">
+      <div class="section-top"><h2 id="schedule-heading">Calendar settings</h2></div>
+      <div class="actions calendar-actions"><a class="text-link" href="https://my.home-assistant.io/redirect/config_flow_start/?domain=local_calendar" target="_blank" rel="noopener noreferrer">Add Local Calendar ↗</a></div>
+      <p>All shutdown and wake dates are stored in Home Assistant's Calendar. Edit dates and repeats there; this screen shows the upcoming off periods.</p>
+      <p id="migration-notice" class="notice" hidden></p>
+      <form id="schedule-form">
+        <div id="calendar-settings">
+          <label>Calendar for this Pi<select id="calendar-entity"><option value="">Choose a calendar</option></select></label>
+          <p class="hint">Use a dedicated calendar. Every timed event is a period when this Pi is off: <strong>start = shutdown, end = wake</strong>. Choose dates and repeats in Home Assistant. Turn off All day; each period must last ten minutes to seven days, with no overlaps.</p>
+          <p id="calendar-message" class="hint" role="status"></p>
+        </div>
+        <label>Time zone<input id="timezone" list="timezones" placeholder="America/Chicago" maxlength="100" required></label>
+        <datalist id="timezones"><option value="America/Chicago"><option value="America/New_York"><option value="America/Denver"><option value="America/Los_Angeles"><option value="Europe/London"><option value="Europe/Berlin"><option value="Australia/Sydney"><option value="UTC"></datalist>
+        <p id="timezone-help" class="hint">Display time zone only. Event dates and their time zone are stored in Home Assistant's Calendar.</p>
+        <label class="toggle"><input id="enabled" type="checkbox"><span>Enable schedule</span></label>
+        <p id="enable-help" class="hint">Confirm a successful wake test to enable scheduling. You can choose a calendar now.</p>
+        <p id="unsaved" class="hint" hidden>You have unsaved calendar settings. The saved selection below is still in use.</p>
+        <div class="actions"><button id="save" class="primary" type="submit">Save calendar settings</button></div>
+      </form>
+    </section>
+  </div></section>
+  <section id="view-ups" aria-label="UPS" hidden><div class="grid">
+    <section class="card schedule-card" aria-labelledby="ups-heading">
+      <div class="section-top"><h2 id="ups-heading">Power source</h2><span id="ups-mode" class="badge">Monitor only</span></div>
+
+
+      <div class="actions"><button id="scan-ups">Find power sources</button><a class="text-link" href="https://my.home-assistant.io/redirect/config_flow_start/?domain=nut" target="_blank" rel="noopener noreferrer">Connect NUT to Home Assistant ↗</a></div>
+      <p id="ups-message" class="hint" role="status"></p>
+      <details id="power-settings-panel"><summary>Change power source and notifications</summary>
+      <form id="ups-form">
+        <label>Power source for this Pi<select id="ups-source"><option value="">Choose a power source</option></select></label>
+        <label class="toggle"><input id="ups-notifications" type="checkbox"><span>Show power notices in Home Assistant</span></label>
+        <label>Warn below battery charge (%)<input id="ups-low-battery" type="number" min="5" max="80" value="25" required></label>
+        <button id="save-ups" type="submit">Save power monitor</button>
+      </form></details>
+      <ul id="ups-summary" class="saved-times"></ul>
+      <details id="ups-readings" hidden><summary>Active readings from this UPS</summary><ul id="ups-readings-list" class="saved-times"></ul></details>
+      <details id="nut-sensors" hidden><summary>Additional NUT readings you can enable</summary><p id="nut-sensor-message" class="hint"></p><ul id="nut-sensor-list" class="sensor-list"></ul><a id="nut-device-link" class="text-link" href="/config/devices/dashboard" target="_blank" rel="noopener noreferrer">Open this UPS in Home Assistant ↗</a></details>
+      <p class="hint">The power monitor never switches UPS outputs. Optional graceful shutdown and RTC recovery are configured below.</p>
+    </section>
+    <section class="card schedule-card" aria-labelledby="recovery-heading">
+      <div class="section-top"><h2 id="recovery-heading">UPS protection</h2><span id="recovery-badge" class="badge">Off</span></div>
+      <ul id="recovery-summary" class="saved-times" aria-live="polite"></ul>
+      <p id="recovery-message" class="hint" role="status"></p>
+      <button id="pause-retries" hidden>Pause RTC retries for this outage</button>
+      <details id="recovery-settings-panel"><summary>Configure UPS protection</summary>
+      <p>Keep Home Assistant running until the UPS reaches the remaining-runtime threshold, or choose early shutdown to conserve battery. Retry wake dates are saved in your selected Home Assistant Calendar.</p>
+      <p class="hint">For NUT, expand <strong>Additional NUT readings you can enable</strong> above and enable <strong>Battery runtime</strong>, or use the UPS device page. Choose remaining runtime here; a low-runtime setpoint or startup/shutdown delay is a different reading.</p>
+      <div class="owner-check"><strong>Who shuts down this Pi?</strong><p id="shutdown-owner-message" class="hint"></p><a id="nut-owner-link" class="text-link" href="https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_nut" target="_blank" rel="noopener noreferrer">Open NUT app settings ↗</a><p class="hint">If using this app for timed retries, turn off NUT's Host shutdown option and restart NUT. Other host-shutdown automations/controllers must also be reviewed. This app does not change NUT's options.</p></div>
+      <form id="recovery-form">
+        <label class="toggle"><input id="recovery-retries" type="checkbox" checked><span>Allow timed RTC retries during an outage</span></label>
+        <label class="toggle"><input id="recovery-emergency" type="checkbox" checked><span>Keep emergency low-battery protection active when retries are paused</span></label>
+        <p class="hint">Cancelling a retry leaves emergency protection on. Changing this option requires a separate confirmation.</p>
+        <label>Remaining-runtime reading<select id="recovery-runtime"><option value="">Choose Battery runtime</option></select></label>
+        <p id="recovery-runtime-help" class="hint"></p>
+        <div class="recovery-grid" id="rtc-retry-thresholds">
+          <label>Shut down at remaining runtime (minutes)<input id="recovery-shutdown-runtime" type="number" min="5" max="240" value="30" required></label>
+          <label>First retry after shutdown (minutes)<input id="recovery-first-retry" type="number" min="10" max="120" value="15" required></label>
+        </div>
+        <div class="retry-plan" id="rtc-retry-plan"><strong>Runtime required at each retry decision</strong><table><thead><tr><th>Retry</th><th>Off interval</th><th>Minimum estimated runtime</th></tr></thead><tbody id="retry-requirements"></tbody></table><p id="retry-feasibility" class="hint"></p></div>
+        <details>
+          <summary>Advanced recovery settings</summary>
+          <div class="recovery-grid">
+          <label id="rtc-max-interval-field">Maximum retry interval (minutes)<input id="recovery-max-interval" type="number" min="10" max="360" value="120" required></label>
+          <label id="rtc-max-retries-field">Maximum RTC retries per outage<input id="recovery-max-retries" type="number" min="1" max="8" value="3" required></label>
+          <label id="rtc-reserve-field">Keep this runtime reserve after a retry (minutes)<input id="recovery-reserve" type="number" min="3" max="60" value="5" required></label>
+          <label>Low-battery charge threshold (%)<input id="recovery-min-charge" type="number" min="5" max="80" value="20" required></label>
+          <label>Boot/readings allowance (minutes)<input id="recovery-boot-grace" type="number" min="1" max="15" value="3" required></label>
+          <label>Emergency shutdown at remaining runtime (minutes)<input id="recovery-emergency-runtime" type="number" min="2" max="60" value="5" required></label>
+          <label>Utility power must stay stable (minutes)<input id="recovery-stable" type="number" min="1" max="15" value="2" required></label>
+          </div>
+        <div id="rtc-early-settings"><label class="toggle"><input id="recovery-early" type="checkbox"><span>Also shut down early to conserve battery</span></label>
+        <label>Early shutdown after outage lasts (minutes)<input id="recovery-outage-delay" type="number" min="1" max="120" value="5" required></label>
+        <p class="hint">Intervals double after each wake, up to your maximum. The reported runtime must cover the wait, boot allowance, and reserve. An estimate cannot guarantee that UPS power lasts.</p></div>
+        </details>
+        <label class="toggle"><input id="recovery-owner" type="checkbox"><span>I have reviewed shutdown ownership. If I changed NUT's Host shutdown option, I restarted NUT. Other controllers will not shut down this Pi independently during timed retries.</span></label>
+        <label class="toggle" id="rtc-supply-confirmation"><input id="recovery-supply" type="checkbox"><span>I have confirmed a wake test on this UPS supply path, and the UPS keeps supplying the Pi while it is off.</span></label>
+        <label class="toggle"><input id="recovery-final" type="checkbox"><span>I understand that low reserve, exhausted retries, or lost readings cause a final shutdown without a timed wake. Restart may require restored UPS output, a power cycle, or the Pi's power button.</span></label>
+        <label class="toggle"><input id="recovery-enabled" type="checkbox"><span>Enable automatic UPS protection</span></label>
+        <p id="recovery-unsaved" class="hint" hidden>Recovery settings have unsaved changes. The saved policy remains active.</p>
+        <button id="save-recovery" type="submit">Save UPS recovery</button>
+      </form></details>
+      <p class="hint">Cancel this retry pauses timed retries for that outage. Emergency low-battery protection stays active if enabled. Utility power must be fresh and stable before normal schedules resume. If the UPS removes its output, RTC cannot wake the Pi; UPS output restoration needs separate device testing.</p>
+    </section>
+  </div></section>
+  <section id="view-setup" aria-label="Pi setup" hidden><div class="grid">
+    <section class="card" aria-labelledby="checks-heading">
+      <div class="section-top"><span class="step" aria-hidden="true">1</span><h2 id="checks-heading">Check this Pi</h2><span id="ready-badge" class="badge">Checking</span></div>
+      <ul id="checks-list" class="checks"></ul>
+      <p id="checks-message"></p><p id="checks-action" class="muted"></p>
+      <details id="check-details" hidden><summary>Details for support</summary><p class="hint">Copy this text when asking for help.</p><textarea id="support-text" aria-label="Details for support" rows="7" readonly></textarea></details>
+      <div class="actions"><button id="check">Check again</button><a class="text-link" href="https://my.home-assistant.io/redirect/updates/" target="_blank" rel="noopener noreferrer">Home Assistant updates ↗</a></div>
+    </section>
+    <section class="card" aria-labelledby="prepare-heading">
+      <div class="section-top"><span class="step" aria-hidden="true">2</span><h2 id="prepare-heading">Prepare once</h2></div>
+      <p id="prepare-description">Wake settings are checked automatically. Preparation keeps your existing boot order.</p>
+      <p class="muted">Home Assistant handles Pi firmware updates. If an update is needed, use the updates link first and reboot.</p>
+      <div class="actions"><button id="prepare" class="primary" disabled>Prepare this Pi</button><button id="reboot" class="danger" hidden>Reboot Pi</button></div>
+      <p id="reboot-reminder" class="hint" hidden></p>
+    </section>
+    <section class="card" aria-labelledby="test-heading">
+      <div class="section-top"><span class="step" aria-hidden="true">3</span><h2 id="test-heading">Try a wake test</h2><span id="test-badge" class="badge">Not tested</span></div>
+      <p id="test-description">The Pi shuts down and should wake about ten minutes later. Home Assistant will be offline while it is off.</p>
+      <p class="muted">Leave the power supply connected. If Home Assistant has not returned after 15 minutes, press the Pi's power button once.</p>
+      <div id="confirm-test" hidden><p><strong>Did Home Assistant return by itself, without pressing the power button or reconnecting power?</strong></p><div class="actions"><button id="confirm-yes" class="primary">Yes, it returned by itself</button><button id="confirm-no">No / I'm not sure</button></div></div>
+      <button id="test" class="primary" disabled>Run ten-minute test</button>
+    </section>
+  </div>
+  <aside class="offline"><strong>While the Pi is off</strong><p>Home Assistant, its automations, and connected voice features are unavailable. The Pi needs continuous power to wake. An RTC battery keeps time during a power loss; it cannot power the Pi back on by itself.</p></aside>
+  </section>
+  <footer id="version"></footer>
+</main>
+<dialog id="confirm-dialog" aria-labelledby="dialog-title">
+  <h2 id="dialog-title"></h2><p id="dialog-message"></p>
+  <form method="dialog"><div class="actions"><button value="cancel">Go back</button><button id="dialog-confirm" class="primary" value="confirm">Continue</button></div></form>
+</dialog>
+</body>
+</html>

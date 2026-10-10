@@ -1,0 +1,254 @@
+"""Home Assistant APIs and a bounded host preparation bridge."""
+
+import json
+import logging
+import os
+from pathlib import Path
+import re
+import subprocess
+import time
+import urllib.error
+import urllib.request
+from urllib.parse import urlencode
+
+from state import UserError
+from host_helper import error_details, safe_details, stderr_reason
+from calendar_schedule import CALENDAR_ID, calendar_query_window
+from datetime import datetime, timezone
+from power_sources import DISCOVERY_TEMPLATE
+from ha_registry import CoreRegistry
+
+LOG = logging.getLogger("pi5_rtc_wake")
+
+
+def effective_host_capabilities():
+    """Report just the three capabilities required for this fixed host bridge."""
+    try:
+        status = Path("/proc/self/status").read_text()
+        match = re.search(r"^CapEff:\s*([0-9a-fA-F]{1,16})\s*$", status, re.M)
+        if not match:
+            return None
+        effective = int(match.group(1), 16)
+        return {name: bool(effective & (1 << number)) for name, number in
+                (("SYS_ADMIN", 21), ("SYS_PTRACE", 19), ("SYS_CHROOT", 18))}
+    except (OSError, ValueError):
+        return None  # A diagnostic read must not replace the original failure.
+
+
+class HostError(UserError):
+    def __init__(self, operation, details):
+        self.details = {"operation": operation, **safe_details(details)}
+        location = self.details["step"]
+        if location == "host_entry":
+            capabilities = effective_host_capabilities()
+            if capabilities is not None:
+                self.details["effective_capabilities"] = capabilities
+        reason = self.details.get("reason")
+        support = "Open Details for support below, copy the text, and send it to the app maintainer."
+        if operation == "apply":
+            message = "Pi preparation could not be verified."
+            action = "Keep the power connected. Reboot from Settings → System, then select Check again. " + support
+        elif location == "host_entry" and reason == "permission_denied":
+            message = "The app was denied access to the Pi's wake settings."
+            action = "Check Protection mode on this app's Info page. If it is on, turn it off and restart the app. If it is already off and the app was restarted, " + support[0].lower() + support[1:]
+        elif location == "host_entry" and (self.details["error_type"] == "FileNotFoundError" or reason == "unsupported_option"):
+            message = "The app's host access tool is missing or incompatible."
+            action = support + " The app needs a repair; another Pi firmware update will not fix this app tool."
+        elif location in ("host_entry", "helper_start"):
+            message = "The app could not start its helper on Home Assistant OS."
+            action = support
+        elif reason == "unexpected_os":
+            message = "The app did not reach Home Assistant OS."
+            action = support
+        else:
+            labels = {"running_config": "running wake settings", "boot_partition": "boot partition",
+                      "firmware_image": "installed firmware image", "image_contents": "firmware image contents",
+                      "image_version": "firmware image version", "running_version": "running firmware version",
+                      "pending_update": "pending firmware update"}
+            message = "The Pi's " + labels.get(location, "wake settings") + " could not be checked."
+            action = support
+        LOG.warning("Host operation failed: %s", json.dumps(self.details, sort_keys=True))
+        super().__init__(message, action)
+
+
+class Supervisor:
+    def __init__(self):
+        self.token = os.environ.get("SUPERVISOR_TOKEN", "")
+
+    def request(self, path, payload=None):
+        if not self.token:
+            raise UserError("Home Assistant could not be reached.", "Open this app from Home Assistant and select Check again.")
+        request = urllib.request.Request(
+            "http://supervisor" + path,
+            data=json.dumps(payload).encode() if payload is not None else None,
+            headers={"Authorization": "Bearer " + self.token, "Content-Type": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=15) as response:
+                result = json.loads(response.read(2 * 1024 * 1024))
+            if path.startswith("/core/api/"):
+                return result
+            if result.get("result") != "ok":
+                raise ValueError("API failure")
+            return result.get("data", {})
+        except (OSError, ValueError, urllib.error.URLError, TypeError, AttributeError):
+            raise UserError("Home Assistant did not complete the request.", "Keep the Pi on. Check Settings → System for updates or repairs, then select Check again.") from None
+
+    def os_info(self):
+        return self.request("/os/info")
+
+    def firmware_info(self):
+        return self.request("/os/boards/raspberrypi/firmware")
+
+    def timezone(self):
+        return self.request("/core/api/config").get("time_zone")
+
+    def calendars(self):
+        result = self.request("/core/api/calendars")
+        if not isinstance(result, list) or len(result) > 200:
+            raise UserError("Home Assistant's calendar list could not be read.", "Open Calendar in Home Assistant, then select Check again.")
+        for item in result:
+            if (not isinstance(item, dict) or not isinstance(item.get("entity_id"), str)
+                    or not CALENDAR_ID.fullmatch(item["entity_id"]) or not isinstance(item.get("name"), str)):
+                raise UserError("Home Assistant's calendar list could not be read.", "Open Calendar in Home Assistant, then select Check again.")
+        return [{"entity_id": item["entity_id"], "name": item["name"][:200]} for item in result]
+
+    def power_sources(self):
+        return self.request("/core/api/template", {"template": DISCOVERY_TEMPLATE})
+
+    def nut_sensors(self):
+        with CoreRegistry(self.token) as registry:
+            return registry.nut_sensors()
+
+    def enable_nut_sensor(self, device_id, entity_id):
+        with CoreRegistry(self.token) as registry:
+            return registry.enable_nut_sensor(device_id, entity_id)
+
+    def shutdown_controller(self):
+        """Read the known Community NUT app; never expose options/credentials."""
+        value = self.request("/addons")
+        apps = value.get("addons") if isinstance(value, dict) else None
+        if not isinstance(apps, list):
+            raise UserError("NUT shutdown ownership could not be checked.", "Check the NUT app's settings and restart it after changes, then Check again.")
+        if not any(isinstance(app, dict) and app.get("slug") == "a0d7b954_nut" for app in apps):
+            return {"state": "not_found", "addon_id": None, "message": "No supported local NUT app was found. Review other controllers before enabling RTC retries."}
+        info = self.request("/addons/a0d7b954_nut/info")
+        options = info.get("options", {}) if isinstance(info, dict) else {}
+        setting = options.get("shutdown_host")
+        host_shutdown = setting if type(setting) is bool else {"true": True, "false": False}.get(setting) if isinstance(setting, str) else None
+        state = "conflict" if host_shutdown is True else "review" if host_shutdown is None or info.get("state") != "started" else "ready"
+        return {"state": state, "addon_id": "a0d7b954_nut", "message": "NUT is also configured to shut down this Pi. RTC retries are blocked; choose one host-shutdown controller." if state == "conflict" else
+                "Check NUT settings, start/restart it, and confirm shutdown ownership." if state == "review" else
+                "NUT's saved host-shutdown option is off. Confirm NUT was restarted after any change and no other controller shuts down this Pi."}
+
+    def power_notice(self, notice=None):
+        identity = "pi5_rtc_wake_power_status"
+        if notice is None:
+            return self.request("/core/api/services/persistent_notification/dismiss", {"notification_id": identity})
+        return self.request("/core/api/services/persistent_notification/create", {
+            "notification_id": identity, "title": "Pi Wake & Sleep: power status", "message": notice["message"]})
+
+    def recovery_notice(self, notice=None):
+        identity = "pi5_rtc_wake_ups_recovery"
+        if notice is None:
+            return self.request("/core/api/services/persistent_notification/dismiss", {"notification_id": identity})
+        return self.request("/core/api/services/persistent_notification/create", {
+            "notification_id": identity, "title": "Pi Wake & Sleep: UPS recovery", "message": notice["message"]})
+
+    def calendar_writable(self, entity_id):
+        if not isinstance(entity_id, str) or not CALENDAR_ID.fullmatch(entity_id):
+            raise UserError("Choose a writable calendar.", "Select a dedicated Local Calendar and save it.")
+        value = self.request("/core/api/states/" + entity_id)
+        features = value.get("attributes", {}).get("supported_features") if isinstance(value, dict) else None
+        if type(features) is not int or not features & 1 or value.get("state") in ("unknown", "unavailable"):
+            raise UserError("This calendar cannot accept recovery events.", "Use a dedicated Local Calendar that allows event creation, then save recovery again.")
+        return True
+
+    def create_power_event(self, entity_id, start, end, kind, token):
+        if (not isinstance(entity_id, str) or not CALENDAR_ID.fullmatch(entity_id) or kind not in ("retry", "stop")
+                or not isinstance(token, str) or not re.fullmatch(r"[a-f0-9]{32}", token)
+                or type(start) is not int or type(end) is not int or not 0 < start < end <= 0xFFFFFFFF):
+            raise UserError("The recovery date could not be saved.", "Check Calendar and the recovery settings.")
+        return self.request("/core/api/services/calendar/create_event", {
+            "entity_id": entity_id, "summary": "UPS RTC retry: Pi off" if kind == "retry" else "UPS final shutdown: manual/power restart may be needed",
+            "description": "Pi Wake & Sleep UPS v1:" + kind + ":" + token,
+            "start_date_time": datetime.fromtimestamp(start, timezone.utc).isoformat(),
+            "end_date_time": datetime.fromtimestamp(end, timezone.utc).isoformat()})
+
+    def calendar_events(self, entity_id, now):
+        if not isinstance(entity_id, str) or not CALENDAR_ID.fullmatch(entity_id):
+            raise UserError("Choose a Home Assistant calendar.", "Select a calendar and save.")
+        start, end = calendar_query_window(now)
+        return self.request("/core/api/calendars/" + entity_id + "?" + urlencode({"start": start, "end": end}))
+
+    def reboot_notice(self, required):
+        identity = "pi5_rtc_wake_reboot_required"
+        if required:
+            return self.request("/core/api/services/persistent_notification/create", {
+                "notification_id": identity, "title": "Pi Wake & Sleep: reboot needed",
+                "message": "Reboot the Pi to finish wake preparation or a pending firmware update. Open **Pi Wake & Sleep** and select **Reboot Pi**, or use **Settings → System** to reboot the system. Leave the power supply connected. This reminder clears after the Pi reboots and the checks succeed."})
+        return self.request("/core/api/services/persistent_notification/dismiss", {"notification_id": identity})
+
+    def shutdown(self):
+        return self.request("/host/shutdown", {"force": False})
+
+    def reboot(self):
+        return self.request("/host/reboot", {"force": False})
+
+
+class Host:
+    def __init__(self):
+        self.source = Path(__file__).with_name("host_helper.py").read_text()
+
+    def command(self, operation, payload=None):
+        if operation not in ("inspect", "apply"):
+            raise ValueError("unknown host operation")
+        # Catch import/startup errors too: they previously never reached main().
+        program = ("import json\ntry:\n    exec(" + repr(self.source) + ")\n"
+                   "except Exception as error:\n"
+                   "    print(json.dumps({'ok': False, 'error': {'step': 'helper_start', "
+                   "'error_type': type(error).__name__, 'errno': getattr(error, 'errno', None), "
+                   "'module': getattr(error, 'name', None)}}))\n"
+                   "    raise SystemExit(1)\n"
+                   "main(" + repr(operation) + ", json.loads(" + repr(json.dumps(payload or {})) + "))\n")
+        # Enter only the host mount namespace and root. Host PID access is
+        # granted by Supervisor when the user disables Protection mode.
+        # SYS_PTRACE is also required to read a more privileged host process's
+        # /proc/1/ns/mnt and /proc/1/root; SYS_ADMIN alone does not allow that.
+        # --wdns chooses / AFTER entering and changing root, rather than keeping
+        # a directory descriptor to the app container as --wd=/ did.
+        arguments = ["/usr/bin/nsenter", "--target", "1", "--mount", "--root", "--wdns=/",
+                     "--", "/usr/bin/python3", "-I", "-c", "import sys; exec(sys.stdin.read())"]
+        try:
+            result = subprocess.run(arguments, input=program, text=True, capture_output=True,
+                                    env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "LC_ALL": "C"},
+                                    timeout=240 if operation == "apply" else 65)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise HostError(operation, error_details("host_entry", error)) from None
+        try:
+            parsed = json.loads(result.stdout)
+        except (ValueError, TypeError):
+            parsed = None
+        if isinstance(parsed, dict) and parsed.get("ok") is False and isinstance(parsed.get("error"), dict):
+            details = safe_details(parsed["error"])
+            details["helper_exit_code"] = result.returncode
+            raise HostError(operation, details)
+        if result.returncode or not isinstance(parsed, dict) or parsed.get("ok") is not True or not isinstance(parsed.get("data"), dict):
+            reason = stderr_reason(getattr(result, "stderr", None))
+            raise HostError(operation, {"step": "host_entry" if result.returncode else "helper_result",
+                                        "error_type": "RuntimeError" if result.returncode else "ValueError",
+                                        "exit_code": result.returncode, "reason": reason or "invalid_result"})
+        return parsed["data"]
+
+    def inspect(self):
+        return self.command("inspect")
+
+    def apply(self, snapshot):
+        return self.command("apply", snapshot)
+
+    def boot_id(self):
+        return Path("/proc/sys/kernel/random/boot_id").read_text().strip()
+
+    def boot_epoch(self, now=None):
+        uptime = float(Path("/proc/uptime").read_text().split()[0])
+        return (time.time() if now is None else now) - uptime

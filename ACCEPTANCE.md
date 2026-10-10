@@ -1,0 +1,48 @@
+# Stable beginner-release requirement
+
+**A person with no technical background can install, test, and enable this app entirely through Home Assistant screens. Updates preserve their settings. Every error explains the next action in plain language.**
+
+The maintainer reports that 0.6.0-rc.1 works on their Pi 5 and has authorized public preview publication. Passing automated tests or one maintainer installation alone does not establish the beginner-release requirement. Complete the remaining checks below before removing the preview label or promising unattended UPS recovery.
+
+| Check | Current evidence | Release gate |
+|---|---|---|
+| No end-user YAML, token, terminal, or dashboard setup | Implemented in source | Verify on a real HAOS installation |
+| One Add to Home Assistant link | Local metadata/link generator included | Publish a real repository and test the link |
+| Prebuilt aarch64 image | Build/publish workflow included | Build, make public, and verify an anonymous pull |
+| Protection mode step is discoverable | Info-page instructions and error action included | Observe a novice completing it without help |
+| Pi / OS / RTC / firmware checks | Simulated-service tests pass | Test current stable HAOS on Pi 5 |
+| Stock Home Assistant firmware update path | Reused for versions; custom settings handled separately | Test update then reboot then setup on real hardware |
+| Preserve boot order and unrelated settings | Parser/patch/guards tested | Compare actual EEPROM readback before/after on SD, USB SSD, and NVMe |
+| No downgrade / no overlapping pending update | Version and pending-image guards tested | Test actual pending-update and mismatched-version cases |
+| Concurrent updater safety | UI asks users not to run another firmware update during preparation | Audit serialization with the stock updater before a stable beginner release; the app cannot lock a separate native update through the current API |
+| Prepare button and reboot | Implemented with backed-up configuration; rc.4 repairs the missing permission; user subsequently reports a successful ten-minute wake test | Validate EEPROM readback and boot-order preservation across supported boot devices |
+| Automatic wake after shutdown | Maintainer reports the rc.4 ten-minute test succeeded and that 0.6.0-rc.1 checks out on their Pi 5 | Independently observe and record power-off and RTC-triggered boot |
+| Calendar is the only schedule store | Separate daily engine/fields removed; old daily schedules pause with migration instructions | Upgrade a legacy daily installation and a Calendar installation; verify no duplicated events or hidden scheduler |
+| Saved dates and Calendar access are visible | Prominent native-calendar link, upcoming list, separate draft indicator; user reports Calendar summaries | Verify Overview list and native repeating-event editing on desktop/mobile HA ingress |
+| Completed setup stays out of everyday use | Four sections; confirmed setup opens Overview and new problems reopen Setup; drafts retained in DOM checks | Observe a novice completing setup, finding Calendar/UPS tasks, and resolving a later setup problem without lost edits |
+| Native reboot reminder | Scoped persistent notification lifecycle tested; reboot controls are red | Verify reminder creation/clearing on live HA; it is Notifications, not a custom Settings repair card |
+| Native Calendar and repeating dates | Core API reader, exact event-end RTC alarm, and occurrence guards tested | Verify Local Calendar recurrence, DST, edits/cancellation/outage during countdown, and real wake at event end |
+| UPS discovery and optional notices | NUT device grouping plus versioned generic data hook; NUT discovery is user-observed in 0.4; simulated/backend/HTTP cases pass | Verify live NUT template execution, enabled Status data, actual power source selection, battery/utility transitions, unavailable data, and notice create/clear in HAOS |
+| Additional NUT readings can be enabled | Native registry list/get/update, same-device guards, disabled-device handling, reload/restart guidance, outage block; fake WebSocket and DOM interaction tests pass | Enable real default-disabled runtime/Status data from HA ingress, confirm reload/fresh readings, and test insufficient admin/device/integration permissions |
+| Auxiliary NUT flags do not hide devices | OL TEST and bounded auxiliary flags pass; conflicting flags remain Unknown | Observe real self-test/power transitions and status freshness on the user's UPS |
+| Third-party power hooks | Version 1 data contract documented and validated; no external executable or control callback loaded | Have an independent provider publish a sensor and complete discovery/setup entirely through HA screens |
+| Graceful UPS shutdown and RTC recovery | Opt-in; simulated threshold, Calendar readback, reserve/critical stop, boot freshness, backoff/limits, persistence and uncertainty cases pass | Verify Calendar creation and conditional retries on the actual continuous supply path with sufficient reserve; measure shutdown/boot time and test unavailable readings |
+| Cancelling retries preserves emergency protection | Separate controls; failed RTC/Calendar and cancelled retries followed by low battery pass in simulations; explicit disable confirmation covered | Confirm emergency graceful host shutdown after retry cancellation, unavailable RTC, missing runtime with low battery, and lost readings during a controlled outage |
+| Retry requirements are understandable | Dynamic 24/39/69-minute default table and conditional-sequence warning; DOM checks pass | Ask a novice to explain why a 30-minute threshold does not normally fund all three attempts |
+| Shutdown ownership is reviewed | Community NUT settings/state read-only; conflicts/unknown checks block RTC; user confirms restart/other controllers | Verify actual NUT app startup/option change/restart, external-controller conflicts, and complete shutdown ordering; explicit NUT handoff remains unimplemented |
+| UPS output-off/return recovery | Not implemented; no UPS output command is sent | Future driver/outlet executor needs exact supported command, late-cut delay, physical output-off/return, and Pi boot verification |
+| Overnight operation | Scheduling logic tested with simulated time | Observe multiple overnight cycles with the actual power accessories |
+| Power accessories | User-facing continuous-power explanation | Test the user's Geekworm module, SSD, and powered USB hub as connected |
+| Settings survive app update | Replacement/restart/migration/recovery tests pass | Upgrade the same published app in HAOS and compare all settings |
+| Firmware changes pause timed wake operations | Simulated firmware/boot changes require a retest; commissioned emergency protection remains available | Upgrade native Pi firmware, verify retest screen, and test an emergency stop with RTC retries paused |
+| Cancel and ambiguous shutdown failures | Failure-path tests pass | Test countdown cancellation and network loss on HAOS |
+| Accessibility and responsive UI | Accessible labels and responsive layout implemented | Check desktop/mobile rendering and novice comprehension |
+| Actionable errors | UI/API errors include a next action | Try disabled protection, old OS, missing RTC, clock drift, pending update, invalid config, and storage failure |
+
+Novice session: use a fresh supported Pi and the public install link. Give only the user installation steps in README.md. The person must complete setup, test, schedule, cancellation, and a later app update without developer intervention or a terminal. Record mistakes, completion time, and any screen that required explanation. Fix the flow and repeat before removing the preview label.
+
+Hardware testing must use a stable connected power supply. Back up Home Assistant before the maintainer's first EEPROM trial. Firmware preparation must never be tested by interrupting EEPROM writes; simulate failures at the service boundary instead. Keep a recovery image available during maintainer tests.
+
+For 0.6, a novice must enable default-disabled Battery runtime from UPS, select it, review host-shutdown ownership, understand conditional reserve and final-stop limits, and enable protection without YAML or a terminal. Run real Calendar write/readback and increasing retry cycles only with adequate reserve, plus utility-return, missing-runtime/status, low battery after cancellation/RTC failure, restart during countdown, and uncertain shutdown cases. Upgrade an enabled 0.5 policy and verify settings are preserved while all protection waits for ownership review. Test emergency-only mode and ordinary Calendar scheduling on stable utility power.
+
+UPS output restoration and explicit NUT shutdown handoff remain unpassed control phases. Test a long-outage final stop and the actual output-off/return/boot path on the user's UPS before relying on unattended recovery. A final stop must never be labelled as a verified timed wake; restored utility power cannot boot a continuously supplied halted Pi by itself.
