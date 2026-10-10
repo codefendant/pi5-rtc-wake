@@ -274,7 +274,7 @@ function renderAssist(data, busy) {
   $("assist-connection").textContent = info.connection;
   $("assist-restart").hidden = !info.restart_needed;
   $("assist-unsaved").hidden = !assistDirty;
-  $("connect-assist").disabled = busy || Boolean(data.recovery.session);
+  $("connect-assist").disabled = busy || data.recovery.phase !== "idle";
   for (const id of ["assist-enabled", "assist-requests-enabled", "save-assist"]) $(id).disabled = loading;
   $("assist-requests-empty").hidden = info.requests.length > 0;
   const signature = JSON.stringify([info.requests, busy]);

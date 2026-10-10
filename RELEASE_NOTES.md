@@ -22,6 +22,6 @@ Companion installation updates only fixed owned files and preserves unrelated Ho
 
 Existing Calendar, UPS, wake-test evidence, outage state, and phone settings migrate to schema 8 and are retained. AI access starts off on upgrade. Earlier Core versions can continue using the existing app functions. Future companion updates use Connect Assist and a Home Assistant restart.
 
-324 simulated backend tests and local DOM/syntax checks pass. Publication is gated on the real Home Assistant 2026.10.1 native-interface check, Chromium, RTC ABI, arm64 build, anonymous image pull, and production imports. A real HAOS companion installation and actual AI/voice conversation remain to be observed. No automated check performs a real host power action or phone delivery.
+326 simulated backend tests and local DOM/syntax checks pass. Publication is gated on the real Home Assistant 2026.10.1 native-interface check, Chromium, RTC ABI, arm64 build, anonymous image pull, and production imports. A real HAOS companion installation and actual AI/voice conversation remain to be observed. No automated check performs a real host power action or phone delivery.
 
 The existing continuous-power requirement and UPS recovery limits remain. See [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md) for observed evidence and remaining checks.

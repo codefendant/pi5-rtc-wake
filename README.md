@@ -69,7 +69,7 @@ Keep this app's **Protection mode off** during use so it can check the host wake
 
 ## Validation and development
 
-The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** installation error. **324 simulated backend tests**, DOM interactions, and syntax checks pass locally for this candidate. Publication also requires actual Home Assistant 2026.10.1 companion/tool checks, Chromium, RTC ABI, arm64 build, anonymous image download, and production imports. Live companion setup and an AI/voice conversation, actual phone delivery, novice setup, and the remaining UPS hardware checks still need observation.
+The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** installation error. **326 simulated backend tests**, DOM interactions, and syntax checks pass locally for this candidate. Publication also requires actual Home Assistant 2026.10.1 companion/tool checks, Chromium, RTC ABI, arm64 build, anonymous image download, and production imports. Live companion setup and an AI/voice conversation, actual phone delivery, novice setup, and the remaining UPS hardware checks still need observation.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 

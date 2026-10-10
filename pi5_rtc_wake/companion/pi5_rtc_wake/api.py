@@ -1,5 +1,6 @@
 """Authenticated access to this app on Home Assistant's private app network."""
 
+from collections.abc import Mapping
 from datetime import timedelta
 import json
 import re
@@ -15,7 +16,7 @@ from .const import DOMAIN, PORT, PROTOCOL
 def validate_connection(config, slug):
     """Trust only a Supervisor-discovered instance of our own app."""
     if (not isinstance(slug, str) or not re.fullmatch(r"[a-z0-9]{1,32}_pi5_rtc_wake", slug)
-            or not isinstance(config, dict) or config.get("host") != slug.replace("_", "-")
+            or not isinstance(config, Mapping) or config.get("host") != slug.replace("_", "-")
             or type(config.get("port")) is not int or config["port"] != PORT
             or type(config.get("protocol")) is not int or config["protocol"] != PROTOCOL
             or not isinstance(config.get("token"), str) or not re.fullmatch(r"[A-Za-z0-9_-]{43,128}", config["token"])):

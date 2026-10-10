@@ -35,6 +35,8 @@ class Installer:
     def installed(self):
         try:
             regular_path(self.destination)
+            for name in FILES:
+                regular_path(self.destination / name)
             return all((self.destination / name).read_bytes() == (self.bundle / name).read_bytes()
                        for name in FILES)
         except (OSError, UserError):
@@ -80,14 +82,19 @@ class Installer:
                 changed = True
             atomic_json(self.receipt, {"files": hashes})
         except OSError:
+            restored = True
             for name, value in old.items():
                 target = self.destination / name
-                if value is None:
-                    target.unlink(missing_ok=True)
-                else:
-                    self._write(target, value)
+                try:
+                    if value is None:
+                        target.unlink(missing_ok=True)
+                    else:
+                        self._write(target, value)
+                except OSError:
+                    restored = False
             raise UserError("The Assist companion could not be installed.",
-                            "The previous files were restored. Check free disk space and try Connect Assist again.") from None
+                            "The previous files were restored. Check free disk space and try Connect Assist again." if restored else
+                            "Some companion files could not be restored. Keep Assist off and contact the app maintainer.") from None
         return changed
 
     @staticmethod

@@ -253,7 +253,7 @@ class Assistant:
             raise UserError("The cancellation request was not recognized.", "Ask to cancel the current shutdown countdown.")
         with self.app.lock:
             self._allowed(writes=True)
-            if not self.app.pending and not self.app.job:
+            if not self.app.pending:
                 return {"status": "no_countdown", "message": "The Pi is awake. There is no current countdown to cancel. Future Calendar events and UPS protection are unchanged."}
             self.app.cancel()
             return {"status": "cancelled", "message": "The current shutdown was cancelled. Future Calendar events and emergency UPS protection are unchanged."}

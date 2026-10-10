@@ -61,7 +61,7 @@ async def check():
             assert configured["type"] == "create_entry", configured
             await hass.async_block_till_done()
             entry = configured["result"]
-            assert entry.state is ConfigEntryState.LOADED, entry
+            assert entry.state is ConfigEntryState.LOADED, (entry, entry.reason)
             context = llm.LLMContext(platform="ollama", context=Context(), language="en", assistant="conversation", device_id=None)
             api = await llm.async_get_api(hass, "assist", context)
             own = [tool for tool in api.tools if tool.integration == "pi5_rtc_wake"]

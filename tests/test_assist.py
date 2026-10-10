@@ -227,6 +227,22 @@ class AssistTests(unittest.TestCase, Fixture):
         with urlopen(Request(base + "/v1/status", headers=headers)) as response:
             self.assertTrue(json.load(response)["pi_ready"])
 
+    def test_keep_awake_does_not_interrupt_emergency_preflight(self):
+        self.connect()
+        self.app.job = {"kind": "ups", "label": "Preparing UPS shutdown"}
+        before = self.app.cancel_serial
+        self.assertEqual(self.assist.keep_awake({})["status"], "no_countdown")
+        self.assertEqual(self.app.cancel_serial, before)
+        self.assertEqual(self.app.job["kind"], "ups")
+
+    def test_reviewed_reboot_still_requires_the_supported_haos_host(self):
+        self.connect()
+        request = self.assist.request({"kind": "reboot"})
+        self.supervisor.os["board"] = "rpi4-64"
+        self.approve(request)
+        self.app.process_task()
+        self.assertEqual(self.supervisor.reboots, 0)
+
 
 class InstallerTests(unittest.TestCase):
     def setUp(self):
