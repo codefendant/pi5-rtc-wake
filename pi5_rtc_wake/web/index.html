@@ -22,6 +22,7 @@
     <button id="nav-calendar" type="button" aria-controls="view-calendar" aria-pressed="false">Calendar</button>
     <button id="nav-ups" type="button" aria-controls="view-ups" aria-pressed="false">UPS</button>
     <button id="nav-messages" type="button" aria-controls="view-messages" aria-pressed="false">Messages</button>
+    <button id="nav-assist" type="button" aria-controls="view-assist" aria-pressed="false">Assist</button>
     <button id="nav-setup" type="button" aria-controls="view-setup" aria-pressed="false">Setup</button>
   </nav>
   <div class="daily-actions"><a class="calendar-link" href="/calendar" target="_blank" rel="noopener noreferrer">Open Home Assistant Calendar ↗</a><button id="review-setup" type="button" hidden>Review Pi setup</button></div>
@@ -150,6 +151,27 @@
       </form>
       <section id="message-preview-panel" hidden aria-labelledby="message-preview-heading"><h3 id="message-preview-heading">Message preview</h3><p id="message-preview-title"></p><pre id="message-preview"></pre></section>
       <p class="hint">Delivery uses your Companion app's existing notification connection. <a class="text-link" href="https://companion.home-assistant.io/docs/notifications/notification-local/" target="_blank" rel="noopener noreferrer">Local push settings ↗</a> can use a local connection where available; otherwise Home Assistant may use Apple or Google push. A message accepted by Home Assistant does not confirm phone delivery.</p>
+    </section>
+  </section>
+  <section id="view-assist" aria-label="AI and voice access" hidden>
+    <section class="card" aria-labelledby="assist-heading">
+      <div class="section-top"><h2 id="assist-heading">AI and voice access</h2><span id="assist-badge" class="badge">Off</span></div>
+      <p>Use your existing Home Assistant AI conversation agent, including local Ollama. Ask about Pi uptime, the UPS battery, and the next shutdown and wake. Other readings use the entities you already expose to Assist.</p>
+      <div class="actions"><button id="connect-assist" type="button" class="primary">Connect Assist</button><a class="text-link" href="/config/integrations/dashboard" target="_blank" rel="noopener noreferrer">Open Devices &amp; services ↗</a></div>
+      <p id="assist-connection" class="hint" role="status"></p>
+      <p id="assist-restart" class="notice" hidden>Restart Home Assistant from <a class="text-link" href="/config/system" target="_blank" rel="noopener noreferrer">Settings → System ↗</a>, then add the discovered Pi Wake &amp; Sleep integration in Devices &amp; services.</p>
+      <details><summary>Finish connecting your AI agent</summary><ol><li>Requires Home Assistant Core <strong>2026.10 or newer</strong>. Select Connect Assist and accept installation of the companion.</li><li>Restart Home Assistant if requested. Add the discovered <strong>Pi Wake &amp; Sleep</strong> integration in Devices &amp; services.</li><li>Open your AI integration's settings and choose <strong>Assist</strong> under <strong>Control Home Assistant</strong>. Keep your existing conversation agent.</li><li>Try “When will the Home Assistant Pi next shut down and wake?”</li></ol><p class="hint">No terminal, YAML, API token, or new AI account is needed. Home Assistant's built-in non-AI conversation agent does not call these tools.</p></details>
+      <form id="assist-form">
+        <label class="toggle"><input id="assist-enabled" type="checkbox"><span>Allow Assist to read Pi, Calendar, and selected UPS status</span></label>
+        <label class="toggle"><input id="assist-requests-enabled" type="checkbox"><span>Allow Assist change requests and countdown cancellation</span></label>
+        <p class="hint">Change requests start off. Calendar changes, scheduling on/off, wake tests, and reboots wait for your approval here. “Keep the Pi awake” can cancel an ordinary current countdown immediately; emergency UPS protection remains active.</p>
+        <p id="assist-unsaved" class="hint" hidden>You have unsaved Assist settings.</p>
+        <button id="save-assist" type="submit">Save Assist settings</button>
+      </form>
+      <h3>Requests to review</h3>
+      <p class="hint">Dates shown here are drafts. Approved dates are saved only in Home Assistant Calendar. Unapproved drafts expire after ten minutes or an app restart.</p>
+      <ul id="assist-requests" class="sensor-list" aria-live="polite"></ul>
+      <p id="assist-requests-empty" class="hint">No requests waiting.</p>
     </section>
   </section>
   <section id="view-setup" aria-label="Pi setup" hidden><div class="grid">

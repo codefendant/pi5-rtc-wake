@@ -5,7 +5,8 @@ let powerDirty = false, powerOptions = "";
 let recoveryDirty = false, runtimeOptions = "";
 let messagesDirty = false, messageDraftFields = [], messageOptions = {recipients: [], fields: []}, messageOptionsRevision = 0, messageOptionsLoading = false, messageChoiceSignature = "", recipientSignature = "";
 let activeView = null, lastSetupNeeded = null, sensorOptions = "", openedPowerSettings = false, recoveryDraftTargets = null;
-const views = ["overview", "calendar", "ups", "messages", "setup"];
+let assistDirty = false, assistRequestSignature = "";
+const views = ["overview", "calendar", "ups", "messages", "assist", "setup"];
 const recoveryNumbers = {outage_delay_minutes: "recovery-outage-delay", shutdown_runtime_minutes: "recovery-shutdown-runtime", first_retry_minutes: "recovery-first-retry", max_retry_minutes: "recovery-max-interval", max_retries: "recovery-max-retries", retry_reserve_minutes: "recovery-reserve", min_charge_percent: "recovery-min-charge", boot_grace_minutes: "recovery-boot-grace", stable_power_minutes: "recovery-stable", emergency_runtime_minutes: "recovery-emergency-runtime"};
 const recoveryChecks = {enabled: "recovery-enabled", early_shutdown: "recovery-early", supply_confirmed: "recovery-supply", final_shutdown_confirmed: "recovery-final", owner_confirmed: "recovery-owner", retry_enabled: "recovery-retries", emergency_enabled: "recovery-emergency"};
 const form = $("schedule-form");
@@ -24,7 +25,7 @@ $("review-setup").onclick = () => selectView("setup");
 function renderOverview(data) {
   const needed = !data.checks.ok || data.test_status !== "passed";
   if (!activeView) selectView(needed ? "setup" : "overview");
-  else if (needed && lastSetupNeeded === false && !dirty && !powerDirty && !recoveryDirty && !messagesDirty && !data.pending && !data.job) selectView("setup");
+  else if (needed && lastSetupNeeded === false && !dirty && !powerDirty && !recoveryDirty && !messagesDirty && !assistDirty && !data.pending && !data.job) selectView("setup");
   else if (!needed && lastSetupNeeded === true && activeView === "setup" && !loading) selectView("overview");
   lastSetupNeeded = needed;
   $("nav-setup").textContent = needed ? "Setup · attention" : "Setup ✓";
@@ -262,8 +263,41 @@ function renderMessages(data, busy) {
   renderMessageChoices(blocked);
   if (info.options_revision !== messageOptionsRevision && !messageOptionsLoading) loadMessageOptions(info.options_revision);
 }
+function renderAssist(data, busy) {
+  const info = data.assist;
+  if (!info) return;
+  if (!assistDirty) { $("assist-enabled").checked = info.settings.enabled; $("assist-requests-enabled").checked = info.settings.allow_requests; }
+  $("assist-badge").textContent = !info.settings.enabled ? "Off" : info.settings.allow_requests ? "Requests allowed" : "Status only";
+  $("assist-badge").classList.toggle("ok", info.settings.enabled);
+  $("nav-assist").textContent = info.requests.length ? "Assist · " + info.requests.length : "Assist";
+  $("nav-assist").classList.toggle("attention", info.requests.length > 0);
+  $("assist-connection").textContent = info.connection;
+  $("assist-restart").hidden = !info.restart_needed;
+  $("assist-unsaved").hidden = !assistDirty;
+  $("connect-assist").disabled = busy || Boolean(data.recovery.session);
+  for (const id of ["assist-enabled", "assist-requests-enabled", "save-assist"]) $(id).disabled = loading;
+  $("assist-requests-empty").hidden = info.requests.length > 0;
+  const signature = JSON.stringify([info.requests, busy]);
+  if (signature === assistRequestSignature) return;
+  assistRequestSignature = signature;
+  $("assist-requests").replaceChildren(...info.requests.map(item => {
+    const row = document.createElement("li"), text = document.createElement("span"), actions = document.createElement("div"), approve = document.createElement("button"), dismiss = document.createElement("button");
+    text.textContent = item.summary + (item.submitted ? " Calendar save awaiting confirmation; approving checks for the saved event." : "");
+    actions.className = "actions";
+    approve.textContent = item.submitted ? "Check saved event" : "Approve request";
+    approve.className = item.kind === "reboot" ? "danger" : "primary";
+    approve.disabled = busy && !(item.kind === "set_scheduling" && !item.enabled && !loading);
+    dismiss.textContent = "Dismiss"; dismiss.disabled = loading;
+    approve.onclick = async () => {
+      const detail = item.summary + (item.kind === "wake_test" ? " Leave the power connected. Confirm the automatic return afterward. Calendar scheduling and UPS recovery turn off for this test; review them afterward." : item.kind === "create_period" ? " This saves one event in Calendar. It does not enable scheduling." : "");
+      if (await confirmAction("Approve Assist request?", detail, item.kind === "reboot" ? "Reboot Pi" : "Approve request", item.kind === "reboot" || item.kind === "wake_test")) await act("assist-review", {id: item.id, approve: true, confirmed: true});
+    };
+    dismiss.onclick = () => act("assist-review", {id: item.id, approve: false, confirmed: true});
+    actions.append(approve, dismiss); row.append(text, actions); return row;
+  }));
+}
 async function request(path, payload) {
-  const options = {cache: "no-store", signal: AbortSignal.timeout(path === "recovery-settings" ? 90000 : 25000)};
+  const options = {cache: "no-store", signal: AbortSignal.timeout(["recovery-settings", "connect-assist", "assist-review"].includes(path) ? 90000 : 25000)};
   if (payload !== undefined) Object.assign(options, {method: "POST", headers: {"Content-Type": "application/json", "X-Pi5-CSRF": status?.csrf || ""}, body: JSON.stringify(payload)});
   const response = await fetch("api/" + path, options);
   const data = await response.json();
@@ -327,6 +361,7 @@ function render(data) {
   renderPower(data, busy);
   renderRecovery(data, busy);
   renderMessages(data, busy);
+  renderAssist(data, busy);
   renderOverview(data);
   $("countdown").hidden = !data.pending;
   $("cancel").hidden = Boolean(data.pending?.emergency);
@@ -358,6 +393,7 @@ async function act(path, payload = {}) {
     if (path === "power-settings") powerDirty = false;
     if (path === "recovery-settings") { recoveryDirty = false; recoveryDraftTargets = null; }
     if (path === "message-settings") messagesDirty = false;
+    if (path === "assist-settings") assistDirty = false;
   } catch (error) {
     localMessage = {message: error.message || "The action could not finish.", action: error.action || "Check the connection, then try again."};
   } finally {
@@ -373,6 +409,11 @@ function confirmAction(title, message, label, danger = false) {
   return new Promise(resolve => $("confirm-dialog").addEventListener("close", () => resolve($("confirm-dialog").returnValue === "confirm"), {once: true}));
 }
 $("check").onclick = () => act("check");
+$("connect-assist").onclick = async () => {
+  if (await confirmAction("Connect Assist?", "This installs or updates the app's Home Assistant companion. Home Assistant will discover the connection automatically. A Home Assistant restart may be needed. Status access starts on; change requests start off unless you previously enabled them.", "Connect Assist")) { assistDirty = false; await act("connect-assist", {confirmed: true}); }
+};
+$("assist-form").addEventListener("input", () => { assistDirty = true; $("assist-unsaved").hidden = false; });
+$("assist-form").onsubmit = event => { event.preventDefault(); act("assist-settings", {enabled: $("assist-enabled").checked, allow_requests: $("assist-requests-enabled").checked}); };
 $("cancel").onclick = () => act("cancel");
 $("scan-ups").onclick = () => act("scan-ups");
 $("scan-messages").onclick = () => act("scan-messages");

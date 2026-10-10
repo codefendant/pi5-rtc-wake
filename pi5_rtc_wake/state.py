@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 
 class UserError(Exception):
@@ -86,6 +86,8 @@ class StateStore:
         self.data.update(recovery=deepcopy(DEFAULTS), outage={})
         from phone_messages import DEFAULTS as MESSAGE_DEFAULTS, validate_settings as validate_messages, validate_record
         self.data.update(messages=deepcopy(MESSAGE_DEFAULTS), message_boot={})
+        from assist import DEFAULTS as ASSIST_DEFAULTS, validate_settings as validate_assist
+        self.data["assist"] = deepcopy(ASSIST_DEFAULTS)
         if not self.path.exists() and not self.backup.exists():
             return
         for path in (self.path, self.backup):
@@ -115,6 +117,7 @@ class StateStore:
                 self.data["outage"] = validate_session(loaded.get("outage", {}))
                 self.data["messages"] = validate_messages(loaded.get("messages", MESSAGE_DEFAULTS))
                 self.data["message_boot"] = validate_record(loaded.get("message_boot", {}))
+                self.data["assist"] = validate_assist(loaded.get("assist", ASSIST_DEFAULTS))
                 self.data.pop("last_attempt_date", None)
                 if migration_notice:
                     self.data["migration_notice"] = migration_notice
@@ -124,6 +127,8 @@ class StateStore:
                     self.data["recovery"]["enabled"] = False
                     self.data["recovery"]["qualification"] = None
                     self.data["messages"]["enabled"] = False
+                    self.data["assist"]["enabled"] = False
+                    self.data["assist"]["allow_requests"] = False
                     self.notice = "The last saved settings were restored. Review your times and enable the schedule again."
                 return
             except (OSError, ValueError, KeyError, TypeError, UserError):

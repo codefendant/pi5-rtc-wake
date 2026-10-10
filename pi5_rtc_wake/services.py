@@ -106,6 +106,32 @@ class Supervisor:
     def timezone(self):
         return self.request("/core/api/config").get("time_zone")
 
+    def core_version(self):
+        value = self.request("/core/info")
+        version = value.get("version") if isinstance(value, dict) else None
+        if not isinstance(version, str):
+            raise UserError("Home Assistant's version could not be checked.", "Keep the Pi on and try Connect Assist again when Home Assistant is running.")
+        return version
+
+    def assist_discovery(self, port, token):
+        info = self.request("/addons/self/info")
+        slug = info.get("slug") if isinstance(info, dict) else None
+        if not isinstance(slug, str) or not re.fullmatch(r"[a-z0-9]{1,32}_pi5_rtc_wake", slug):
+            raise UserError("This app's Assist connection could not be identified.", "Restart the app and select Connect Assist again.")
+        return self.request("/discovery", {"service": "pi5_rtc_wake", "config": {
+            "host": slug.replace("_", "-"), "port": port, "protocol": 1, "token": token}})
+
+    def create_assist_event(self, entity_id, start, end, title, marker):
+        if (not isinstance(entity_id, str) or not CALENDAR_ID.fullmatch(entity_id)
+                or type(start) is not int or type(end) is not int or not 0 < start < end <= 0xFFFFFFFF
+                or not isinstance(title, str) or not 1 <= len(title) <= 100
+                or not isinstance(marker, str) or not re.fullmatch(r"Pi Wake & Sleep Assist v1:[a-f0-9]{32}", marker)):
+            raise UserError("The approved off period could not be saved.", "Review the Assist request and Calendar selection.")
+        return self.request("/core/api/services/calendar/create_event", {"entity_id": entity_id,
+            "summary": title, "description": marker,
+            "start_date_time": datetime.fromtimestamp(start, timezone.utc).isoformat(),
+            "end_date_time": datetime.fromtimestamp(end, timezone.utc).isoformat()})
+
     def calendars(self):
         result = self.request("/core/api/calendars")
         if not isinstance(result, list) or len(result) > 200:
