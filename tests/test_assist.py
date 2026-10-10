@@ -174,6 +174,10 @@ class AssistTests(unittest.TestCase, Fixture):
         value = self.assist.request(self.period())
         with patch.object(self.supervisor, "create_assist_event", side_effect=UserError("Timeout", "Check Calendar")) as write:
             with self.assertRaises(UserError): self.approve(value)
+            repeated = self.assist.request(self.period())
+            self.assertEqual(repeated["request_id"], value["request_id"])
+            self.assertEqual(repeated["status"], "awaiting_calendar_confirmation")
+            self.assertIn("may already be saved", repeated["next_action"])
             self.advance(TTL + 1)
             with self.assertRaises(UserError): self.approve(value)
             self.assertEqual(write.call_count, 1)

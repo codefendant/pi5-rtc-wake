@@ -16,7 +16,7 @@ Moving from a local ZIP to the public repository is a separate installation, not
 
 ## Existing local source installation: update to 0.8.0-rc.1
 
-This update adds optional phone messages in their own section. Overview, Calendar, UPS, and Setup remain available. Calendar remains the only source of planned dates; delivery failures do not pause existing shutdown protection.
+This update adds optional native AI tools in Assist. Overview, Calendar, UPS, Messages, and Setup remain available. Calendar remains the only source of planned dates; AI access and phone delivery do not pause existing shutdown protection.
 
 1. Download and extract the release's source ZIP from GitHub.
 2. Open **Settings → Apps → Pi 5 Wake & Sleep → Info** and select **Stop**. Older versions call Apps **Add-ons**.

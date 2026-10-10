@@ -64,6 +64,7 @@ async def check():
             assert entry.state is ConfigEntryState.LOADED, (entry, entry.reason)
             context = llm.LLMContext(platform="ollama", context=Context(), language="en", assistant="conversation", device_id=None)
             api = await llm.async_get_api(hass, "assist", context)
+            assert any(tool.integration != "pi5_rtc_wake" for tool in api.tools), "Normal Assist tools must remain available"
             own = [tool for tool in api.tools if tool.integration == "pi5_rtc_wake"]
             assert [tool.name for tool in own] == ["pi5_rtc_wake__status"], own
             status = await api.async_call_tool(llm.ToolInput(tool_name="pi5_rtc_wake__status", tool_args={}))

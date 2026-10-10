@@ -241,6 +241,9 @@ class Assistant:
 
     @staticmethod
     def _request_result(request):
+        if request.get("submitted"):
+            return {"status": "awaiting_calendar_confirmation", "request_id": request["id"], "summary": request["summary"],
+                    "next_action": "The approved event may already be saved. Open Pi Wake & Sleep → Assist, check Calendar, and select Check saved event. A second copy will not be submitted."}
         return {"status": "awaiting_app_approval", "request_id": request["id"], "summary": request["summary"],
                 "next_action": "Open Pi Wake & Sleep → Assist and approve this request. Nothing has been changed yet."}
 
