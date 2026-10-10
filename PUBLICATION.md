@@ -4,7 +4,7 @@ The public source repository is **codefendant/pi5-rtc-wake**. Version 0.6.0-rc.1
 
 Version [0.7.0-rc.1](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.1) is published. [Run 38035745972](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38035745972) passed all checks, including anonymous arm64 download and production imports. The pushed/pulled digest is `sha256:ee68f1cb446e1b47b31d666d3cead9c006e0a160b672e44225cae559d3cb102c`. See VALIDATION.md for the exact commit and remaining physical checks.
 
-Version **0.7.0-rc.2** is a guidance repair for the confirmed Protection mode installation issue. Publish it through the same verification gates without changing the existing 0.7.0-rc.1 tag.
+Version [0.7.0-rc.2](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.2) is published as a guidance repair for the confirmed Protection mode installation issue. [Run 38038717809](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38038717809) passed every verification/publication gate. The pushed and anonymously downloaded image digest is `sha256:fc9146c93c1d9e70cf6dcc3777771c8be2b40fbb4d456354d4d93d4d1d572cdf`. The tag points to `25d335098154ae8760b3caaafa84e541a2f30b2e`; the existing 0.7.0-rc.1 tag was read back unchanged.
 
 ## Publish a preview
 

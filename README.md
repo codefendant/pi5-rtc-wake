@@ -6,7 +6,7 @@ Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assista
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-The [public preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.2) improves Protection mode guidance and retains optional phone wake/status messages. Backend, browser, build, and anonymous-download checks gate publication. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
+The [public preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.2) improves Protection mode guidance and retains optional phone wake/status messages. Its matching public arm64 image is available; the [publishing workflow](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38038717809) passed backend, Chromium, build, anonymous-download, and production-import checks. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
 
 ## Install and set up
 
@@ -62,7 +62,7 @@ Keep this app's **Protection mode off** during use so it can check the host wake
 
 ## Validation and development
 
-The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** public-installation error. The suite has **303 simulated backend tests**, including the reported error path and Setup recovery. DOM interactions and JavaScript syntax pass locally; browser, arm64 build, and anonymous production-image checks gate publication. Actual phone delivery, novice setup, and the remaining UPS hardware checks still need observation.
+The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** public-installation error. All **303 simulated backend tests**, including the reported error path and Setup recovery, passed locally and in the [publishing workflow](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38038717809). DOM interactions, JavaScript syntax, RTC ABI, Chromium, arm64 build, anonymous image download, and production imports also passed. Actual phone delivery, the 0.7.0-rc.2 HAOS update, novice setup, and the remaining UPS hardware checks still need observation.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 

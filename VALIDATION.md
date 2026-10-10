@@ -6,7 +6,15 @@ The maintainer installed the public 0.7.0-rc.1 app on their Pi 5 running HAOS 18
 
 This repair updates host-error guidance and setup documentation only. It preserves the settings schema, firmware preparation guards, wake verification, Calendar/UPS policy, phone worker, and app permissions. The reported error now gives the Info-page Stop/off/Start/Check again sequence; if access still fails, the original safe support details remain available.
 
-Local verification passes 303 backend cases, including the reported helper response and an authenticated Setup API error/recovery check. DOM interactions and JavaScript syntax also pass. Hosted browser, arm64 build, anonymous image download, and production imports must pass before publication; results will be recorded here.
+Local verification passes 303 backend cases, including the reported helper response and an authenticated Setup API error/recovery check. DOM interactions and JavaScript syntax also pass. Hosted verification and publication succeeded:
+
+- Candidate [38038545178](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38038545178) passed all 303 backend cases, DOM/JavaScript/RTC ABI checks, Chromium, and the arm64 build at `74661cf1caadea6a2e6d6aae20295031c6721d3b`.
+- Publishing [38038717809](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38038717809) passed the same checks, image push, fresh anonymous pull, architecture check, production imports, and preview creation.
+- [v0.7.0-rc.2](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.2) is non-draft and marked pre-release, published at 08:42 UTC on 10 October 2026. Its tag points to `25d335098154ae8760b3caaafa84e541a2f30b2e` and its source tree `542ea08e4e50137b16fff304ba74b2b83ea0ff50` exactly matches the verified candidate.
+- Image `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.7.0-rc.2` was pushed and pulled anonymously with matching digest `sha256:fc9146c93c1d9e70cf6dcc3777771c8be2b40fbb4d456354d4d93d4d1d572cdf`. The anonymous job verified arm64, imported production server/websocket, and checked `server.VERSION`.
+- The preceding 0.7.0-rc.1 tag was read back unchanged at `f8a4f0ba0e3ef1486784bb89651b6bee22e96c51`.
+
+These workflows perform no physical Pi/UPS operation and send no real phone messages. The 0.7.0-rc.2 HAOS update and rendered error on the actual Pi still need observation. Successful 0.7.0-rc.1 access does not establish unattended UPS recovery or novice setup acceptance.
 
 Sources: [Home Assistant app configuration](https://developers.home-assistant.io/docs/apps/configuration/) documents that host_pid and full_access work only with Protection mode off. [Raspberry Pi RTC documentation](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#real-time-clock-rtc) describes low-power bootloader setup and RTC wake alarms. Narrow RTC device mapping and separated preparation would need a permission redesign and real HAOS testing before claiming protected operation.
 
