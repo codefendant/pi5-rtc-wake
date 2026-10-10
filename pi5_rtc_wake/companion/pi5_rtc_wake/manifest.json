@@ -1,0 +1,13 @@
+{
+  "domain": "pi5_rtc_wake",
+  "name": "Pi Wake & Sleep",
+  "version": "0.8.0-rc.1",
+  "config_flow": true,
+  "documentation": "https://github.com/codefendant/pi5-rtc-wake/blob/main/ASSIST.md",
+  "issue_tracker": "https://github.com/codefendant/pi5-rtc-wake/issues",
+  "codeowners": ["@codefendant"],
+  "dependencies": ["llm"],
+  "after_dependencies": ["hassio"],
+  "integration_type": "service",
+  "iot_class": "local_polling"
+}

@@ -50,6 +50,15 @@ class FakeSupervisor:
     def os_info(self): return deepcopy(self.os)
     def firmware_info(self): return deepcopy(self.firmware)
     def timezone(self): return "America/Chicago"
+    def core_version(self): return "2026.10.1"
+    def assist_discovery(self, port, token):
+        self.assist_connection = {"port": port, "token": token}
+    def create_assist_event(self, entity_id, start, end, title, marker):
+        self.calendar_writable(entity_id)
+        stamp = lambda value: datetime.fromtimestamp(value, ZoneInfo("UTC")).isoformat()
+        event = {"summary": title, "description": marker, "start": {"dateTime": stamp(start)}, "end": {"dateTime": stamp(end)}}
+        self.events[entity_id].append(event)
+        self.created_events.append(deepcopy(event))
     def calendars(self): return deepcopy(self.calendar_list)
     def calendar_events(self, entity_id, now):
         if entity_id not in self.events:

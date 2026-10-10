@@ -45,8 +45,19 @@ jobs:
       - run: npm install --no-save playwright
       - run: npx playwright install --with-deps chromium
       - run: node tests/ui_smoke.cjs
+  assist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check the real Home Assistant native Assist interface
+        run: |
+          docker run --rm -v "$PWD:/workspace" -w /workspace \
+            --entrypoint python ghcr.io/home-assistant/home-assistant:2026.10.1 \
+            tools/check_ha_assist.py
   image:
-    needs: [verify, ui]
+    needs: [verify, ui, assist]
     runs-on: ubuntu-latest
     outputs:
       publish: ${{ steps.meta.outputs.publish }}

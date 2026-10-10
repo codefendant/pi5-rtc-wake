@@ -1,3 +1,11 @@
+# Validation — 10 October 2026, 0.8.0-rc.1 candidate
+
+Local checks pass **326 simulated backend tests**, JavaScript syntax, Python compilation, and DOM interactions. New cases cover read-only defaults, no secrets in tool/UI responses, authenticated API boundaries, unsupported approval/firmware routes, precise time-zone offsets, expiry, restart/migration, live revocation, approval-time Calendar checks, read-back after a timeout, no duplicate uncertain writes, unchanged emergency protection, and safe companion installation.
+
+The hosted candidate also runs actual Home Assistant 2026.10.1 for Supervisor-style discovery/configuration, lazy native Assist platform loading, real tool schemas and ToolResult dispatch, a reviewed Calendar write, revocation, and unload. Hardware and services are simulated; this does not exercise an actual model or the user's HAOS instance. Chromium covers Connect Assist consent, read-only defaults, settings, request review, and mobile width. These checks and the arm64 image build are publication gates; results will be recorded after they complete.
+
+A live HAOS companion installation, actual AI/voice conversation, and companion update/restart remain unobserved. Physical wake, phone delivery, long-outage UPS recovery, and novice acceptance retain the limits recorded below.
+
 # Validation — 10 October 2026, 0.7.0-rc.2
 
 ## Protection mode guidance repair

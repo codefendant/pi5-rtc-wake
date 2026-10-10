@@ -1,25 +1,27 @@
-# Pi 5 Wake & Sleep 0.7.0-rc.2 — clearer setup guidance
+# Pi 5 Wake & Sleep 0.8.0-rc.1 — native Home Assistant AI tools
 
-If a new installation starts with Protection mode on, Setup now explains the next action instead of only saying it did not reach Home Assistant OS:
+Use your existing AI conversation agent, including local Ollama, to ask about Pi uptime, next shutdown/wake dates, readiness, and selected UPS battery/runtime. The bundled companion adds tools to Home Assistant's native Assist API alongside ordinary home controls.
 
-**Open Settings → Apps → Pi 5 Wake & Sleep → Info. Select Stop, turn Protection mode off, then select Start. Reopen Setup and select Check again.**
+[Install](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Update guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/UPDATE.md) · [Connect Assist](https://github.com/codefendant/pi5-rtc-wake/blob/main/ASSIST.md)
 
-Older Home Assistant versions call Apps Add-ons. If Protection mode is already off and this sequence still fails, Details for support remain available. Access-denied errors use the same sequence.
+## Connect through screens
 
-[Install in Home Assistant](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Update guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/UPDATE.md)
+Requires **Home Assistant Core 2026.10 or newer** for this optional feature. Update the same installed app, open **Assist → Connect Assist**, restart Home Assistant if requested, and add the discovered **Pi Wake & Sleep** integration in Devices & services. Choose **Assist** under **Control Home Assistant** in your existing AI integration. No terminal, YAML, address, user API token, or new AI account is required.
 
-## Firmware and permissions
+Status access starts on when connected. Change requests start off. Enable them separately if you want AI controls. A tool-capable model and an AI conversation agent are required; this does not add tools to the built-in sentence-based agent or AI Task automations.
 
-Home Assistant handles Pi firmware version updates. The app separately checks low-power wake settings and verifies the RTC alarm before a scheduled shutdown. An updated firmware version does not replace those checks. With the current architecture, Protection mode must stay off for host checks and RTC hardware access during operation. This repair changes guidance only; it does not reduce permissions or skip checks.
+## Controlled changes and one Calendar
 
-## Update
+AI can request single off periods, scheduling on/off, wake tests, and reboots. Review exact dates or the operation in **Assist → Requests to review**, then approve it in the app. Approved dates are saved/read back only in Home Assistant Calendar. Recurrences and existing events stay in the native Calendar editor. Saving an event does not enable scheduling.
 
-Update the same installed app and reload its Web UI. Calendar, UPS, phone preferences, and confirmed wake evidence are preserved. This guidance repair does not require another wake test unless firmware or wake settings changed.
+Ordinary current countdowns can be cancelled immediately when change access is enabled. Emergency low-battery protection and future Calendar events remain active. AI cannot approve its own request, confirm physical wake evidence, change firmware, disable emergency protection, or run arbitrary commands.
 
-The optional phone features from 0.7.0-rc.1 remain available in Messages. Use Send status now to check actual phone delivery; automatic wake messages start off.
+Companion installation updates only fixed owned files and preserves unrelated Home Assistant configuration. The authenticated private API publishes no host port and has no approval endpoint. Connection credentials are excluded from UI and tool responses. Turning Assist off revokes new access immediately.
 
-## Verification
+## Update and verification
 
-The local suite passes 303 simulated backend tests, including the reported container-OS error and recovery through Setup, plus DOM interaction and JavaScript syntax checks. Hosted browser, arm64 build, anonymous image download, and production-import checks gate publication. The maintainer confirmed that disabling Protection mode resolved the 0.7.0-rc.1 public-installation error; actual phone delivery and a new RTC-wake message remain unobserved.
+Existing Calendar, UPS, wake-test evidence, outage state, and phone settings migrate to schema 8 and are retained. AI access starts off on upgrade. Earlier Core versions can continue using the existing app functions. Future companion updates use Connect Assist and a Home Assistant restart.
 
-Home Assistant is unavailable while the Pi is off. RTC wake needs continuous main power; the RTC battery keeps time but cannot boot the Pi. UPS output-return control and a complete NUT shutdown handoff remain unimplemented. See [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md) for the observed checks and limits.
+326 simulated backend tests and local DOM/syntax checks pass. Publication is gated on the real Home Assistant 2026.10.1 native-interface check, Chromium, RTC ABI, arm64 build, anonymous image pull, and production imports. A real HAOS companion installation and actual AI/voice conversation remain to be observed. No automated check performs a real host power action or phone delivery.
+
+The existing continuous-power requirement and UPS recovery limits remain. See [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md) for observed evidence and remaining checks.

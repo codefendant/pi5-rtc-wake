@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_setup import FakeRTC, FakeSupervisor, FakeHost
 from test_phone_messages import configure_phone
+from assist_install import Installer
 import server
 
 
@@ -30,6 +31,9 @@ def main():
         now = stamp(int(time.time()))
         supervisor.power_rows = {"rows": [{"kind": "hook", "entity_id": "sensor.demo_local_power", "name": "Demo UPS", "state": "mains", "reported_at": now, "attributes": {"rtc_wake_power": {"schema_version": 1, "provider": "Simulated local adapter", "observed_at": now, "power_state": "mains", "battery_percent": 100, "runtime_seconds": 3600}}}]}
         app = server.Application(data, FakeRTC(time.time), supervisor, FakeHost(time.time()))
+        demo_config = Path(data) / "homeassistant"
+        demo_config.mkdir()
+        app.assistant.installer = Installer(data, demo_config)
         app.refresh()
 
         class DemoHandler(server.IngressHandler):

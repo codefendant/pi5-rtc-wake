@@ -58,3 +58,7 @@ By default Home Assistant stays on until runtime reaches 30 minutes; early shutd
 Fresh stable utility power resumes normal scheduling. Low reserve/exhausted retries lead to a final stop with no verified timed wake. Critical reserve skips optional recording/countdown delays. Emergency shutdown does not require RTC access; unrelated alarms are preserved. Uncertain host requests are not repeated on the same boot.
 
 The app does not control UPS outlets. If the UPS continues supplying a halted Pi, utility power returning alone will not restart it. Final recovery needs a tested output-off/return path, an external controller, a power cycle, or the Pi power button. Native sensor activation, ownership coordination, and the complete outage/return path still require real-device acceptance. Full setup is in UPS_RECOVERY.md in the ZIP.
+
+## Home Assistant AI and voice
+
+Core 2026.10 or newer can use the optional **Assist** section. Select **Connect Assist**, restart Home Assistant if requested, and add the discovered Pi Wake & Sleep companion in Devices & services. Choose **Assist** under **Control Home Assistant** in your existing AI integration, such as local Ollama. Status access starts on when connected; change requests start off. Requests for Calendar dates, scheduling, wake tests, and reboots require approval in the app. Cancelling an ordinary countdown keeps emergency UPS protection active. See [ASSIST.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/ASSIST.md).

@@ -25,8 +25,10 @@ from host_helper import config_values, patched_config, sha
 from rtc_wake import Controller, LinuxRTC, PolicyError
 from services import Host, Supervisor
 from state import StateStore, UserError, atomic_json, validate_schedule
+from assist import Assistant, PORT as ASSIST_PORT
+from assist_http import AssistHandler
 
-VERSION = "0.7.0-rc.2"
+VERSION = "0.8.0-rc.1"
 LOG = logging.getLogger("pi5_rtc_wake")
 COUNTDOWN = 30
 TEST_SECONDS = 600
@@ -72,6 +74,7 @@ class Application:
         self.last_nut_settings_refresh = -math.inf
         self.recovery = Recovery(self)
         self.messages = PhoneMessages(self)
+        self.assistant = Assistant(self, data)
 
     def _fingerprint(self, snapshot):
         value = snapshot["current_version"] + ":" + snapshot["config_fingerprint"]
@@ -401,6 +404,7 @@ class Application:
                             "sensor_settings": deepcopy(self.nut_sensor_info), "shutdown_controller": deepcopy(self.shutdown_controller_info)},
                     "recovery": self.recovery.snapshot(),
                     "messages": self.messages.snapshot(),
+                    "assist": self.assistant.snapshot(),
                     "test_status": state.get("test", {}).get("status", "not_started"),
                     "next_sleep_epoch": next_sleep, "next_wake_epoch": next_wake, "pending": pending, "job": self.job,
                     "shutdown_requested": self.shutdown_requested_at is not None,
@@ -670,7 +674,9 @@ class Application:
                 self.prepare()
             elif kind == "reboot":
                 self.refresh()
-                if not self.checks.get("needs_reboot"):
+                if payload.get("assist_reviewed") is True and not self.host_shutdown_supported:
+                    raise UserError("This host could not be verified for a reboot.", "Keep the Pi on and check Setup before requesting another reboot.")
+                if not self.checks.get("needs_reboot") and payload.get("assist_reviewed") is not True:
                     raise UserError("A setup reboot is not needed right now.", "Select Check again and continue with the wake test.")
                 self.supervisor.reboot()
             elif kind == "ups":
@@ -688,6 +694,7 @@ class Application:
     def run(self):
         # Phone/Core requests must not occupy the RTC/UPS control worker.
         threading.Thread(target=self.messages.run, name="phone-messages", daemon=True).start()
+        threading.Thread(target=self.assistant.run, name="assist-discovery", daemon=True).start()
         while not self.stop_event.is_set():
             self.process_task()
             self.tick()
@@ -771,6 +778,12 @@ class IngressHandler(BaseHTTPRequestHandler):
                 self.application.recovery.save_settings(payload)
             elif path == "/api/message-settings":
                 self.application.messages.save_settings(payload)
+            elif path == "/api/connect-assist":
+                self.application.assistant.connect(payload)
+            elif path == "/api/assist-settings":
+                self.application.assistant.save_settings(payload)
+            elif path == "/api/assist-review":
+                self.application.assistant.review(payload)
             elif path in ("/api/scan-messages", "/api/preview-message", "/api/send-message"):
                 self.application.messages.begin({"/api/scan-messages": "scan", "/api/preview-message": "preview", "/api/send-message": "send"}[path], payload)
             elif path == "/api/enable-nut-sensor":
@@ -799,15 +812,20 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     app = Application("/data", LinuxRTC(), Supervisor(), Host())
     IngressHandler.application = app
+    AssistHandler.assistant = app.assistant
     worker = threading.Thread(target=app.run, daemon=True)
     worker.start()
     LOG.info("Pi 5 Wake/Sleep %s: open the app in Home Assistant to finish setup.", VERSION)
     server = ThreadingHTTPServer(("0.0.0.0", 8099), IngressHandler)
+    companion = ThreadingHTTPServer(("0.0.0.0", ASSIST_PORT), AssistHandler)
+    threading.Thread(target=companion.serve_forever, name="assist-api", daemon=True).start()
     try:
         server.serve_forever()
     finally:
         app.stop_event.set()
         server.server_close()
+        companion.shutdown()
+        companion.server_close()
 
 
 if __name__ == "__main__":

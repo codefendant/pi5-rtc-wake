@@ -1,5 +1,5 @@
 name: Pi 5 Wake & Sleep
-version: "0.7.0-rc.2"
+version: "0.8.0-rc.1"
 slug: pi5_rtc_wake
 description: Pi 5 Calendar scheduling, guided RTC setup, UPS protection, and optional phone wake/status messages.
 arch:
@@ -17,6 +17,11 @@ panel_title: Pi Wake & Sleep
 hassio_api: true
 hassio_role: manager
 homeassistant_api: true
+discovery:
+  - pi5_rtc_wake
+map:
+  - type: homeassistant_config
+    read_only: false
 host_pid: true
 full_access: true
 apparmor: false
