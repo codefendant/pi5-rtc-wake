@@ -3,8 +3,9 @@ const $ = id => document.getElementById(id);
 let status = null, dirty = false, loading = false, localMessage = null, calendarOptions = "";
 let powerDirty = false, powerOptions = "";
 let recoveryDirty = false, runtimeOptions = "";
+let messagesDirty = false, messageDraftFields = [], messageOptions = {recipients: [], fields: []}, messageOptionsRevision = 0, messageOptionsLoading = false, messageChoiceSignature = "", recipientSignature = "";
 let activeView = null, lastSetupNeeded = null, sensorOptions = "", openedPowerSettings = false, recoveryDraftTargets = null;
-const views = ["overview", "calendar", "ups", "setup"];
+const views = ["overview", "calendar", "ups", "messages", "setup"];
 const recoveryNumbers = {outage_delay_minutes: "recovery-outage-delay", shutdown_runtime_minutes: "recovery-shutdown-runtime", first_retry_minutes: "recovery-first-retry", max_retry_minutes: "recovery-max-interval", max_retries: "recovery-max-retries", retry_reserve_minutes: "recovery-reserve", min_charge_percent: "recovery-min-charge", boot_grace_minutes: "recovery-boot-grace", stable_power_minutes: "recovery-stable", emergency_runtime_minutes: "recovery-emergency-runtime"};
 const recoveryChecks = {enabled: "recovery-enabled", early_shutdown: "recovery-early", supply_confirmed: "recovery-supply", final_shutdown_confirmed: "recovery-final", owner_confirmed: "recovery-owner", retry_enabled: "recovery-retries", emergency_enabled: "recovery-emergency"};
 const form = $("schedule-form");
@@ -23,7 +24,7 @@ $("review-setup").onclick = () => selectView("setup");
 function renderOverview(data) {
   const needed = !data.checks.ok || data.test_status !== "passed";
   if (!activeView) selectView(needed ? "setup" : "overview");
-  else if (needed && lastSetupNeeded === false && !dirty && !powerDirty && !recoveryDirty && !data.pending && !data.job) selectView("setup");
+  else if (needed && lastSetupNeeded === false && !dirty && !powerDirty && !recoveryDirty && !messagesDirty && !data.pending && !data.job) selectView("setup");
   else if (!needed && lastSetupNeeded === true && activeView === "setup" && !loading) selectView("overview");
   lastSetupNeeded = needed;
   $("nav-setup").textContent = needed ? "Setup · attention" : "Setup ✓";
@@ -189,6 +190,78 @@ function renderRecovery(data, busy) {
   for (const id of ["rtc-retry-thresholds", "rtc-retry-plan", "rtc-max-interval-field", "rtc-max-retries-field", "rtc-reserve-field", "rtc-early-settings", "rtc-supply-confirmation"]) $(id).hidden = !$("recovery-retries").checked;
   renderRetryRequirements();
 }
+function messageSettings() {
+  return {enabled: $("message-enabled").checked, recipient: $("message-recipient").value || null, fields: [...messageDraftFields]};
+}
+function messageEdited() {
+  messagesDirty = true;
+  if (status) renderMessages(status, Boolean(status.job || status.pending || status.shutdown_requested || loading));
+}
+function renderMessageChoices(busy) {
+  const selected = messageDraftFields;
+  const category = $("message-category").value || "suggested", search = $("message-search").value.trim().toLocaleLowerCase();
+  const signature = JSON.stringify([messageOptionsRevision, selected, category, search, busy]);
+  if (signature === messageChoiceSignature) return;
+  messageChoiceSignature = signature;
+  $("message-field-count").textContent = "(" + selected.length + " / 12)";
+  const matches = messageOptions.fields.filter(item => (search || category === "all" || category === "suggested" && item.suggested || category === item.category) && (!search || [item.name, item.id, item.area, item.category].join(" ").toLocaleLowerCase().includes(search)));
+  $("message-fields-help").textContent = !messageOptions.fields.length ? "Find phones and readings to list the readings Home Assistant already monitors." : !matches.length ? "No matching readings. Try another search or choose All available readings." : "Showing " + Math.min(60, matches.length) + " of " + matches.length + " matching readings." + (matches.length > 60 ? " Search by name or area to narrow the list." : "");
+  $("message-field-options").replaceChildren(...matches.slice(0, 60).map(item => {
+    const li = document.createElement("li"), label = document.createElement("label"), checkbox = document.createElement("input"), name = document.createElement("span"), detail = document.createElement("span");
+    checkbox.type = "checkbox"; checkbox.checked = selected.includes(item.id); checkbox.disabled = busy || !checkbox.checked && selected.length >= 12;
+    checkbox.setAttribute("aria-label", "Include " + item.name);
+    name.textContent = item.name; detail.className = "hint"; detail.textContent = [item.category, item.area, item.unit, item.id].filter(Boolean).join(" · ");
+    checkbox.onchange = () => { messageDraftFields = checkbox.checked ? [...messageDraftFields, item.id] : messageDraftFields.filter(id => id !== item.id); messageEdited(); };
+    const text = document.createElement("span"); text.append(name, detail); label.append(checkbox, text); li.append(label); return li;
+  }));
+  $("message-selected-fields").replaceChildren(...selected.map(id => {
+    const item = messageOptions.fields.find(row => row.id === id), li = document.createElement("li"), name = document.createElement("span"), remove = document.createElement("button");
+    name.textContent = item ? item.name + (item.area ? " · " + item.area : "") : id + " (not currently available)";
+    remove.type = "button"; remove.textContent = "Remove"; remove.disabled = busy; remove.setAttribute("aria-label", "Remove " + (item?.name || id));
+    remove.onclick = () => { messageDraftFields = messageDraftFields.filter(field => field !== id); messageEdited(); };
+    li.append(name, remove); return li;
+  }));
+}
+async function loadMessageOptions(revision) {
+  if (messageOptionsLoading) return;
+  messageOptionsLoading = true;
+  try {
+    messageOptions = await request("message-options"); messageOptionsRevision = revision;
+    if (status) renderMessages(status, Boolean(status.job || status.pending || status.shutdown_requested || loading));
+  } catch (error) {
+    $("messages-result").textContent = "The reading list could not be loaded. Select Find phones and readings to try again.";
+  } finally { messageOptionsLoading = false; }
+}
+function renderMessages(data, busy) {
+  const info = data.messages;
+  if (!info) return;
+  const blocked = busy || Boolean(info.busy);
+  if (!messagesDirty) {
+    messageDraftFields = [...info.settings.fields]; $("message-enabled").checked = info.settings.enabled;
+  }
+  const selected = messagesDirty ? $("message-recipient").value : info.settings.recipient || "";
+  const signature = JSON.stringify([messageOptionsRevision, selected]);
+  if (signature !== recipientSignature) {
+    recipientSignature = signature;
+    const placeholder = document.createElement("option"); placeholder.value = ""; placeholder.textContent = "Choose a phone";
+    const choices = messageOptions.recipients.map(item => { const option = document.createElement("option"); option.value = item.id; option.textContent = item.name + " · " + item.kind; return option; });
+    if (selected && !messageOptions.recipients.some(item => item.id === selected)) { const option = document.createElement("option"); option.value = selected; option.textContent = "Saved phone (find phones to check)"; choices.push(option); }
+    $("message-recipient").replaceChildren(placeholder, ...choices); $("message-recipient").value = selected;
+  }
+  if (!messagesDirty) $("message-recipient").value = info.settings.recipient || "";
+  for (const id of ["message-recipient", "message-enabled", "save-messages", "scan-messages", "preview-message"]) $(id).disabled = blocked;
+  $("send-message").disabled = blocked || messagesDirty || !info.settings.recipient;
+  $("message-unsaved").hidden = !messagesDirty;
+  $("messages-badge").textContent = info.settings.enabled ? "Wake messages on" : info.settings.recipient ? "Manual only" : "Off";
+  $("messages-badge").classList.toggle("ok", info.settings.enabled);
+  $("messages-result").textContent = info.busy || [info.result.message, info.result.action].filter(Boolean).join(" ");
+  $("messages-result").classList.toggle("message-error", info.result.error);
+  $("message-preview-panel").hidden = !info.preview;
+  $("message-preview-title").textContent = info.preview?.title || "";
+  $("message-preview").textContent = info.preview?.message || "";
+  renderMessageChoices(blocked);
+  if (info.options_revision !== messageOptionsRevision && !messageOptionsLoading) loadMessageOptions(info.options_revision);
+}
 async function request(path, payload) {
   const options = {cache: "no-store", signal: AbortSignal.timeout(path === "recovery-settings" ? 90000 : 25000)};
   if (payload !== undefined) Object.assign(options, {method: "POST", headers: {"Content-Type": "application/json", "X-Pi5-CSRF": status?.csrf || ""}, body: JSON.stringify(payload)});
@@ -253,6 +326,7 @@ function render(data) {
   $("migration-notice").textContent = data.migration_notice || "";
   renderPower(data, busy);
   renderRecovery(data, busy);
+  renderMessages(data, busy);
   renderOverview(data);
   $("countdown").hidden = !data.pending;
   $("cancel").hidden = Boolean(data.pending?.emergency);
@@ -283,6 +357,7 @@ async function act(path, payload = {}) {
     if (path === "settings") dirty = false;
     if (path === "power-settings") powerDirty = false;
     if (path === "recovery-settings") { recoveryDirty = false; recoveryDraftTargets = null; }
+    if (path === "message-settings") messagesDirty = false;
   } catch (error) {
     localMessage = {message: error.message || "The action could not finish.", action: error.action || "Check the connection, then try again."};
   } finally {
@@ -300,6 +375,18 @@ function confirmAction(title, message, label, danger = false) {
 $("check").onclick = () => act("check");
 $("cancel").onclick = () => act("cancel");
 $("scan-ups").onclick = () => act("scan-ups");
+$("scan-messages").onclick = () => act("scan-messages");
+$("message-recipient").onchange = messageEdited;
+$("message-enabled").onchange = messageEdited;
+$("message-search").oninput = () => { messageChoiceSignature = ""; if (status) renderMessages(status, loading); };
+$("message-category").onchange = () => { messageChoiceSignature = ""; if (status) renderMessages(status, loading); };
+$("messages-form").onsubmit = event => { event.preventDefault(); act("message-settings", messageSettings()); };
+$("preview-message").onclick = () => act("preview-message", {settings: messageSettings()});
+$("send-message").onclick = async () => {
+  const saved = status.messages.settings;
+  const phone = messageOptions.recipients.find(row => row.id === saved.recipient)?.name || "your saved phone";
+  if (await confirmAction("Send Pi status to " + phone + "?", "This sends the next shutdown and wake times, Pi uptime, and your saved readings through Home Assistant. Check the phone to confirm delivery.", "Send status")) await act("send-message", {confirmed: true, expected_settings: saved});
+};
 $("pause-retries").onclick = () => act("pause-rtc-retries");
 $("ups-form").addEventListener("input", () => { powerDirty = true; });
 $("ups-form").onsubmit = event => { event.preventDefault(); act("power-settings", {source_id: $("ups-source").value || null, notifications: $("ups-notifications").checked, low_battery_percent: Number($("ups-low-battery").value)}); };

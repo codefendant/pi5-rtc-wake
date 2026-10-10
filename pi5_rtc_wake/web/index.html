@@ -10,7 +10,7 @@
 <body>
 <main>
   <header><div class="brand" aria-hidden="true">⏻</div><div><p class="eyebrow">HOME ASSISTANT · RASPBERRY PI 5</p><h1>Pi Wake &amp; Sleep</h1><p>Choose when your Home Assistant Pi rests and wakes.</p></div></header>
-  <div class="release">Preview release · Physical Pi testing is still required before public release.</div>
+  <div class="release">Preview release · Test wake and UPS recovery on your own hardware.</div>
   <div id="connection" class="notice" role="status" hidden>Connecting to Home Assistant…</div>
   <div id="feedback" class="notice" role="status"><strong id="feedback-text">Checking this Pi…</strong><p id="feedback-action"></p></div>
   <section id="countdown" class="card countdown" aria-live="polite" hidden>
@@ -21,6 +21,7 @@
     <button id="nav-overview" type="button" aria-controls="view-overview" aria-pressed="false">Overview</button>
     <button id="nav-calendar" type="button" aria-controls="view-calendar" aria-pressed="false">Calendar</button>
     <button id="nav-ups" type="button" aria-controls="view-ups" aria-pressed="false">UPS</button>
+    <button id="nav-messages" type="button" aria-controls="view-messages" aria-pressed="false">Messages</button>
     <button id="nav-setup" type="button" aria-controls="view-setup" aria-pressed="false">Setup</button>
   </nav>
   <div class="daily-actions"><a class="calendar-link" href="/calendar" target="_blank" rel="noopener noreferrer">Open Home Assistant Calendar ↗</a><button id="review-setup" type="button" hidden>Review Pi setup</button></div>
@@ -126,6 +127,31 @@
       <p class="hint">Cancel this retry pauses timed retries for that outage. Emergency low-battery protection stays active if enabled. Utility power must be fresh and stable before normal schedules resume. If the UPS removes its output, RTC cannot wake the Pi; UPS output restoration needs separate device testing.</p>
     </section>
   </div></section>
+  <section id="view-messages" aria-label="Phone messages" hidden>
+    <section class="card" aria-labelledby="messages-heading">
+      <div class="section-top"><h2 id="messages-heading">Phone messages</h2><span id="messages-badge" class="badge">Off</span></div>
+      <p>Know when your Pi is awake. Every message includes the Pi's uptime and the next shutdown and wake times, or explains why no time is planned.</p>
+      <details><summary>Connect a phone</summary><ol><li>Install the <a class="text-link" href="https://companion.home-assistant.io/docs/getting_started/" target="_blank" rel="noopener noreferrer">Home Assistant Companion app ↗</a> on your phone and connect it to this Home Assistant.</li><li>Allow notifications on the phone, then select <strong>Find phones and readings</strong> here.</li><li>Choose your phone, save, and use <strong>Send status now</strong> to check delivery.</li></ol><p class="hint">If a new phone is missing, open the Companion app and try finding it again. Home Assistant may need a restart after the phone's first registration.</p></details>
+      <div class="actions"><button id="scan-messages" type="button">Find phones and readings</button></div>
+      <p id="messages-result" class="hint" role="status"></p>
+      <form id="messages-form">
+        <label>Send to phone<select id="message-recipient"><option value="">Choose a phone</option></select></label>
+        <label class="toggle"><input id="message-enabled" type="checkbox"><span>Send a message after this Pi starts</span></label>
+        <p class="hint">Off by default. Enabling starts with the next Pi boot. Restarting or updating this app does not send another wake message.</p>
+        <details id="message-readings-panel"><summary>Choose extra readings <span id="message-field-count">(0 / 12)</span></summary>
+          <p class="hint">Suggestions use Home Assistant's entity types, device classes, areas, and your selected UPS. Choose up to twelve readings. Search scans all available readings. Hidden, disabled, and configuration entities are excluded.</p>
+          <div class="message-filters"><label>Find a reading<input id="message-search" type="search" placeholder="Battery, kitchen, temperature…" maxlength="100"></label><label>Show<select id="message-category"><option value="suggested">Suggested readings</option><option value="all">All available readings</option><option value="UPS">UPS</option><option value="Battery">Battery</option><option value="Temperature">Temperature</option><option value="Weather">Weather</option><option value="Security &amp; maintenance">Security &amp; maintenance</option><option value="Energy &amp; power">Energy &amp; power</option><option value="Lights">Lights</option></select></label></div>
+          <p id="message-fields-help" class="hint"></p><ul id="message-field-options" class="message-fields"></ul>
+          <p class="hint">For today's energy, choose an existing daily energy sensor. A cumulative meter reading is shown as a cumulative reading. The dashboard's Energy totals are calculated separately.</p>
+        </details>
+        <ul id="message-selected-fields" class="sensor-list" aria-label="Selected message readings"></ul>
+        <p id="message-unsaved" class="hint" hidden>You have unsaved phone settings. Save before sending; Preview message can show your draft.</p>
+        <div class="actions"><button id="save-messages" class="primary" type="submit">Save phone settings</button><button id="preview-message" type="button">Preview message</button><button id="send-message" type="button">Send status now</button></div>
+      </form>
+      <section id="message-preview-panel" hidden aria-labelledby="message-preview-heading"><h3 id="message-preview-heading">Message preview</h3><p id="message-preview-title"></p><pre id="message-preview"></pre></section>
+      <p class="hint">Delivery uses your Companion app's existing notification connection. <a class="text-link" href="https://companion.home-assistant.io/docs/notifications/notification-local/" target="_blank" rel="noopener noreferrer">Local push settings ↗</a> can use a local connection where available; otherwise Home Assistant may use Apple or Google push. A message accepted by Home Assistant does not confirm phone delivery.</p>
+    </section>
+  </section>
   <section id="view-setup" aria-label="Pi setup" hidden><div class="grid">
     <section class="card" aria-labelledby="checks-heading">
       <div class="section-top"><span class="step" aria-hidden="true">1</span><h2 id="checks-heading">Check this Pi</h2><span id="ready-badge" class="badge">Checking</span></div>

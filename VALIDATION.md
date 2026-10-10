@@ -1,4 +1,19 @@
-# Validation — 10 October 2026, 0.6.0-rc.1
+# Validation — 10 October 2026, 0.7.0-rc.1
+
+## New phone-message behavior
+
+The 0.7 preview adds optional phone wake/status messages. The maintainer's successful Pi report below applies to the earlier 0.6 app. Actual Companion app delivery and an actual RTC-wake message have not been observed for 0.7.
+
+Local verification passes **301 Python unittest cases**, including 42 new phone cases, expanded DOM interaction checks, and JavaScript syntax. Phone tests cover current/legacy action contracts, discovery and native visibility/area metadata, explicit phone/send consent, safe field selection, draft preview, schedule/UPS message semantics, actual host uptime, current-boot/restored/unavailable observations, bounded waiting, persistent claims before I/O, ambiguous delivery, failed persistence, app restart deduplication, schema-6 preservation, and a blocked phone request while the shutdown worker completes. All phone deliveries and Pi operations in these tests are simulated.
+
+The browser smoke script now covers phone discovery, field selection, preview without sending, saving, send confirmation, simulated delivery, reload persistence, and mobile width. Hosted Chromium, arm64 build, and anonymous production-image verification are pending for this source version until recorded below.
+
+New files are standard-library code plus documentation/tests; production dependencies, ingress authorization, RTC preflight, UPS policy, Calendar ownership, and native firmware handling are unchanged. Schema 7 retains schema-6 settings and introduces disabled phone preferences plus historical boot-attempt metadata. No future phone/schedule dates are persisted outside Calendar.
+
+Remaining acceptance: actual phone delivery on the user's selected connection, RTC-wake notification, same-boot add-on restart without duplicates, internet/local-network outage behavior, novice setup, and the existing fresh-install/UPS output-return checks in ACCEPTANCE.md.
+
+## Earlier 0.6.0-rc.1 validation
+
 
 ## Public-preview preparation
 

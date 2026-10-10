@@ -65,7 +65,37 @@ async function main() {
     await page.getByRole('button', {name: 'Save UPS recovery', exact: true}).click();
     await page.waitForFunction(() => document.getElementById('recovery-message').textContent.includes('off'));
     assert.equal((await (await page.request.get(url + 'api/status')).json()).recovery.settings.enabled, false);
+    await page.locator('#nav-messages').click();
+    assert.equal(await page.getByLabel('Send a message after this Pi starts', {exact: true}).isChecked(), false);
+    assert.equal(await page.locator('#send-message').isDisabled(), true);
+    await page.getByRole('button', {name: 'Find phones and readings', exact: true}).click();
+    await page.waitForFunction(() => document.getElementById('message-recipient').options.length > 1 && !document.getElementById('scan-messages').disabled);
+    await page.getByLabel(/^Send to phone/).selectOption('entity:notify.demo_phone');
+    await page.locator('#message-readings-panel summary').click();
+    await page.getByRole('checkbox', {name: 'Include ups battery', exact: true}).check();
+    assert.equal(await page.locator('#message-unsaved').isVisible(), true);
+    await page.getByRole('button', {name: 'Preview message', exact: true}).click();
+    await page.waitForFunction(() => document.getElementById('message-preview').textContent.includes('50 %'));
+    const preview = await page.locator('#message-preview').innerText();
+    assert.match(preview, /Uptime:/);
+    assert.match(preview, /Next shutdown:/);
+    assert.match(preview, /Next wake:/);
+    assert.equal(await page.locator('#send-message').isDisabled(), true);
+    await page.getByLabel('Send a message after this Pi starts', {exact: true}).check();
+    await page.getByRole('button', {name: 'Save phone settings', exact: true}).click();
+    await page.waitForFunction(() => !document.getElementById('send-message').disabled && document.getElementById('message-unsaved').hidden);
+    await page.getByRole('button', {name: 'Send status now', exact: true}).click();
+    await page.getByRole('button', {name: 'Go back', exact: true}).click();
+    await page.getByRole('button', {name: 'Send status now', exact: true}).click();
+    await page.getByRole('button', {name: 'Send status', exact: true}).click(); // Simulated phone only.
+    await page.waitForFunction(() => document.getElementById('messages-result').textContent.includes('accepted by Home Assistant'));
+    await page.reload();
+    await page.locator('#nav-messages').click();
+    await page.waitForFunction(() => document.getElementById('message-recipient').value === 'entity:notify.demo_phone');
+    assert.equal(await page.getByLabel('Send a message after this Pi starts', {exact: true}).isChecked(), true);
+    assert.equal(await page.locator('#message-selected-fields li').count(), 1);
     await page.setViewportSize({width: 390, height: 844});
+    await page.locator('#message-readings-panel summary').click();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     const readyStatus = await (await page.request.get(url + 'api/status')).json();
     readyStatus.test_status = 'passed';
@@ -77,7 +107,7 @@ async function main() {
     await page.locator('#nav-setup').click();
     assert.equal(await page.locator('#view-setup').isVisible(), true);
     assert.deepEqual(errors, []);
-    console.log('UI smoke passed: calendar-only settings, native link, saved list, reload, countdown cancellation, UPS discovery/selection/notices, and mobile width.');
+    console.log('UI smoke passed: Calendar/UPS tasks, phone discovery/readings/preview/save/consent/simulated send/reload, and mobile width. No real phone or power operation.');
   } finally {
     if (browser) await browser.close();
     child.kill('SIGTERM');

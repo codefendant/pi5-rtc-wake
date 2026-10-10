@@ -16,7 +16,22 @@ Your selected calendar and confirmed wake test survive ordinary app updates. Fir
 
 ## Everyday use
 
-Successful setup opens **Overview**, with compact status and the upcoming saved schedule. **Calendar** holds schedule preferences. **UPS** holds power monitoring and protection. **Setup** keeps checks/preparation/test available for review and returns when attention is needed. Drafts are preserved during background refreshes. Detailed readings and forms are collapsed; countdowns and action messages remain visible across sections.
+Successful setup opens **Overview**, with compact status and the upcoming saved schedule. **Calendar** holds schedule preferences. **UPS** holds power monitoring and protection. **Messages** holds optional phone notifications. **Setup** keeps checks/preparation/test available for review and returns when attention is needed. Drafts are preserved during background refreshes. Detailed readings and forms are collapsed; countdowns and action messages remain visible across sections.
+
+## Phone wake and status messages
+
+1. Install/open the Home Assistant Companion app on your phone, connect it to this Home Assistant, and allow phone notifications.
+2. Open **Messages → Find phones and readings**, choose your phone, and optionally open **Choose extra readings**. Search by name, area, or type and select up to twelve existing readings. Suggestions use native entity metadata and your selected NUT UPS. Hidden, disabled, and configuration entities are excluded. Enable missing NUT readings in the UPS section first.
+3. Select **Preview message** to inspect a draft without sending. Save, then use **Send status now** and confirm the chosen phone. Check your phone to confirm delivery.
+4. Optionally enable **Send a message after this Pi starts** and save. Automatic wake messages start off and begin with the next Pi host boot. Restarting/updating this app on the same Pi boot does not duplicate a wake message.
+
+Every message includes the Pi's actual uptime and next shutdown/wake times, or explains off/paused scheduling, no upcoming event, conditional UPS recovery, or a final stop without a timed wake. Dates remain in Calendar. Selected readings use Home Assistant's states and units. After startup the app waits for current-boot observations; missing/restored/older-boot values are labelled. For today's energy, choose a daily energy sensor; the app does not copy the Energy dashboard's calculated daily totals or exact summary priority order.
+
+Home Assistant's current phone notification entities and older mobile-app actions are supported. A phone may appear in both forms; choose one. Broadcast notification targets are excluded. A saved phone that disappears is not replaced with another target. Settings survive updates. Schema 6 upgrades keep Calendar, UPS, and wake evidence while phone messages start off.
+
+Delivery uses the Companion app's existing notification connection: local push where available, or possibly Apple/Google push. **Accepted by Home Assistant** does not confirm that your phone received it. An automatic attempt is saved before submitting, so an uncertain send is not repeated on the same boot. Check the phone before manually sending again. The separate message worker cannot delay RTC/UPS control with notification network requests.
+
+More details: [Phone messages](https://github.com/codefendant/pi5-rtc-wake/blob/main/PHONE_MESSAGES.md) · [Companion Local Push](https://companion.home-assistant.io/docs/notifications/notification-local/).
 
 ## UPS & power sources
 

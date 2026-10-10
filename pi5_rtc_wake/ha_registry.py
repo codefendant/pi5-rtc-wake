@@ -60,7 +60,7 @@ class CoreRegistry:
 
     def command(self, kind, **values):
         # No arbitrary WebSocket command or service supplied by the browser.
-        if kind not in {"config/device_registry/list", "config/entity_registry/list", "config/entity_registry/get", "config/entity_registry/update"}:
+        if kind not in {"config/device_registry/list", "config/entity_registry/list", "config/entity_registry/get", "config/entity_registry/update", "config/area_registry/list"}:
             raise ValueError("Unsupported registry operation")
         self.serial += 1
         try:
@@ -71,6 +71,28 @@ class CoreRegistry:
             return result["result"]
         except Exception:
             raise UserError("Home Assistant did not confirm the sensor change.", "Check this sensor on the NUT device page before trying again. The request may already have succeeded.") from None
+
+    def message_metadata(self):
+        from phone_messages import ENTITY, text
+        entities = self.command("config/entity_registry/list")
+        devices = self.command("config/device_registry/list")
+        areas = self.command("config/area_registry/list")
+        if (not isinstance(entities, list) or len(entities) > 50000 or not isinstance(devices, list)
+                or len(devices) > 20000 or not isinstance(areas, list) or len(areas) > 2000):
+            raise UserError("Home Assistant's entity settings could not be read.", "Find phones and readings again after Home Assistant has started.")
+        devices = {row["id"]: row for row in devices if isinstance(row, dict) and isinstance(row.get("id"), str)}
+        areas = {row["area_id"]: text(row.get("name")) for row in areas if isinstance(row, dict) and isinstance(row.get("area_id"), str)}
+        result = {}
+        for row in entities:
+            if not isinstance(row, dict) or not isinstance(row.get("entity_id"), str) or not ENTITY.fullmatch(row["entity_id"]):
+                continue
+            device = devices.get(row.get("device_id"), {}) if isinstance(row.get("device_id"), str) else {}
+            result[row["entity_id"]] = {"name": text(row.get("name") or row.get("original_name")),
+                "platform": text(row.get("platform")), "device_id": text(row.get("device_id")),
+                "area": areas.get(row.get("area_id") or device.get("area_id"), ""),
+                "disabled": row.get("disabled_by") is not None or device.get("disabled_by") is not None,
+                "hidden": row.get("hidden_by") is not None, "entity_category": row.get("entity_category")}
+        return result
 
     def nut_sensors(self):
         rows = self.command("config/entity_registry/list")

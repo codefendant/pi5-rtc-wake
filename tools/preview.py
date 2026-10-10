@@ -12,6 +12,7 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_setup import FakeRTC, FakeSupervisor, FakeHost
+from test_phone_messages import configure_phone
 import server
 
 
@@ -21,6 +22,7 @@ def main():
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix="pi5-demo-") as data:
         supervisor = FakeSupervisor()
+        configure_phone(supervisor, time.time())
         supervisor.calendar_list = [{"entity_id": "calendar.demo_pi_sleep", "name": "Demo Pi Sleep"}]
         start = int(time.time()) + 3600
         stamp = lambda epoch: datetime.fromtimestamp(epoch, timezone.utc).isoformat()
@@ -36,7 +38,7 @@ def main():
 
             def do_GET(self):
                 if self.path == "/":
-                    content = (server.WEB / "index.html").read_text().replace("Preview release · Physical Pi testing is still required before public release.", "LOCAL DEMO · Simulated Pi services. No Raspberry Pi is connected.")
+                    content = (server.WEB / "index.html").read_text().replace("Preview release · Test wake and UPS recovery on your own hardware.", "LOCAL DEMO · Simulated Pi, UPS, and phone. No real message or power operation.")
                     self._send(200, content.encode(), "text/html; charset=utf-8")
                 else:
                     super().do_GET()

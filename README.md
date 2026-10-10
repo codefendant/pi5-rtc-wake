@@ -2,11 +2,11 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.6.0-rc.1 · Public preview · MIT license**
+**0.7.0-rc.1 · Public preview · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-The [public preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.6.0-rc.1) and matching arm64 image are available. The [publishing workflow](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38031186599) passed backend, browser, build, and anonymous-download checks. See [PUBLICATION.md](PUBLICATION.md) for the publishing process.
+The [public preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.1) adds optional phone wake/status messages to the Calendar/UPS app. Publication requires backend, browser, build, and anonymous-download checks. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
 
 ## Install and set up
 
@@ -25,6 +25,7 @@ No end-user terminal, API token, YAML automation, or extra dashboard card is nee
 | Overview | Check readiness, UPS state, and the next scheduled off periods. |
 | Calendar | Select the calendar, review dates, and open native Calendar editing. |
 | UPS | Choose the power source, enable available NUT readings, and configure optional notices or shutdown protection. |
+| Messages | Choose a Companion app phone and readings, preview/send status, and enable optional messages after Pi boot. |
 | Setup | Review Pi checks, preparation, reboot, and wake-test evidence when needed. |
 
 After a confirmed wake test, Overview opens by default. Setup returns when a problem needs attention. Details stay collapsed until needed.
@@ -45,6 +46,12 @@ Optional protection uses an explicitly selected runtime sensor and reviewed shut
 
 See [UPS_RECOVERY.md](UPS_RECOVERY.md) for the policy and setup. Developers can publish compatible Home Assistant sensor data using [UPS_HOOKS.md](UPS_HOOKS.md); external executable hooks are not loaded into this privileged app.
 
+## Phone messages
+
+In **Messages**, select **Find phones and readings**, choose your Home Assistant Companion app phone, and optionally choose up to twelve existing readings. Every message includes Pi uptime and the next shutdown/wake times, or explains why no time is planned. Preview a draft without sending, save, and use **Send status now** to check your phone. Enable **Send a message after this Pi starts** for the next host boot; app restarts do not duplicate a wake message.
+
+Suggestions use native entity types, device classes, areas, visibility, and the selected NUT UPS. They do not copy the exact dashboard summary order. For today's energy, select an existing daily sensor. Delivery uses the Companion app's existing connection and may use local or Apple/Google push; acceptance by Home Assistant is not a delivery receipt. Phone work is separate from the RTC/UPS worker. See [PHONE_MESSAGES.md](PHONE_MESSAGES.md).
+
 ## Power and firmware
 
 While this Pi is off, Home Assistant and its automations are unavailable. RTC wake needs continuous main input power. An RTC battery keeps time; it cannot boot the Pi. If the UPS switches output off, restart depends on restored output or an independently powered controller.
@@ -55,7 +62,7 @@ Home Assistant's Raspberry Pi integration handles board firmware version updates
 
 ## Validation and development
 
-The maintainer reports that this release works on their Pi 5. **259 simulated backend tests**, DOM interactions, JavaScript syntax, RTC ABI checks, and the real Chromium smoke test pass in GitHub Actions. The arm64 image builds, downloads anonymously, and imports its production modules successfully. A fresh Home Assistant app-store install/update and the remaining novice/UPS hardware acceptance checks still need observation.
+The maintainer tested the preceding **0.6.0-rc.1** on their Pi 5. The expanded suite has **301 simulated backend tests**, including phone discovery, reporting, restart persistence, delivery uncertainty, and shutdown isolation. DOM interactions and JavaScript syntax pass locally. Browser/build/public-image checks gate publication. New real-phone delivery, a fresh Home Assistant app-store install/update, and the remaining novice/UPS hardware acceptance checks still need observation.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 
