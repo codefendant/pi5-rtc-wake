@@ -2,11 +2,11 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.8.0-rc.1 · Preview candidate · MIT license**
+**0.8.0-rc.1 · Public preview · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-This preview adds optional tools for your existing Home Assistant AI conversation agent. See [ASSIST.md](ASSIST.md) for screen-only setup and supported requests. The previous [0.7.0-rc.2 public preview](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.2) remains available while this candidate is verified. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
+This preview adds optional tools for your existing Home Assistant AI conversation agent. See [ASSIST.md](ASSIST.md) for screen-only setup and supported requests. The [0.8.0-rc.1 public preview](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.8.0-rc.1) and matching arm64 image are published. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
 
 ## Install and set up
 
@@ -69,7 +69,7 @@ Keep this app's **Protection mode off** during use so it can check the host wake
 
 ## Validation and development
 
-The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** installation error. **326 simulated backend tests**, DOM interactions, and syntax checks pass locally for this candidate. Publication also requires actual Home Assistant 2026.10.1 companion/tool checks, Chromium, RTC ABI, arm64 build, anonymous image download, and production imports. Live companion setup and an AI/voice conversation, actual phone delivery, novice setup, and the remaining UPS hardware checks still need observation.
+The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** installation error. **326 simulated backend tests**, DOM/JavaScript/RTC ABI checks, actual Home Assistant 2026.10.1 companion/tool checks, Chromium, arm64 build, anonymous image download, and production imports pass. [Publishing run 38075883994](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38075883994) records the results. Live companion setup and an AI/voice conversation, actual phone delivery, novice setup, and the remaining UPS hardware checks still need observation.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 

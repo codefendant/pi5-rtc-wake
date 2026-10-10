@@ -1,10 +1,16 @@
-# Validation — 10 October 2026, 0.8.0-rc.1 candidate
+# Validation — 10 October 2026, 0.8.0-rc.1
 
-Local checks pass **326 simulated backend tests**, JavaScript syntax, Python compilation, and DOM interactions. New cases cover read-only defaults, no secrets in tool/UI responses, authenticated API boundaries, unsupported approval/firmware routes, precise time-zone offsets, expiry, restart/migration, live revocation, approval-time Calendar checks, read-back after a timeout, no duplicate uncertain writes, unchanged emergency protection, and safe companion installation.
+Verification and publication succeeded. **326 simulated backend tests**, JavaScript syntax, Python compilation, DOM interactions, and RTC ABI checks pass. New cases cover read-only defaults, no secrets in tool/UI responses, authenticated API boundaries, unsupported approval/firmware routes, precise time-zone offsets, expiry, restart/migration, live revocation, approval-time Calendar checks, read-back after a timeout, truthful uncertain-save results, no duplicate writes, queued emergency preparation and low-battery protection, supported-host reboot guards, and safe companion installation.
 
-The hosted candidate also runs actual Home Assistant 2026.10.1 for Supervisor-style discovery/configuration, lazy native Assist platform loading, real tool schemas and ToolResult dispatch, a reviewed Calendar write, revocation, and unload. Hardware and services are simulated; this does not exercise an actual model or the user's HAOS instance. Chromium covers Connect Assist consent, read-only defaults, settings, request review, and mobile width. These checks and the arm64 image build are publication gates; results will be recorded after they complete.
+Actual **Home Assistant 2026.10.1** passes Supervisor-style discovery and confirmation, real config-entry loading (including its immutable settings), lazy native Assist platform loading, native tool schemas and ToolResult dispatch, normal Assist tools retained, status-only defaults, reviewed Calendar creation, immediate revocation, and unload. App hardware/services are simulated; the official Core loader, config flow, platform, and dispatcher are real. Chromium passes Connect Assist consent, read-only defaults, settings, request approval/cancellation, and mobile width.
 
-A live HAOS companion installation, actual AI/voice conversation, and companion update/restart remain unobserved. Physical wake, phone delivery, long-outage UPS recovery, and novice acceptance retain the limits recorded below.
+- Candidate [38075738481](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38075738481) passed all required checks and the arm64 build at `07678f073780361fe72446a688c875ba82cc4813`.
+- Publishing [38075883994](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38075883994) passed those checks, image push, fresh anonymous arm64 pull, production imports, version verification, and preview creation.
+- [v0.8.0-rc.1](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.8.0-rc.1) is non-draft and marked pre-release, published at 18:30 UTC on 10 October 2026. Its tag points to `d6b42c83617cd3334513532807b7621b60b92a56` and source tree `708c8ba80eeeeaa4cc93f74d9ea8787d9c00a576`, identical to the verified candidate.
+- Image `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.8.0-rc.1` was pushed and pulled anonymously with matching digest `sha256:829084b3502e635af2bf6910c365a278d79afa40b6909a277943db926291a035`. The anonymous job verified arm64, imported production server/websocket, and checked `server.VERSION`.
+- The preceding 0.7.0-rc.2 tag was read back unchanged at `25d335098154ae8760b3caaafa84e541a2f30b2e`.
+
+A live HAOS companion installation, actual AI/voice conversation, and companion update/restart remain unobserved. Automated checks perform no physical Pi/UPS operation and send no real phone messages. Physical wake, phone delivery, long-outage UPS recovery, and novice acceptance retain the limits recorded below.
 
 # Validation — 10 October 2026, 0.7.0-rc.2
 
