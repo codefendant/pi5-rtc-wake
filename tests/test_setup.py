@@ -563,6 +563,24 @@ class IngressTests(unittest.TestCase, Fixture):
         self.assertIsNone(data["schedule"]["calendar_entity_id"])
         self.assertNotIn("sleep_time", data["schedule"])
 
+    def test_container_os_error_shows_protection_mode_recovery_in_setup(self):
+        error = HostError("inspect", {"step": "host_os", "error_type": "ValueError", "helper_exit_code": 1, "reason": "unexpected_os"})
+        with patch.object(self.host, "inspect", side_effect=error):
+            self.app.refresh()
+        status, _, body = self.request("GET", "/api/status")
+        self.assertEqual(status, 200)
+        data = json.loads(body)
+        self.assertFalse(data["checks"]["ok"])
+        self.assertFalse(data["checks"].get("can_prepare", False))
+        self.assertFalse(data["schedule_active"])
+        self.assertEqual(data["checks"]["details"], error.details)
+        self.assertIn("Protection mode", data["checks"]["message"])
+        self.assertIn("turn Protection mode off", data["checks"]["action"])
+        self.assertIsNone(self.app.pending)
+        self.app.refresh()
+        _, _, body = self.request("GET", "/api/status")
+        self.assertTrue(json.loads(body)["checks"]["ok"])
+
     def test_recovered_host_check_clears_old_error_details(self):
         error = HostError("inspect", {"step": "running_config", "error_type": "CalledProcessError", "exit_code": 2})
         with patch.object(self.host, "inspect", side_effect=error):

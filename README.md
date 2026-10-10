@@ -2,11 +2,11 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.7.0-rc.1 · Public preview · MIT license**
+**0.7.0-rc.2 · Public preview · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-The [public preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.1) adds optional phone wake/status messages to the Calendar/UPS app. The matching public arm64 image is available; the [publishing workflow](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38035745972) passed backend, Chromium, build, and anonymous-download checks. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
+The [public preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.2) improves Protection mode guidance and retains optional phone wake/status messages. Backend, browser, build, and anonymous-download checks gate publication. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
 
 ## Install and set up
 
@@ -58,11 +58,11 @@ While this Pi is off, Home Assistant and its automations are unavailable. RTC wa
 
 This app does not switch UPS outputs or implement a complete NUT shutdown handoff. A final emergency stop has no verified timed wake, and utility power returning does not restart a halted Pi whose input stayed powered. Test the actual UPS output-return path before relying on unattended long-outage recovery.
 
-Home Assistant's Raspberry Pi integration handles board firmware version updates. This app separately checks/prepares `POWER_OFF_ON_HALT=1` and `WAKE_ON_GPIO=0`, preserving boot order and backing up the current settings. Pending updates or unsupported preparation produce an action message. A required reboot appears in Home Assistant Notifications and in Setup.
+Keep this app's **Protection mode off** during use so it can check the host wake settings and access the built-in RTC. An updated firmware version does not verify or configure low-power wake settings. Home Assistant's Raspberry Pi integration handles board firmware version updates. This app separately checks/prepares `POWER_OFF_ON_HALT=1` and `WAKE_ON_GPIO=0`, preserving boot order and backing up the current settings. Pending updates or unsupported preparation produce an action message. A required reboot appears in Home Assistant Notifications and in Setup.
 
 ## Validation and development
 
-The maintainer tested the preceding **0.6.0-rc.1** on their Pi 5. The expanded suite has **301 simulated backend tests**, including phone discovery, reporting, restart persistence, delivery uncertainty, and shutdown isolation. DOM interactions, JavaScript syntax, RTC ABI, actual Chromium flow, arm64 build, and anonymous production-image checks also pass in the [publishing run](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38035745972). New real-phone delivery, a fresh Home Assistant app-store install/update, and the remaining novice/UPS hardware acceptance checks still need observation.
+The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** public-installation error. The suite has **303 simulated backend tests**, including the reported error path and Setup recovery. DOM interactions and JavaScript syntax pass locally; browser, arm64 build, and anonymous production-image checks gate publication. Actual phone delivery, novice setup, and the remaining UPS hardware checks still need observation.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 
