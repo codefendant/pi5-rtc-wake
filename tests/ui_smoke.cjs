@@ -23,7 +23,9 @@ async function main() {
     assert.equal(await page.locator('#sleep-time, #wake-time, #schedule-source, #sleep-now').count(), 0);
     assert.equal(await page.getByRole('link', {name: 'Open Home Assistant Calendar ↗'}).isVisible(), true);
     await page.locator('#nav-calendar').click();
-    await page.getByLabel('Calendar for this Pi', {exact: true}).selectOption('calendar.demo_pi_sleep');
+    // A wrapping select label also contains option text; retain the label check
+    // while matching its stable leading text rather than the changing options.
+    await page.getByLabel(/^Calendar for this Pi/).selectOption('calendar.demo_pi_sleep');
     assert.match(await page.locator('#saved-times').innerText(), /Not selected/);
     assert.equal(await page.locator('#unsaved').isVisible(), true);
     await page.getByRole('button', {name: 'Save calendar settings', exact: true}).click();
@@ -48,7 +50,7 @@ async function main() {
     await page.locator('#nav-ups').click();
     await page.getByRole('button', {name: 'Find power sources', exact: true}).click();
     await page.waitForFunction(() => document.getElementById('scan-ups').disabled === false && document.getElementById('ups-source').options.length > 1);
-    await page.getByLabel('Power source for this Pi', {exact: true}).selectOption('hook:sensor.demo_local_power');
+    await page.getByLabel(/^Power source for this Pi/).selectOption('hook:sensor.demo_local_power');
     await page.getByLabel('Show power notices in Home Assistant', {exact: true}).check();
     await page.getByRole('button', {name: 'Save power monitor', exact: true}).click();
     await page.waitForFunction(() => document.getElementById('ups-summary').textContent.includes('Demo UPS'));

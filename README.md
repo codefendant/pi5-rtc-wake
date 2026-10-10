@@ -6,7 +6,7 @@ Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assista
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-The installation link requires the public repository and matching image. If you are reading a prepared archive before publication, see [PUBLICATION.md](PUBLICATION.md).
+The source repository is public. The installation link becomes usable when the matching image passes the public-download check and a preview appears in Releases. See [PUBLICATION.md](PUBLICATION.md) for the publishing process.
 
 ## Install and set up
 

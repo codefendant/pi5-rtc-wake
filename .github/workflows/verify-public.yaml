@@ -1,13 +1,14 @@
 name: Verify public installation image
 on:
   workflow_dispatch:
+  workflow_call:
 permissions:
   contents: read
 jobs:
   anonymous-image:
     runs-on: ubuntu-latest
     env:
-      DOCKER_CONFIG: ${{ runner.temp }}/pi-wake-anonymous-docker
+      DOCKER_CONFIG: /tmp/pi-wake-anonymous-docker
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:

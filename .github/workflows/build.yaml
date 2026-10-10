@@ -48,6 +48,10 @@ jobs:
   image:
     needs: [verify, ui]
     runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.meta.outputs.publish }}
+      version: ${{ steps.meta.outputs.version }}
+      image: ${{ steps.meta.outputs.image }}
     permissions:
       contents: read
       packages: write
@@ -63,6 +67,7 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           EVENT_NAME: ${{ github.event_name }}
           PUBLISH_REQUEST: ${{ inputs.publish && 'true' || 'false' }}
+          HEAD_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           python3 - <<'PY'
           import os, re
@@ -77,6 +82,11 @@ jobs:
           if publish:
               if os.environ['REF_NAME'] != 'v' + version:
                   raise SystemExit('The release tag must match config.yaml version.')
+          message = os.environ.get('HEAD_MESSAGE', '').splitlines()
+          if (os.environ['EVENT_NAME'] == 'push' and os.environ['REF_TYPE'] == 'branch'
+                  and os.environ['REF_NAME'] == 'main' and message
+                  and message[0] == '[release] ' + version):
+              publish = True
           if os.environ['EVENT_NAME'] == 'workflow_dispatch' and os.environ['PUBLISH_REQUEST'] == 'true':
               if os.environ['REF_TYPE'] != 'branch' or os.environ['REF_NAME'] != 'main':
                   raise SystemExit('Publish a preview from the main branch only.')
@@ -108,3 +118,74 @@ jobs:
             org.opencontainers.image.licenses=MIT
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  public-image:
+    needs: image
+    if: needs.image.outputs.publish == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/verify-public.yaml
+  release:
+    needs: [image, public-image]
+    if: needs.image.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Publish the verified preview release
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+          VERSION: ${{ needs.image.outputs.version }}
+          RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          from urllib.error import HTTPError
+          from urllib.request import Request, urlopen
+          repo, version, commit = (os.environ[k] for k in ('REPOSITORY', 'VERSION', 'COMMIT_SHA'))
+          if not re.fullmatch(r'[A-Za-z0-9-]+/[A-Za-z0-9_.-]+', repo):
+              raise SystemExit('Invalid repository.')
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+-[A-Za-z0-9.]+', version):
+              raise SystemExit('This job publishes preview versions only.')
+          if not re.fullmatch(r'[0-9a-f]{40}', commit):
+              raise SystemExit('Invalid release commit.')
+          tag = 'v' + version
+          def api(path, data=None, optional=False):
+              request = Request('https://api.github.com/repos/' + repo + '/' + path,
+                  data=json.dumps(data).encode() if data is not None else None,
+                  headers={'Authorization': 'Bearer ' + os.environ['RELEASE_TOKEN'],
+                           'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json',
+                           'X-GitHub-Api-Version': '2026-03-10'})
+              try:
+                  with urlopen(request, timeout=30) as response:
+                      return json.load(response)
+              except HTTPError as error:
+                  if optional and error.code == 404:
+                      return None
+                  raise
+          def verify_tag(ref):
+              obj = ref['object']
+              if obj['type'] == 'tag':
+                  obj = api('git/tags/' + obj['sha'])['object']
+              if obj['type'] != 'commit' or obj['sha'] != commit:
+                  raise SystemExit('The existing tag points to a different commit; do not move it.')
+          ref = api('git/ref/tags/' + tag, optional=True)
+          if ref is not None:
+              verify_tag(ref)
+          release = api('releases/tags/' + tag, optional=True)
+          if release is None:
+              release = api('releases', {'tag_name': tag, 'target_commitish': commit,
+                  'name': 'Pi 5 Wake & Sleep ' + version + ' — public preview',
+                  'body': Path('RELEASE_NOTES.md').read_text(), 'draft': False,
+                  'prerelease': True, 'make_latest': 'false'})
+          if release.get('draft') or not release.get('prerelease') or release.get('tag_name') != tag:
+              raise SystemExit('The release is not the expected published preview.')
+          verify_tag(api('git/ref/tags/' + tag))
+          print(release['html_url'])
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as stream:
+              stream.write('Published [' + tag + '](' + release['html_url'] + ') at `' + commit + '`.\n')
+          PY
