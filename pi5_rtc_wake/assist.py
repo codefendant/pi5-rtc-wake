@@ -1,7 +1,7 @@
 """Native Assist access: bounded status, cancellation, and human-reviewed requests."""
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime
 import hashlib
 import json
 import math
@@ -285,6 +285,9 @@ class Assistant:
                 if item["enabled"]:
                     self.app._require_ready(require_test=True)
                 with self.app.lock:
+                    self._allowed(writes=True)
+                    if item["calendar"] != self.app.store.data["schedule"]["calendar_entity_id"]:
+                        raise UserError("The selected Calendar changed while this request was being checked.", "Dismiss it and ask Assist for a new request.")
                     settings = deepcopy(self.app.store.data["schedule"])
                 settings["enabled"] = item["enabled"]
                 self.app.save_settings(settings)
@@ -311,6 +314,10 @@ class Assistant:
             if any(item["start_epoch"] <= p["end_epoch"] and p["start_epoch"] <= item["end_epoch"] for p in periods):
                 raise UserError("This off period overlaps or touches another event.", "Review Calendar and ask Assist for different dates.")
             self.app.supervisor.calendar_writable(entity)
+            with self.app.lock:
+                self._allowed(writes=True)
+                if entity != self.app.store.data["schedule"]["calendar_entity_id"] or self.app.store.data["outage"]:
+                    raise UserError("The Calendar or power state changed while this request was being checked.", "Keep the Pi on and review the request again after checking Calendar and UPS status.")
             item["submitted"] = True
             try:
                 self.app.supervisor.create_assist_event(entity, item["start_epoch"], item["end_epoch"], item["title"], marker)

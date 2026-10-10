@@ -2,11 +2,11 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.7.0-rc.2 · Public preview · MIT license**
+**0.8.0-rc.1 · Preview candidate · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-The [public preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.2) improves Protection mode guidance and retains optional phone wake/status messages. Its matching public arm64 image is available; the [publishing workflow](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38038717809) passed backend, Chromium, build, anonymous-download, and production-import checks. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
+This preview adds optional tools for your existing Home Assistant AI conversation agent. See [ASSIST.md](ASSIST.md) for screen-only setup and supported requests. The previous [0.7.0-rc.2 public preview](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.7.0-rc.2) remains available while this candidate is verified. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
 
 ## Install and set up
 
@@ -26,6 +26,7 @@ No end-user terminal, API token, YAML automation, or extra dashboard card is nee
 | Calendar | Select the calendar, review dates, and open native Calendar editing. |
 | UPS | Choose the power source, enable available NUT readings, and configure optional notices or shutdown protection. |
 | Messages | Choose a Companion app phone and readings, preview/send status, and enable optional messages after Pi boot. |
+| Assist | Connect your existing AI agent, ask status questions, and review requested Calendar changes or Pi operations. |
 | Setup | Review Pi checks, preparation, reboot, and wake-test evidence when needed. |
 
 After a confirmed wake test, Overview opens by default. Setup returns when a problem needs attention. Details stay collapsed until needed.
@@ -52,6 +53,12 @@ In **Messages**, select **Find phones and readings**, choose your Home Assistant
 
 Suggestions use native entity types, device classes, areas, visibility, and the selected NUT UPS. They do not copy the exact dashboard summary order. For today's energy, select an existing daily sensor. Delivery uses the Companion app's existing connection and may use local or Apple/Google push; acceptance by Home Assistant is not a delivery receipt. Phone work is separate from the RTC/UPS worker. See [PHONE_MESSAGES.md](PHONE_MESSAGES.md).
 
+## AI and voice interaction
+
+Requires Core **2026.10 or newer** for the optional native tool platform. Select **Assist → Connect Assist**, restart Home Assistant if requested, and add the discovered companion integration. Choose **Assist** under **Control Home Assistant** in your existing AI integration, such as local Ollama. No end-user token, YAML, terminal, or new AI account is needed.
+
+Start with Pi uptime, next shutdown/wake dates, and selected UPS status. Change requests start off. When enabled, dates, scheduling changes, wake tests, and reboots wait for approval in the app. Approved dates go only into Home Assistant Calendar. Cancelling an ordinary current countdown preserves future events and emergency UPS protection. Other household readings use your normal Assist exposed entities. See [ASSIST.md](ASSIST.md).
+
 ## Power and firmware
 
 While this Pi is off, Home Assistant and its automations are unavailable. RTC wake needs continuous main input power. An RTC battery keeps time; it cannot boot the Pi. If the UPS switches output off, restart depends on restored output or an independently powered controller.
@@ -62,7 +69,7 @@ Keep this app's **Protection mode off** during use so it can check the host wake
 
 ## Validation and development
 
-The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** public-installation error. All **303 simulated backend tests**, including the reported error path and Setup recovery, passed locally and in the [publishing workflow](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38038717809). DOM interactions, JavaScript syntax, RTC ABI, Chromium, arm64 build, anonymous image download, and production imports also passed. Actual phone delivery, the 0.7.0-rc.2 HAOS update, novice setup, and the remaining UPS hardware checks still need observation.
+The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** installation error. **324 simulated backend tests**, DOM interactions, and syntax checks pass locally for this candidate. Publication also requires actual Home Assistant 2026.10.1 companion/tool checks, Chromium, RTC ABI, arm64 build, anonymous image download, and production imports. Live companion setup and an AI/voice conversation, actual phone delivery, novice setup, and the remaining UPS hardware checks still need observation.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 

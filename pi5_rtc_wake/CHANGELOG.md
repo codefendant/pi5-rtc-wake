@@ -1,3 +1,12 @@
+# 0.8.0-rc.1
+
+- Add an optional Assist section and a bundled Home Assistant companion using Core 2026.10's native LLM tool platform. Connect through screens and authenticated Supervisor discovery; no user token or YAML is needed.
+- Report fresh Pi uptime, Calendar shutdown/wake dates, readiness, and selected UPS readings through the existing AI conversation agent, including local Ollama. Start with status only; change requests start off.
+- Let enabled AI request single Calendar off periods, scheduling on/off, wake tests, and reboots for explicit approval in the app. Keep every approved date in native Calendar. Check/read back writes and do not duplicate uncertain requests.
+- Allow ordinary current countdown cancellation while preserving emergency protection. AI cannot approve requests, confirm wake evidence, change firmware, or disable emergency protection.
+- Install/update only owned companion files through Connect Assist. Add a private authenticated API with no published host port or approval endpoint. Mount the Core configuration folder for the fixed companion; preserve unrelated configuration.
+- Preserve existing settings in schema 8 with AI access off. Add backend boundary/migration cases, browser connection/review flows, and real Home Assistant 2026.10.1 native platform/flow/tool checks using simulated hardware.
+
 # 0.7.0-rc.2
 
 - Explain Protection mode in the container-OS host-check error and give the complete Info-page Stop/off/Start/Check again sequence. Keep support details available if that does not restore access.

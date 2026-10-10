@@ -1,6 +1,5 @@
 """Authenticated access to this app on Home Assistant's private app network."""
 
-import asyncio
 from datetime import timedelta
 import json
 import re
@@ -39,9 +38,11 @@ class Client:
                 json=payload, headers={"Authorization": "Bearer " + self.token},
                 timeout=aiohttp.ClientTimeout(total=20, connect=5), allow_redirects=False,
             ) as response:
-                body = await response.content.read(65537)
-                if len(body) > 65536:
-                    raise ValueError()
+                body = bytearray()
+                async for chunk in response.content.iter_chunked(8192):
+                    body.extend(chunk)
+                    if len(body) > 65536:
+                        raise ValueError()
                 value = json.loads(body)
                 if not isinstance(value, dict):
                     raise ValueError()

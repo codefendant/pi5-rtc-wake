@@ -2,7 +2,6 @@
 
 from http.server import BaseHTTPRequestHandler
 import json
-from urllib.parse import urlsplit
 
 from state import UserError
 
@@ -35,7 +34,10 @@ class AssistHandler(BaseHTTPRequestHandler):
         if self.path != "/v1/status":
             self.send(404, {"message": "That Assist action is not supported."})
             return
-        self.send(200, self.assistant.status())
+        try:
+            self.send(200, self.assistant.status())
+        except (UserError, OSError, ValueError, TypeError, KeyError):
+            self.send(503, {"message": "Pi status could not be read.", "action": "Keep the Pi powered and check the app's Setup page."})
 
     def do_POST(self):
         if not self.allowed():

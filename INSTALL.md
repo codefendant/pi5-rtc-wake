@@ -1,6 +1,6 @@
 # Install Pi 5 Wake & Sleep
 
-**Public preview 0.7.0-rc.2.** You need Home Assistant OS 18 or newer running on a Raspberry Pi 5 and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
+**Public preview 0.8.0-rc.1.** You need Home Assistant OS 18 or newer running on a Raspberry Pi 5 and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
 
 The repository and matching arm64 image are public. The installation image passed its anonymous-download and production-import checks. Use the link below to add the repository.
 
@@ -40,6 +40,10 @@ Shutdown protection starts disabled. Before enabling it, read [UPS_RECOVERY.md](
 ## Optional phone messages
 
 Install/open the Home Assistant Companion app on your phone and allow notifications. In **Messages**, select **Find phones and readings**, choose your phone, optionally choose up to twelve readings, and save. **Preview message** sends nothing; **Send status now** lets you check actual delivery. Every message includes uptime and the next shutdown/wake times. Enable **Send a message after this Pi starts** and save for the next Pi boot. Messages start off and app restarts do not duplicate a wake message. See [PHONE_MESSAGES.md](PHONE_MESSAGES.md).
+
+## Optional Home Assistant AI interaction
+
+Requires Home Assistant Core **2026.10 or newer** and an existing AI conversation agent with tool support, such as local Ollama. Open **Assist → Connect Assist**, restart Home Assistant if requested, and add the discovered **Pi Wake & Sleep** integration in Devices & services. Choose **Assist** in your AI integration's **Control Home Assistant** setting. Status access starts on; change requests start off. Approved dates stay in Home Assistant Calendar. Follow [ASSIST.md](ASSIST.md) for the screen-by-screen steps and examples.
 
 ## Already using the local ZIP installation?
 

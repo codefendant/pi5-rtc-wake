@@ -16,7 +16,7 @@ import threading
 import unittest
 from unittest.mock import patch
 
-from homeassistant import bootstrap
+from homeassistant import bootstrap, loader
 from homeassistant.config_entries import SOURCE_HASSIO, ConfigEntryState
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.helpers import llm
@@ -40,6 +40,7 @@ async def check():
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     hass = HomeAssistant(str(fixture.config))
+    loader.async_setup(hass)
     try:
         assert await bootstrap.async_from_config_dict(
             {"http": {"server_host": "127.0.0.1", "server_port": 8123}, "llm": {}}, hass=hass
