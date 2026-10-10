@@ -2,7 +2,7 @@
 
 **Public preview 0.6.0-rc.1.** You need Home Assistant OS 18 or newer running on a Raspberry Pi 5 and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
 
-The repository and matching image must be public before this link can install the app. Publication steps are in PUBLICATION.md.
+The repository and matching arm64 image are public. The installation image passed its anonymous-download and production-import checks. Use the link below to add the repository.
 
 ## Install
 

@@ -10,7 +10,16 @@ Original tested ZIP SHA-256: `c32c90008d3b76d5e2a201f4e81ad2a8af8a5fc1c1b7b65682
 
 The source is now committed to the public repository. The first hosted run, [38030570751](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38030570751), passed all 259 backend tests, DOM interactions, JavaScript syntax, and the compiled ABI check. Chromium installed successfully; the browser script then failed on an exact label selector for a wrapping dropdown containing option text. That test now matches the stable label prefix for Calendar and UPS selectors without changing app code. The public-image workflow also needed its temporary Docker configuration path moved out of an unsupported job-level runner expression.
 
-The updated publishing workflow supports an explicit main-commit release marker, an anonymous image gate, and automatic preview/tag creation only after that gate succeeds. Local syntax checks, ten publish-condition cases, and six simulated release API cases pass, including duplicate prevention, refusing a mismatched tag, and failing on authorization errors. The updated hosted browser run, Docker build, public image availability, and fresh HAOS install remain pending; record their actual results below when complete.
+The updated publishing workflow supports an explicit main-commit release marker, an anonymous image gate, and automatic preview/tag creation only after that gate succeeds. Local syntax checks, ten publish-condition cases, and six simulated release API cases pass, including duplicate prevention, refusing a mismatched tag, and failing on authorization errors.
+
+## Verified public publication
+
+- [Publishing workflow 38031186599](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38031186599) completed successfully on 10 October 2026 at 06:32 UTC. Backend tests, DOM checks, JavaScript syntax, RTC ABI, real Chromium smoke test, arm64 build/push, anonymous image verification, and preview creation all passed.
+- Release/tag: [v0.6.0-rc.1](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.6.0-rc.1), published as a non-draft pre-release, targeting commit `890427491b8311616e74df8f6058e0251357c337`. The tag's commit was read back and matches that verified publishing commit.
+- Image: `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.6.0-rc.1`. Pushed and anonymously pulled digest: `sha256:9b38d105188464d24dea50a50350296ccc7cb74206814e342ae7f0b65992a739`.
+- The separate anonymous job used a fresh Docker configuration without registry login. It pulled the release image, checked arm64 architecture, imported `server` and `websocket`, and verified `server.VERSION == 0.6.0-rc.1`. No real Pi/UPS operation was executed in CI.
+- All 45 files in the publishing commit's tree match the prepared local content. App Python files and web assets remain byte-for-byte identical to the Pi-tested ZIP; source and test/documentation changes do not substitute for additional physical acceptance.
+- A fresh Home Assistant app-store installation/update, novice completion, and the full long-outage UPS restart path remain unobserved here. The earlier maintainer report is the available physical Pi evidence.
 
 The publication working copy passes the 259 backend tests, DOM checks, JavaScript syntax, and compiled RTC ABI check. Byte comparison confirms unchanged application Python/web assets. Manifest equality apart from URL/image, workflow YAML and embedded shell/Python syntax, full-commit action pins, documentation links, and seven publish-condition cases pass. Ordinary main pushes, pull requests, and dispatches without the publish option do not publish; a main dispatch and matching release tag do, while a non-main publish request or mismatched tag is rejected. Docker and hosted browser/public-image checks remain pending.
 
@@ -41,8 +50,7 @@ The user reports that the ten-minute test worked with rc.4 and that dates entere
 
 ## Not verified here
 
-- Browser rendering and the UI smoke test. The 0.6 smoke script was attempted: Playwright is installed, but its Chromium headless-shell executable is missing. The script/CI job cover the four-section flow, collapsed UPS settings, completed-setup default, reserve table, and mobile width; they still need a successful browser run. The passing DOM fixture does not substitute for that run.
-- Docker image build or GitHub Actions workflow execution. Docker is not available in this workspace.
+- Local browser execution and Docker remain unavailable in this workspace. The hosted Chromium smoke test and real arm64 image build/import now pass, as recorded above. That smoke test uses simulated loopback services; it does not verify real Home Assistant ingress, every accessibility interaction, or every device's layout.
 - The complete fresh-install/update flow, authentication security through actual Home Assistant ingress, or a full Supervisor manifest/runtime check. Earlier rc.2/rc.3 logs showed failed host inspection and access denied before helper startup; rc.4 repaired the missing `SYS_PTRACE` declaration. The later successful test report supersedes that failure as the latest user result, although effective-capability metadata was not captured here.
 - Host namespace entry on Home Assistant OS, host Python/tool paths, EEPROM staging/flashrom, boot-order preservation on actual firmware, or interference with a separately initiated native firmware update.
 - Independently observed power-off/RTC wake, multiple overnight cycles, accessory-specific reliability, or migration through an actual published-app update. One successful ten-minute cycle is user-reported above.
@@ -50,7 +58,7 @@ The user reports that the ten-minute test worked with rc.4 and that dates entere
 - Independently captured NUT registry list/update over the live Core WebSocket proxy, sensor reload/restart timing, actual disabled-device/permission failures, the community NUT app's settings/startup state, or runtime selection after activation on HAOS. Registry/ownership source contracts were checked; wire tests use fake sockets.
 - This user's UPS driver/firmware/connection, shutdown ownership ordering, and long-outage output-off/return behavior. The app sends no UPS output command; enabled protection requests graceful host shutdown. Emergency shutdown, RTC retries, ownership review, and final recovery have not passed physical acceptance. Explicit NUT handoff and UPS output control remain unimplemented.
 - Independent Jinja parsing/rendering of the discovery template. The Jinja dependency is absent here. Home Assistant's current template state wrapper exposes `last_reported`, and its integration/device helpers were checked in primary source; the 0.4 user screenshot is now evidence of template execution on this installation. New 0.5 fields are not independently observed here.
-- Repository publication, public image availability, or the Add to Home Assistant link on a fresh install.
+- A fresh Home Assistant app-store installation through the Add to Home Assistant link. The public repository, published preview/tag, anonymous image download, target architecture, and production imports are verified above.
 
 The production image excludes the developer preview and tests. Production ingress allows only the Supervisor proxy at `172.30.32.2`. The developer preview is explicitly simulated and binds only to loopback.
 

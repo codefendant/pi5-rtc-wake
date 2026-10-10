@@ -6,7 +6,7 @@ Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assista
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-The source repository is public. The installation link becomes usable when the matching image passes the public-download check and a preview appears in Releases. See [PUBLICATION.md](PUBLICATION.md) for the publishing process.
+The [public preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.6.0-rc.1) and matching arm64 image are available. The [publishing workflow](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38031186599) passed backend, browser, build, and anonymous-download checks. See [PUBLICATION.md](PUBLICATION.md) for the publishing process.
 
 ## Install and set up
 
@@ -55,7 +55,7 @@ Home Assistant's Raspberry Pi integration handles board firmware version updates
 
 ## Validation and development
 
-The maintainer reports that this release works on their Pi 5. **259 simulated backend tests** and DOM interaction checks pass locally. Publication also requires the hosted browser smoke test before building/publishing the arm64 image. Local Docker and Chromium execution were unavailable; hosted workflow and public installation results must be recorded after they run.
+The maintainer reports that this release works on their Pi 5. **259 simulated backend tests**, DOM interactions, JavaScript syntax, RTC ABI checks, and the real Chromium smoke test pass in GitHub Actions. The arm64 image builds, downloads anonymously, and imports its production modules successfully. A fresh Home Assistant app-store install/update and the remaining novice/UPS hardware acceptance checks still need observation.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 
