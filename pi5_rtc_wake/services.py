@@ -85,7 +85,7 @@ class Supervisor:
         )
         try:
             with urllib.request.urlopen(request, timeout=15) as response:
-                result = json.loads(response.read(2 * 1024 * 1024))
+                result = json.loads(response.read((16 if path == "/core/api/states" else 2) * 1024 * 1024))
             if path.startswith("/core/api/"):
                 return result
             if result.get("result") != "ok":
@@ -115,6 +115,34 @@ class Supervisor:
 
     def power_sources(self):
         return self.request("/core/api/template", {"template": DISCOVERY_TEMPLATE})
+
+    def message_states(self):
+        return self.request("/core/api/states")
+
+    def message_services(self):
+        return self.request("/core/api/services")
+
+    def message_temperature_unit(self):
+        return self.request("/core/api/config").get("unit_system", {}).get("temperature", "")
+
+    def message_metadata(self):
+        try:
+            with CoreRegistry(self.token) as registry:
+                return registry.message_metadata()
+        except UserError:
+            raise UserError("Home Assistant's phone and reading settings could not be reached.", "Wait for Home Assistant to finish starting, then select Find phones and readings. Your Pi's shutdown protection continues normally.") from None
+
+    def send_phone_message(self, recipient, message):
+        from phone_messages import RECIPIENT
+        if (not isinstance(recipient, str) or not RECIPIENT.fullmatch(recipient)
+                or not isinstance(message, dict) or set(message) != {"title", "message"} or message.get("title") not in ("Pi 5 is awake", "Pi 5 status")
+                or not isinstance(message.get("message"), str)
+                or not message["message"].startswith(("Pi 5 is awake.\n", "Pi 5 status.\n"))
+                or len(message["message"].encode("utf-8")) > 3900):
+            raise UserError("The phone message is not valid.", "Preview your saved message settings and try again.")
+        if recipient.startswith("entity:"):
+            return self.request("/core/api/services/notify/send_message", {**message, "entity_id": recipient[7:]})
+        return self.request("/core/api/services/notify/" + recipient[8:], message)
 
     def nut_sensors(self):
         with CoreRegistry(self.token) as registry:

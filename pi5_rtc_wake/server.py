@@ -19,13 +19,14 @@ from zoneinfo import ZoneInfo
 from calendar_schedule import due_period, parse_periods
 from power_sources import discover_sources, notice_for, validate_settings as validate_power_settings
 from ups_recovery import Recovery
+from phone_messages import PhoneMessages
 
 from host_helper import config_values, patched_config, sha
 from rtc_wake import Controller, LinuxRTC, PolicyError
 from services import Host, Supervisor
 from state import StateStore, UserError, atomic_json, validate_schedule
 
-VERSION = "0.6.0-rc.1"
+VERSION = "0.7.0-rc.1"
 LOG = logging.getLogger("pi5_rtc_wake")
 COUNTDOWN = 30
 TEST_SECONDS = 600
@@ -70,6 +71,7 @@ class Application:
         self.shutdown_controller_info = {"state": "unknown", "addon_id": None, "message": "Check shutdown ownership before enabling UPS protection."}
         self.last_nut_settings_refresh = -math.inf
         self.recovery = Recovery(self)
+        self.messages = PhoneMessages(self)
 
     def _fingerprint(self, snapshot):
         value = snapshot["current_version"] + ":" + snapshot["config_fingerprint"]
@@ -398,6 +400,7 @@ class Application:
                     "ups": {**deepcopy(self.power_info), "settings": deepcopy(state["ups"]), "selected": deepcopy(self._selected_power()), "notifications_ok": self.power_notice_ok, "mode": "rtc_recovery" if state["recovery"]["enabled"] else "monitor_only",
                             "sensor_settings": deepcopy(self.nut_sensor_info), "shutdown_controller": deepcopy(self.shutdown_controller_info)},
                     "recovery": self.recovery.snapshot(),
+                    "messages": self.messages.snapshot(),
                     "test_status": state.get("test", {}).get("status", "not_started"),
                     "next_sleep_epoch": next_sleep, "next_wake_epoch": next_wake, "pending": pending, "job": self.job,
                     "shutdown_requested": self.shutdown_requested_at is not None,
@@ -683,6 +686,8 @@ class Application:
         return True
 
     def run(self):
+        # Phone/Core requests must not occupy the RTC/UPS control worker.
+        threading.Thread(target=self.messages.run, name="phone-messages", daemon=True).start()
         while not self.stop_event.is_set():
             self.process_task()
             self.tick()
@@ -728,6 +733,10 @@ class IngressHandler(BaseHTTPRequestHandler):
         path = urlsplit(self.path).path
         if path == "/api/status":
             self._send(200, self.application.snapshot())
+        elif path == "/api/message-options":
+            with self.application.lock:
+                options = deepcopy(self.application.messages.options)
+            self._send(200, options)
         elif path in ("/", "/index.html", "/app.js", "/style.css"):
             filename = "index.html" if path == "/" else path[1:]
             types = {"index.html": "text/html; charset=utf-8", "app.js": "text/javascript; charset=utf-8", "style.css": "text/css; charset=utf-8"}
@@ -760,6 +769,10 @@ class IngressHandler(BaseHTTPRequestHandler):
                 self.application.save_power_settings(payload)
             elif path == "/api/recovery-settings":
                 self.application.recovery.save_settings(payload)
+            elif path == "/api/message-settings":
+                self.application.messages.save_settings(payload)
+            elif path in ("/api/scan-messages", "/api/preview-message", "/api/send-message"):
+                self.application.messages.begin({"/api/scan-messages": "scan", "/api/preview-message": "preview", "/api/send-message": "send"}[path], payload)
             elif path == "/api/enable-nut-sensor":
                 self.application.enable_nut_sensor(payload)
             elif path == "/api/pause-rtc-retries":

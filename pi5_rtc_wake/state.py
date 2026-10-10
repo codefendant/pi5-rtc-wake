@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 
 class UserError(Exception):
@@ -84,6 +84,8 @@ class StateStore:
         self.data = deepcopy(default)
         from ups_recovery import DEFAULTS, validate_policy, validate_session
         self.data.update(recovery=deepcopy(DEFAULTS), outage={})
+        from phone_messages import DEFAULTS as MESSAGE_DEFAULTS, validate_settings as validate_messages, validate_record
+        self.data.update(messages=deepcopy(MESSAGE_DEFAULTS), message_boot={})
         if not self.path.exists() and not self.backup.exists():
             return
         for path in (self.path, self.backup):
@@ -111,6 +113,8 @@ class StateStore:
                     self.data["recovery"]["owner_confirmed"] = False
                     self.data["migration_notice"] = "Review UPS shutdown ownership before automatic protection resumes. Your Calendar, timings, UPS selection, and wake-test result were kept."
                 self.data["outage"] = validate_session(loaded.get("outage", {}))
+                self.data["messages"] = validate_messages(loaded.get("messages", MESSAGE_DEFAULTS))
+                self.data["message_boot"] = validate_record(loaded.get("message_boot", {}))
                 self.data.pop("last_attempt_date", None)
                 if migration_notice:
                     self.data["migration_notice"] = migration_notice
@@ -119,6 +123,7 @@ class StateStore:
                     self.data["schedule"]["enabled"] = False
                     self.data["recovery"]["enabled"] = False
                     self.data["recovery"]["qualification"] = None
+                    self.data["messages"]["enabled"] = False
                     self.notice = "The last saved settings were restored. Review your times and enable the schedule again."
                 return
             except (OSError, ValueError, KeyError, TypeError, UserError):

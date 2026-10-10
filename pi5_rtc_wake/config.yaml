@@ -1,7 +1,7 @@
 name: Pi 5 Wake & Sleep
-version: "0.6.0-rc.1"
+version: "0.7.0-rc.1"
 slug: pi5_rtc_wake
-description: Pi 5 Calendar scheduling, guided RTC setup, NUT readings, and optional UPS shutdown protection.
+description: Pi 5 Calendar scheduling, guided RTC setup, UPS protection, and optional phone wake/status messages.
 arch:
   - aarch64
 machine:

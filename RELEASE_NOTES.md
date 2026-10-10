@@ -1,29 +1,26 @@
-# Pi 5 Wake & Sleep 0.6.0-rc.1 — public preview
+# Pi 5 Wake & Sleep 0.7.0-rc.1 — phone messages preview
 
-Schedule a safe shutdown and automatic RTC wake for the Raspberry Pi 5 that runs Home Assistant OS. Install and configure it through Home Assistant screens. Home Assistant Calendar owns all scheduled dates and repeating events.
+Receive optional wake and status messages through the Home Assistant Companion app. Every message includes Pi uptime and the next shutdown and wake times. Add readings Home Assistant already monitors, using a separate Messages screen.
 
-[Install in Home Assistant](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/INSTALL.md)
+[Install in Home Assistant](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Phone setup](https://github.com/codefendant/pi5-rtc-wake/blob/main/PHONE_MESSAGES.md)
 
-## In this release
+## New behavior
 
-- Overview, Calendar, UPS, and Setup sections keep completed setup out of everyday use.
-- Guided Pi checks, a red reboot control, a Home Assistant reboot notification, and a ten-minute wake test.
-- Native Calendar editing, recurring dates, and an upcoming schedule summary. Event start means shutdown; event end means wake.
-- NUT discovery accepts valid auxiliary flags such as `OL TEST`. Default-disabled NUT sensors can be enabled from the selected UPS page.
-- Optional UPS notices, explicit runtime selection, conditional RTC retry intervals, and separate emergency low-battery protection.
-- Cancelling a retry or failing an RTC check preserves commissioned emergency protection for the same UPS.
-- Shutdown ownership review and settings migration for earlier versions.
+- Discover Companion app phones using current notify entities or legacy mobile-app actions. Choose an explicit phone; broadcast targets are excluded.
+- Suggest native battery, temperature, NUT UPS, weather, security/maintenance, and energy/power readings. Search by name/area/type and choose up to twelve fields. Hidden, disabled, and configuration entities are excluded.
+- Preview a draft without sending, save settings, and confirm Send status now. Automatic wake messages start off and begin with the next Pi host boot.
+- Wait for startup/readings, label missing or old-boot values, and persist an attempt before sending so app restarts and uncertain replies do not cause duplicate automatic pushes.
+- Keep phone network work in a separate worker so delivery cannot delay RTC/UPS protection.
+- Preserve existing schema-6 Calendar, UPS, wake-test, and outage settings in schema 7. All future shutdown/wake dates still belong to Home Assistant Calendar.
 
-The app maintainer reports that this build works on their Pi 5. The local suite passes 259 simulated backend tests and DOM interaction checks. See [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md) for the scope of validation and [ACCEPTANCE.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/ACCEPTANCE.md) for remaining stable-release checks.
+## Setup and updates
 
-## Existing installations
+Update the same installed app, reload its Web UI, and open **Messages → Find phones and readings**. Install/open the Companion app on your phone and allow notifications if it is not already connected. Choose a phone, optionally select readings, preview, save, and test with **Send status now**. Enable **Send a message after this Pi starts** separately for the next Pi boot.
 
-Update the same installed app to retain settings. An enabled 0.5 UPS policy keeps its preferences but waits for shutdown-ownership review before automatic protection resumes. Moving from a local ZIP installation to the public repository creates a separate app installation; follow the migration instructions in INSTALL.md and stop the local app first.
+Phone delivery uses the Companion app's existing local or Apple/Google push connection. **Accepted by Home Assistant** is not proof of phone delivery. Exact dashboard priorities and the Energy dashboard's calculated daily totals are not copied; choose an existing daily energy sensor for today's usage.
 
-## Preview limits
+## Verification and preview limits
 
-While the Pi is off, Home Assistant and its automations are unavailable. RTC wake needs continuous main power. The RTC battery keeps time; it cannot boot the Pi.
+The expanded automated suite passes **301 simulated backend tests**, including 42 phone cases, plus DOM checks locally. Browser, arm64-build, and anonymous-image checks gate publication. The browser flow uses simulated phones only. New real-phone delivery and an actual RTC-wake message still need confirmation. The maintainer's earlier Pi test applies to 0.6.0-rc.1.
 
-Default retries of 15, 30, and 60 minutes require at least 24, 39, and 69 minutes of estimated remaining runtime at each decision. The sequence is conditional. A final emergency shutdown has no verified timed wake.
-
-This app does not control UPS outputs or implement a complete NUT shutdown handoff. Restored utility power does not restart a halted Pi if the UPS has continuously supplied its input. Long-outage output restoration and automatic restart need verification on the actual UPS before relying on unattended recovery.
+Home Assistant is unavailable while the Pi is off. RTC wake needs continuous main power; the RTC battery keeps time but cannot boot the Pi. UPS retries remain conditional on fresh reserve, and a final emergency shutdown has no verified timed wake. This release does not control UPS outputs or provide a complete NUT shutdown handoff. See [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md) and [ACCEPTANCE.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/ACCEPTANCE.md).

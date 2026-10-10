@@ -1,3 +1,11 @@
+# 0.7.0-rc.1
+
+- Add a separate Messages screen for optional Companion app wake/status notifications. Discover current phone notify entities and legacy mobile-app actions; require an explicit phone choice.
+- Include next shutdown, next wake, and actual host uptime. Explain paused/off/no-event schedules, conditional UPS recovery, and final stops without promising a wake.
+- Discover useful existing readings from native entity/device/area metadata, with search, visibility filtering, weather/climate fields, and up to twelve explicitly selected readings. Preview drafts without sending and confirm manual status delivery.
+- Automatic messages start off. Wait for startup/readings, record an attempt before sending, and avoid duplicates on app restart or uncertain delivery. Keep phone network work separate from RTC/UPS control.
+- Preserve schema 6 Calendar/UPS/wake settings in schema 7 with phone messages off. Add 42 backend regression cases (301 total) and DOM/browser phone flows using simulated phones. Actual Companion app delivery remains to be checked.
+
 # 0.6.0-rc.1
 
 - Organize the app into Overview, Calendar, UPS, and Setup. Open Overview after successful setup; show setup again when checks or the wake test need attention. Keep detailed forms/readings collapsed and retain unsaved edits during status refreshes.

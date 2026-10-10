@@ -2,7 +2,7 @@
 
 **A person with no technical background can install, test, and enable this app entirely through Home Assistant screens. Updates preserve their settings. Every error explains the next action in plain language.**
 
-The maintainer reports that 0.6.0-rc.1 works on their Pi 5 and has authorized public preview publication. Passing automated tests or one maintainer installation alone does not establish the beginner-release requirement. Complete the remaining checks below before removing the preview label or promising unattended UPS recovery.
+The maintainer reports that 0.6.0-rc.1 works on their Pi 5 and has authorized public preview publication. Version 0.7.0-rc.1 adds opt-in phone messages; actual phone delivery still needs observation. Passing automated tests or one maintainer installation alone does not establish the beginner-release requirement. Complete the remaining checks below before removing the preview label or promising unattended UPS recovery.
 
 | Check | Current evidence | Release gate |
 |---|---|---|
@@ -19,7 +19,8 @@ The maintainer reports that 0.6.0-rc.1 works on their Pi 5 and has authorized pu
 | Automatic wake after shutdown | Maintainer reports the rc.4 ten-minute test succeeded and that 0.6.0-rc.1 checks out on their Pi 5 | Independently observe and record power-off and RTC-triggered boot |
 | Calendar is the only schedule store | Separate daily engine/fields removed; old daily schedules pause with migration instructions | Upgrade a legacy daily installation and a Calendar installation; verify no duplicated events or hidden scheduler |
 | Saved dates and Calendar access are visible | Prominent native-calendar link, upcoming list, separate draft indicator; user reports Calendar summaries | Verify Overview list and native repeating-event editing on desktop/mobile HA ingress |
-| Completed setup stays out of everyday use | Four sections; confirmed setup opens Overview and new problems reopen Setup; drafts retained in DOM checks | Observe a novice completing setup, finding Calendar/UPS tasks, and resolving a later setup problem without lost edits |
+| Completed setup stays out of everyday use | Separate Overview, Calendar, UPS, Messages, and Setup sections; confirmed setup opens Overview and new problems reopen Setup; drafts retained in DOM checks | Observe a novice completing setup, finding Calendar/UPS/phone tasks, and resolving a later setup problem without lost edits |
+| Optional phone wake/status delivery | Simulated discovery, selection, preview, persistence, consent, boot claims, stale-data labels, and blocked-delivery/shutdown isolation pass | On a real phone, confirm manual status, actual RTC-wake message, local/cloud behavior during outages, same-boot app restart without duplicates, selected values/units, and Calendar dates |
 | Native reboot reminder | Scoped persistent notification lifecycle tested; reboot controls are red | Verify reminder creation/clearing on live HA; it is Notifications, not a custom Settings repair card |
 | Native Calendar and repeating dates | Core API reader, exact event-end RTC alarm, and occurrence guards tested | Verify Local Calendar recurrence, DST, edits/cancellation/outage during countdown, and real wake at event end |
 | UPS discovery and optional notices | NUT device grouping plus versioned generic data hook; NUT discovery is user-observed in 0.4; simulated/backend/HTTP cases pass | Verify live NUT template execution, enabled Status data, actual power source selection, battery/utility transitions, unavailable data, and notice create/clear in HAOS |

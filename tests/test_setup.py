@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "pi5_rtc_wake"))
 import host_helper
 import server
 from services import HostError
-from state import StateStore, UserError, atomic_json
+from state import SCHEMA_VERSION, StateStore, UserError, atomic_json
 from test_rtc_wake import FakeRTC, epoch
 from rtc_wake import next_daily_epoch
 
@@ -42,6 +42,10 @@ class FakeSupervisor:
         self.sensor_registry = []
         self.enabled_sensors = []
         self.shutdown_owner = {"state": "not_found", "addon_id": None, "message": "Simulated: no local host-shutdown controller."}
+        self.phone_states = []
+        self.phone_services = [{"domain": "notify", "services": {}}]
+        self.phone_metadata = {}
+        self.phone_messages = []
 
     def os_info(self): return deepcopy(self.os)
     def firmware_info(self): return deepcopy(self.firmware)
@@ -63,6 +67,11 @@ class FakeSupervisor:
         return {"require_restart": False}
     def power_notice(self, notice=None): self.power_notices.append(deepcopy(notice))
     def recovery_notice(self, notice=None): self.recovery_notices.append(deepcopy(notice))
+    def message_states(self): return deepcopy(self.phone_states)
+    def message_services(self): return deepcopy(self.phone_services)
+    def message_metadata(self): return deepcopy(self.phone_metadata)
+    def message_temperature_unit(self): return "°F"
+    def send_phone_message(self, recipient, message): self.phone_messages.append((recipient, deepcopy(message)))
     def calendar_writable(self, entity_id):
         if not self.calendar_is_writable or entity_id not in self.events:
             raise UserError("Calendar cannot create events.", "Choose a writable Local Calendar.")
@@ -429,7 +438,7 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(store.data["schedule"]["timezone"], "Europe/London")
         self.assertTrue(store.data["timezone_detected"])
         store.save()
-        self.assertEqual(json.loads(path.read_text())["schema_version"], 6)
+        self.assertEqual(json.loads(path.read_text())["schema_version"], SCHEMA_VERSION)
 
     def test_future_schema_is_never_overwritten(self):
         path = Path(self.temp.name) / "settings.json"

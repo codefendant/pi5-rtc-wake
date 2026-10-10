@@ -1,6 +1,6 @@
 # Install Pi 5 Wake & Sleep
 
-**Public preview 0.6.0-rc.1.** You need Home Assistant OS 18 or newer running on a Raspberry Pi 5 and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
+**Public preview 0.7.0-rc.1.** You need Home Assistant OS 18 or newer running on a Raspberry Pi 5 and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
 
 The repository and matching arm64 image are public. The installation image passed its anonymous-download and production-import checks. Use the link below to add the repository.
 
@@ -34,6 +34,10 @@ Events must last ten minutes to seven days and must not overlap or touch. All da
 If you already have a working NUT server and Home Assistant's NUT integration, open **UPS → Find power sources**, select the UPS supplying this Pi, and save. You can enable power notices and additional NUT readings there. Follow the app's messages if enabling a sensor requires a reload or Home Assistant restart.
 
 Shutdown protection starts disabled. Before enabling it, read [UPS_RECOVERY.md](UPS_RECOVERY.md) and complete the runtime and shutdown-ownership checks shown in the app. This release does not switch UPS output back on after a final shutdown.
+
+## Optional phone messages
+
+Install/open the Home Assistant Companion app on your phone and allow notifications. In **Messages**, select **Find phones and readings**, choose your phone, optionally choose up to twelve readings, and save. **Preview message** sends nothing; **Send status now** lets you check actual delivery. Every message includes uptime and the next shutdown/wake times. Enable **Send a message after this Pi starts** and save for the next Pi boot. Messages start off and app restarts do not duplicate a wake message. See [PHONE_MESSAGES.md](PHONE_MESSAGES.md).
 
 ## Already using the local ZIP installation?
 
