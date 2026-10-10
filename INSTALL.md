@@ -1,6 +1,6 @@
 # Install Pi 5 Wake & Sleep
 
-**Public preview 0.7.0-rc.1.** You need Home Assistant OS 18 or newer running on a Raspberry Pi 5 and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
+**Public preview 0.7.0-rc.2.** You need Home Assistant OS 18 or newer running on a Raspberry Pi 5 and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
 
 The repository and matching arm64 image are public. The installation image passed its anonymous-download and production-import checks. Use the link below to add the repository.
 
@@ -10,6 +10,8 @@ The repository and matching arm64 image are public. The installation image passe
 2. Open **Settings → Apps → App store**, find **Pi 5 Wake & Sleep**, and select **Install**. Older versions call Apps **Add-ons**.
 3. On the app's **Info** page, turn off **Protection mode**. Enable **Start on boot** and **Show in sidebar**, then select **Start**.
 4. Select **Open Web UI** or open **Pi Wake & Sleep** from the sidebar.
+
+Keep this app's **Protection mode off** during use. It needs access to the Pi's wake settings and built-in RTC hardware; updating firmware does not grant that access. Each installation has its own Protection mode setting. If you started the app with it on, select **Stop**, turn it off, then select **Start** and **Setup → Check again**.
 
 If the link cannot open your Home Assistant, open the app store's **⋮ → Repositories**, add `https://github.com/codefendant/pi5-rtc-wake`, then select **⋮ → Check for updates** and look for the app again.
 
@@ -43,7 +45,7 @@ Install/open the Home Assistant Companion app on your phone and allow notificati
 
 You can keep your tested local app. Adding this public repository does not automatically move its settings. The public app is a separate installation.
 
-1. Leave the local app installed, but **stop it before starting the public app**. Run only one Wake & Sleep app at a time.
+1. Leave the local app installed, but **stop it and turn off its Start on boot before starting the public app**. Run only one Wake & Sleep app at a time.
 2. Install the public app using the steps above. Complete its checks/wake confirmation and reselect your existing Calendar, UPS, and preferences. Your Calendar dates remain in Home Assistant.
 3. Verify the upcoming list and protection settings before enabling scheduling or UPS control. Future updates use Home Assistant's normal Update button.
 

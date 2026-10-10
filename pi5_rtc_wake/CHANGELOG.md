@@ -1,3 +1,9 @@
+# 0.7.0-rc.2
+
+- Explain Protection mode in the container-OS host-check error and give the complete Info-page Stop/off/Start/Check again sequence. Keep support details available if that does not restore access.
+- Use the same sequence for access-denied errors and explain that normal RTC operation still needs Protection mode off. Firmware updates remain owned by Home Assistant; wake checks remain in place.
+- Preserve all existing settings, wake-test evidence, permissions, firmware guards, Calendar behavior, UPS policy, and phone behavior. Add regression coverage for the reported error and Setup recovery.
+
 # 0.7.0-rc.1
 
 - Add a separate Messages screen for optional Companion app wake/status notifications. Discover current phone notify entities and legacy mobile-app actions; require an explicit phone choice.

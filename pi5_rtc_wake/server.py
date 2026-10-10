@@ -26,7 +26,7 @@ from rtc_wake import Controller, LinuxRTC, PolicyError
 from services import Host, Supervisor
 from state import StateStore, UserError, atomic_json, validate_schedule
 
-VERSION = "0.7.0-rc.1"
+VERSION = "0.7.0-rc.2"
 LOG = logging.getLogger("pi5_rtc_wake")
 COUNTDOWN = 30
 TEST_SECONDS = 600

@@ -1,4 +1,16 @@
-# Validation — 10 October 2026, 0.7.0-rc.1
+# Validation — 10 October 2026, 0.7.0-rc.2
+
+## Protection mode guidance repair
+
+The maintainer installed the public 0.7.0-rc.1 app on their Pi 5 running HAOS 18.3, reported a host_os/unexpected_os failure, and confirmed that turning Protection mode off resolved it. This is live confirmation of that installation issue, not a new phone-delivery or UPS-recovery test.
+
+This repair updates host-error guidance and setup documentation only. It preserves the settings schema, firmware preparation guards, wake verification, Calendar/UPS policy, phone worker, and app permissions. The reported error now gives the Info-page Stop/off/Start/Check again sequence; if access still fails, the original safe support details remain available.
+
+Local verification passes 303 backend cases, including the reported helper response and an authenticated Setup API error/recovery check. DOM interactions and JavaScript syntax also pass. Hosted browser, arm64 build, anonymous image download, and production imports must pass before publication; results will be recorded here.
+
+Sources: [Home Assistant app configuration](https://developers.home-assistant.io/docs/apps/configuration/) documents that host_pid and full_access work only with Protection mode off. [Raspberry Pi RTC documentation](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#real-time-clock-rtc) describes low-power bootloader setup and RTC wake alarms. Narrow RTC device mapping and separated preparation would need a permission redesign and real HAOS testing before claiming protected operation.
+
+## Earlier 0.7.0-rc.1 validation
 
 ## New phone-message behavior
 

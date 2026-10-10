@@ -45,12 +45,15 @@ class HostError(UserError):
                 self.details["effective_capabilities"] = capabilities
         reason = self.details.get("reason")
         support = "Open Details for support below, copy the text, and send it to the app maintainer."
+        access_action = ("Open Settings → Apps → Pi 5 Wake & Sleep → Info (Add-ons on older Home Assistant versions). "
+                         "Select Stop, turn Protection mode off, then select Start. Reopen Setup and select Check again. "
+                         "If it is already off and this still fails after Stop → Start, " + support[0].lower() + support[1:])
         if operation == "apply":
             message = "Pi preparation could not be verified."
             action = "Keep the power connected. Reboot from Settings → System, then select Check again. " + support
         elif location == "host_entry" and reason == "permission_denied":
             message = "The app was denied access to the Pi's wake settings."
-            action = "Check Protection mode on this app's Info page. If it is on, turn it off and restart the app. If it is already off and the app was restarted, " + support[0].lower() + support[1:]
+            action = access_action
         elif location == "host_entry" and (self.details["error_type"] == "FileNotFoundError" or reason == "unsupported_option"):
             message = "The app's host access tool is missing or incompatible."
             action = support + " The app needs a repair; another Pi firmware update will not fix this app tool."
@@ -58,8 +61,8 @@ class HostError(UserError):
             message = "The app could not start its helper on Home Assistant OS."
             action = support
         elif reason == "unexpected_os":
-            message = "The app did not reach Home Assistant OS."
-            action = support
+            message = "The app cannot access this Pi's wake settings. Check Protection mode."
+            action = access_action
         else:
             labels = {"running_config": "running wake settings", "boot_partition": "boot partition",
                       "firmware_image": "installed firmware image", "image_contents": "firmware image contents",

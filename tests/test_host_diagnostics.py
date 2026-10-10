@@ -33,6 +33,20 @@ class HostDiagnosticsTests(unittest.TestCase):
         self.assertIn("already off", error.action)
         self.assertNotIn("update Home Assistant OS", error.action)
 
+    def test_container_os_failure_explains_protection_mode_without_a_firmware_update(self):
+        output = json.dumps({"ok": False, "error": {"step": "host_os", "error_type": "ValueError", "reason": "unexpected_os"}})
+        error = self.failure(self.result(stdout=output))
+        self.assertEqual(error.details["step"], "host_os")
+        self.assertEqual(error.details["reason"], "unexpected_os")
+        self.assertEqual(error.details["helper_exit_code"], 1)
+        self.assertIn("Protection mode", error.message)
+        self.assertIn("Settings → Apps → Pi 5 Wake & Sleep → Info", error.action)
+        self.assertIn("Select Stop, turn Protection mode off, then select Start", error.action)
+        self.assertIn("Check again", error.action)
+        self.assertIn("already off", error.action)
+        self.assertNotIn("firmware", error.action)
+        self.assertNotIn("Reboot", error.action)
+
     def test_missing_app_tool_is_not_misreported_as_protection_mode(self):
         with patch("services.subprocess.run", side_effect=FileNotFoundError(2, "private path")):
             with self.assertRaises(HostError) as caught:
