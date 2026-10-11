@@ -1,6 +1,12 @@
 # Validation — 0.9.0-rc.2 navigation fix
 
-The candidate adds browser checks for leaving setup before/after readiness, pausing Calendar without deleting dates, confirmed resume, countdown cancellation availability, emergency protection, and administrator access. **346 simulated backend tests pass.** Regressions confirm that pausing persists and retains wake evidence, and that commissioned emergency shutdown still operates after restarting the app with Calendar paused. Candidate/release checks must pass before publication.
+The maintainer's Home Assistant screenshots show the expanded setup without an exit control and Keep awake disabled before a countdown. This repair adds Back to dashboard and Pause calendar / Resume calendar without changing power prerequisites or deleting Calendar dates. **346 simulated backend tests pass.** Regressions confirm that pausing persists and retains wake evidence, and that commissioned emergency shutdown still operates after restarting the app with Calendar paused.
+
+Both the [candidate run 38114839876](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38114839876) and [publishing run 38115027189](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38115027189) passed. Gates covered Chromium desktop/phone checks, actual Home Assistant 2026.10.1 integration/entity/Assist/dashboard/Calendar APIs, the arm64 build, and anonymous public image/import verification. Browser checks cover leaving setup before/after readiness, pause without date deletion, confirmed resume, countdown cancellation availability, emergency protection, and administrator access. Desktop setup/dashboard and phone screenshots were visually reviewed. Hardware and phone services are simulated; no physical Pi or UPS operation was repeated for this navigation repair.
+
+- [Published preview v0.9.0-rc.2](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.9.0-rc.2) is non-draft and marked pre-release, published at **05:34:42 UTC on 11 October 2026**. Its tag points to `f2b580a24d54ce366bc137117832ae990f3f9789`, tree `8abf732d2c3051a2f822012c39866c7227d90312`, identical to the verified candidate tree.
+- Public image: `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.9.0-rc.2`; anonymous-pull digest `sha256:d39c2608bfa84f8169512280087eee32723d1c82a0ad2ac3878f845d660e8ee0`.
+- Anonymous download, arm64 architecture, matching production version, and production imports passed before publication. This remains a preview; the existing physical UPS recovery limits still apply.
 
 ## Earlier release evidence
 
