@@ -1,3 +1,10 @@
+# 0.9.0-rc.2
+
+- Add Back to dashboard to expanded setup. Leaving unfinished setup shows a needs-attention strip and keeps power checks enforced.
+- Show Pause calendar and Resume calendar in Pi controls when no shutdown countdown is running. Pausing keeps Calendar dates and emergency UPS protection; resuming requires review and confirmation.
+- Keep awake cancels a running ordinary countdown. Emergency shutdowns remain protected; controls explain each state.
+- Retain settings, wake evidence, and personal dashboard cards. Refresh the companion with Connect dashboard after updating.
+
 # 0.9.0-rc.1
 
 - Add native cards, visual card editors, and an editable starter dashboard; preserve user layouts on updates.

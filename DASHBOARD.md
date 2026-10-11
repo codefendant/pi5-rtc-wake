@@ -18,7 +18,7 @@ The setup card begins with **Permissions → Pi checks → Wake test**. It check
 
 Turning Protection mode off grants access; the Pi is marked ready only after the wake settings, clock, and successful wake test have been checked. Prepare wake settings only if requested, reboot the Pi if requested, then run and confirm the ten-minute test. An existing valid wake test is retained when firmware and wake settings have not changed.
 
-Completed setup collapses into **Pi ready · Wake test passed**. **Review setup** opens the details again. Problems bring the needed guidance back. Power operations show confirmations and require a Home Assistant administrator; other users can view status.
+Completed setup collapses into **Pi ready · Wake test passed**. **Review setup** opens the details again; **Back to dashboard** closes them. Leaving unfinished setup keeps a **Pi setup needs attention** strip and does not enable power operations. A new readiness problem brings the needed guidance back. Power operations show confirmations and require a Home Assistant administrator; other users can view status.
 
 ## Calendar
 
@@ -33,7 +33,7 @@ Calendar remains the only store of scheduled dates. After reviewing events and p
 - **UPS power:** Find and select the UPS supplying the Pi. Monitoring starts separately from automatic protection. Disabled NUT readings can be enabled from the card. **Set up protection** opens the existing detailed commissioning screen for shutdown ownership, runtime selection, and retry/emergency thresholds.
 - **Messages:** Choose a discovered Companion app phone and up to twelve existing readings. Save and send a confirmed test message. Automatic wake messages are separately enabled. Each message includes uptime and the next shutdown/wake times.
 - **Assist:** Enable status access, then select **Assist** in the existing AI agent's **Control Home Assistant** setting. Change requests are separately enabled and wait for approval in the card or app. Turning AI access off keeps the dashboard available.
-- **Controls:** **Keep awake** cancels the current ordinary countdown, keeping future Calendar events and commissioned emergency protection. It is available during that countdown. **Reboot Pi** has a red background and requires confirmation.
+- **Controls:** With no shutdown countdown, **Pause calendar** turns Calendar shutdowns off while retaining every date. **Resume calendar** asks you to review and confirm before enabling them again. During an ordinary countdown, **Keep awake** cancels that shutdown only; future dates are retained. These actions do not change emergency UPS protection. Emergency low-battery shutdowns cannot be cancelled here. **Reboot Pi** has a red background and requires confirmation.
 - **Recent activity:** Collapsed by default; shows recent dashboard setup and action entries in plain language.
 
 ## Personalize and update
