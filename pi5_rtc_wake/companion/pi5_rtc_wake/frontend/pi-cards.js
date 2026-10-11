@@ -36,7 +36,7 @@
     set hass(hass) { this._hass = hass; this.toggleAttribute("dark", Boolean(hass.themes?.darkMode)); if (this.isConnected && !this.unsubscribe) this.bind(); }
     get kind() { return this.constructor.kind; }
     get admin() { return this._hass?.user?.is_admin === true; }
-    get blocked() { return !this.admin || this.busy || Boolean(this.state?.job || this.state?.pending || this.state?.shutdown_requested); }
+    get blocked() { return !this.admin || !this.state || Boolean(this.error) || this.busy || Boolean(this.state?.job || this.state?.pending || this.state?.shutdown_requested); }
     connectedCallback() { this.bind(); this.render(); }
     disconnectedCallback() { this.unbind(); }
     unbind() { this.unsubscribe?.(); this.unsubscribe = null; }

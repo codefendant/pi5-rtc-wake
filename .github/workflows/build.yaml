@@ -48,6 +48,14 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: node tests/ui_smoke.cjs
       - run: node tests/native_ui_smoke.cjs
+      - name: Save native dashboard screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: native-dashboard-screenshots
+          path: ui-artifacts/*.png
+          if-no-files-found: ignore
+          retention-days: 14
   assist:
     runs-on: ubuntu-latest
     steps:

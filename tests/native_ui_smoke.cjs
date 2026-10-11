@@ -2,6 +2,7 @@
 const assert = require('node:assert/strict');
 const {spawn} = require('node:child_process');
 const {chromium} = require('playwright');
+const {mkdir} = require('node:fs/promises');
 
 async function start(args = []) {
   const child = spawn('python3', ['tools/preview.py', '--port', '0', ...args], {stdio: ['ignore', 'pipe', 'pipe']});
@@ -15,6 +16,7 @@ async function start(args = []) {
 
 async function main() {
   const browser = await chromium.launch({headless:true,args:['--no-sandbox']});
+  await mkdir('ui-artifacts', {recursive:true});
   const first = await start(['--protected']), ready = await start(['--ready']);
   try {
     const page = await browser.newPage({viewport:{width:1536,height:1050},locale:'en-US'}), errors = [], posts=[];
@@ -22,6 +24,7 @@ async function main() {
     page.on('request',request=>{if(request.url().endsWith('/demo/ha-ws')&&request.method()==='POST')posts.push(request.postDataJSON());});
     await page.goto(first.url+'native');
     await page.getByRole('heading',{name:'Allow access to your Pi'}).waitFor();
+    await page.screenshot({path:'ui-artifacts/setup-desktop.png',fullPage:true});
     assert.equal(await page.getByRole('link',{name:'Open app Info ↗'}).getAttribute('href'),'/config/app/local_pi5_rtc_wake/info');
     assert.equal(await page.getByRole('button',{name:'Create Pi Sleep calendar',exact:true}).isEnabled(),true);
     await page.getByRole('button',{name:'Create Pi Sleep calendar',exact:true}).click();
@@ -38,6 +41,7 @@ async function main() {
 
     await page.goto(ready.url+'native');
     await page.getByText('Pi ready · Wake test passed',{exact:true}).waitFor();
+    await page.screenshot({path:'ui-artifacts/dashboard-desktop.png',fullPage:true});
     assert.equal(await page.locator('[data-kind="setup"]').getByRole('button',{name:'Review setup'}).isVisible(),true);
     assert.equal(await page.getByRole('button',{name:'Keep awake',exact:true}).isDisabled(),true);
     assert.match(await page.locator('[data-kind="ups"]').innerText(),/Monitoring only/);
@@ -70,6 +74,7 @@ async function main() {
     assert.equal((await (await page.request.get(ready.url+'api/status')).json()).assist.settings.enabled,false);
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
+    await page.screenshot({path:'ui-artifacts/dashboard-mobile.png',fullPage:true});
     await page.evaluate(()=>{window.previewHass.user.is_admin=false;});
     await page.waitForTimeout(5500);
     assert.equal(await page.getByRole('button',{name:'Reboot Pi',exact:true}).isDisabled(),true);
