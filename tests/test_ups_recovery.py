@@ -393,6 +393,24 @@ class RecoveryTests(unittest.TestCase, Fixture):
         self.assertTrue(self.app.pending["emergency"])
         self.assertIsNone(self.app.pending["wake_epoch"])
 
+    def test_dashboard_calendar_pause_keeps_emergency_protection_after_restart(self):
+        policy = deepcopy(self.app.store.data["recovery"])
+        dates = deepcopy(self.supervisor.events)
+        self.app.dashboard.action("settings", {**self.app.store.data["schedule"], "enabled": False})
+        self.assertTrue(self.app.snapshot()["recovery"]["emergency_active"])
+        self.assertEqual(self.supervisor.events, dates)
+        self.app = self.new_app()
+        self.app.refresh()
+        self.assertFalse(self.app.store.data["schedule"]["enabled"])
+        self.assertEqual(self.app.store.data["recovery"], policy)
+        self.reading("battery", 100)
+        self.app.tick()
+        self.app.process_task()
+        self.assertTrue(self.app.pending["emergency"])
+        with self.assertRaises(UserError):
+            self.app.dashboard.action("cancel", {})
+        self.assertTrue(self.app.pending["emergency"])
+
     def test_reboot_after_final_stop_remains_paused_until_stable_utility(self):
         self.start(runtime=100)
         self.finish()

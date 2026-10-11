@@ -76,6 +76,21 @@ class DashboardTests(unittest.TestCase, Fixture):
             with self.assertRaises(UserError): self.app.dashboard.create_calendar({"confirmed": True})
         create.assert_not_called()
 
+    def test_calendar_pause_persists_without_deleting_dates_or_wake_evidence(self):
+        self.pass_test()
+        self.supervisor.calendar_list = [{"entity_id": "calendar.pi_sleep", "name": "Pi Sleep"}]
+        dates = [event(self.now + 3600, self.now + 7200)]
+        self.supervisor.events["calendar.pi_sleep"] = deepcopy(dates)
+        self.app.dashboard.action("settings", {**self.app.store.data["schedule"], "calendar_entity_id": "calendar.pi_sleep", "enabled": True})
+        before = deepcopy(self.app.store.data)
+        self.app.dashboard.action("settings", {**before["schedule"], "enabled": False})
+        restored = StateStore(self.temp.name)
+        self.assertFalse(restored.data["schedule"]["enabled"])
+        self.assertEqual(restored.data["schedule"]["calendar_entity_id"], "calendar.pi_sleep")
+        self.assertEqual(self.supervisor.events["calendar.pi_sleep"], dates)
+        for key in ("test", "recovery", "ups", "messages", "assist"):
+            self.assertEqual(before[key], restored.data[key])
+
     def test_schema_eight_update_preserves_settings_and_wake_evidence(self):
         self.pass_test()
         self.app.store.data["schema_version"] = 8

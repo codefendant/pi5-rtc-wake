@@ -11,8 +11,10 @@
   const link = (url, text) => `<a href="${esc(url)}">${text}</a>`;
   const check = (key, label, value, disabled = false) => `<label class="toggle"><input type="checkbox" name="${key}" ${value ? "checked" : ""} ${disabled ? "disabled" : ""}>${esc(label)}</label>`;
   const styles = `
-    :host{display:block;color:var(--primary-text-color,#172033);font:14px/1.5 var(--paper-font-body1_-_font-family,system-ui,sans-serif)}
+    :host{display:block;scroll-margin-top:80px;color:var(--primary-text-color,#172033);font:14px/1.5 var(--paper-font-body1_-_font-family,system-ui,sans-serif)}
     ha-card{display:block;border-radius:var(--ha-card-border-radius,12px);border:1px solid var(--divider-color,#dce3eb);box-shadow:var(--ha-card-box-shadow,none);background:var(--ha-card-background,var(--card-background-color,#fff));overflow:hidden}
+    .setup-nav{margin-bottom:16px}.setup-ready.needs-attention{background:#fff0ce;color:#805600}.setup-ready.needs-attention ha-icon{color:inherit}
+    :host([dark]) .setup-ready.needs-attention{background:#4d3b12;color:#ffe3a1}
     .body{padding:20px 22px}.heading{display:flex;align-items:center;gap:10px;margin-bottom:16px}h2{font-size:18px;font-weight:600;margin:0;line-height:1.35}.heading>.badge{margin-left:auto}h3{font-size:16px;margin:12px 0}p{margin:10px 0}.muted,small{color:var(--secondary-text-color,#677386)}.hint{font-size:13px}.badge{display:inline-flex;align-items:center;gap:5px;border-radius:7px;padding:3px 9px;background:var(--secondary-background-color,#edf1f5);font-size:12px;white-space:nowrap}.badge.ok{background:#d4f2dd;color:#166534}.badge.warn{background:#fff0ce;color:#905700}.badge.error{background:#fbe1df;color:#a02620}
     .metric{display:flex;align-items:center;gap:20px}.metric .symbol{display:grid;place-items:center;width:76px;height:76px;flex-shrink:0;border-radius:50%;background:var(--pi-icon-background,#e5f7f9);color:#008595}.symbol ha-icon{--mdc-icon-size:44px}.big{font-size:35px;font-weight:700;line-height:1.3;letter-spacing:-.5px}.sub{font-size:16px}.uptime{font-size:19px;font-weight:600;margin-top:5px}
     button,a{font:inherit}button{min-height:42px;padding:9px 14px;border:1px solid var(--divider-color,#dce3eb);border-radius:8px;color:var(--primary-color,#008cff);background:transparent;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px}button.primary{background:var(--primary-color,#008cff);border-color:var(--primary-color,#008cff);color:var(--text-primary-color,#fff)}button.danger{background:#e8242e;border-color:#e8242e;color:#fff}button:disabled{opacity:.48;cursor:default}.full{width:100%}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.actions>*{flex:1}a{color:var(--primary-color,#008cff);text-decoration:none}a:hover{text-decoration:underline}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--primary-color,#008cff);outline-offset:3px}
@@ -31,7 +33,7 @@
   function feedFor(hass, entry) { const key = hass.connection || hass; let entries = connections.get(key); if (!entries) { entries = new Map(); connections.set(key, entries); } if (!entries.has(entry)) entries.set(entry, new Feed(hass, entry)); const feed = entries.get(entry); feed.hass = hass; return feed; }
 
   class PiCard extends HTMLElement {
-    constructor() { super(); this.attachShadow({mode: "open"}); this.state = null; this.error = ""; this.message = ""; this.panel = null; this.busy = false; this.dirty = false; }
+    constructor() { super(); this.attachShadow({mode: "open"}); this.state = null; this.error = ""; this.message = ""; this.panel = null; this.busy = false; this.dirty = false; this.setupDismissed = false; }
     setConfig(config) { this.config = {...config}; this.unbind(); if (this.isConnected) this.bind(); this.render(); }
     set hass(hass) { this._hass = hass; this.toggleAttribute("dark", Boolean(hass.themes?.darkMode)); if (this.isConnected && !this.unsubscribe) this.bind(); }
     get kind() { return this.constructor.kind; }
@@ -40,10 +42,11 @@
     connectedCallback() { this.bind(); this.render(); }
     disconnectedCallback() { this.unbind(); }
     unbind() { this.unsubscribe?.(); this.unsubscribe = null; }
-    bind() { if (!this._hass || !this.config || this.unsubscribe) return; this.feed = feedFor(this._hass, this.config.entry_id || ""); this.unsubscribe = this.feed.add((state, error) => { this.state = state; this.error = error; if ((!this.panel || this.panel === "setup") && !this.confirming) this.render(); }); }
-    getCardSize() { return this.kind === "setup" && this.ready ? 1 : this.kind === "activity" ? 1 : 4; }
+    bind() { if (!this._hass || !this.config || this.unsubscribe) return; this.feed = feedFor(this._hass, this.config.entry_id || ""); this.unsubscribe = this.feed.add((state, error) => { const wasReady = this.ready; this.state = state; this.error = error; if (wasReady && !this.ready) this.setupDismissed = false; if ((!this.panel || this.panel === "setup") && !this.confirming) this.render(); }); }
+    getCardSize() { return this.kind === "setup" && !this.setupExpanded ? 1 : this.kind === "activity" ? 1 : 4; }
     getGridOptions() { return {columns: 12, rows: "auto", min_columns: 6, min_rows: this.kind === "setup" || this.kind === "activity" ? 1 : 3}; }
     get ready() { return Boolean(this.state?.checks?.ok && this.state?.test_status === "passed"); }
+    get setupExpanded() { return this.panel === "setup" || !this.ready && !this.setupDismissed; }
     time(epoch, compact = false) { if (!epoch) return "—"; return new Intl.DateTimeFormat(this._hass?.locale?.language || undefined, {timeZone: this.state.schedule.timezone, hour: "numeric", minute: "2-digit", ...(compact ? {} : {month: "short", day: "numeric", timeZoneName: "short"})}).format(new Date(epoch * 1000)); }
     day(epoch) { const tz = this.state.schedule.timezone; const format = new Intl.DateTimeFormat("en-CA", {timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit"}); const now = new Date(this.state.current_epoch * 1000), date = new Date(epoch * 1000); if (format.format(now) === format.format(date)) return "Today"; const parts = Object.fromEntries(format.formatToParts(now).map(part => [part.type,part.value])); const tomorrow = new Date(Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day)+1)); const next = new Intl.DateTimeFormat("en-CA", {timeZone:"UTC",year:"numeric",month:"2-digit",day:"2-digit"}); if (next.format(tomorrow) === format.format(date)) return "Tomorrow"; return new Intl.DateTimeFormat(this._hass?.locale?.language || undefined, {timeZone: tz, weekday: "long", month: "short", day: "numeric"}).format(date); }
     relative(epoch) { const minutes = Math.max(0, Math.round((epoch - this.state.current_epoch) / 60)); return minutes < 60 ? `in ${minutes} min` : minutes < 1440 ? `in ${Math.floor(minutes / 60)} h${minutes % 60 ? " " + minutes % 60 + " min" : ""}` : `in ${Math.round(minutes / 1440)} days`; }
@@ -63,8 +66,8 @@
       });
     }
     async perform(action) {
-      if (action === "close-panel") { if (this.dirty && !window.confirm("Discard your unsaved changes?")) return; this.panel = null; this.dirty = false; this.message = ""; this.render(); return; }
-      if (action === "review-setup") { this.panel = this.panel ? null : "setup"; this.render(); return; }
+      if (action === "close-panel") { if (this.dirty && !window.confirm("Discard your unsaved changes?")) return; this.panel = null; this.dirty = false; this.message = ""; if (this.kind === "setup") this.setupDismissed = true; this.render(); if (this.kind === "setup") this.scrollIntoView({behavior: "smooth", block: "start"}); return; }
+      if (action === "review-setup") { this.panel = "setup"; this.setupDismissed = false; this.render(); return; }
       if (action === "choose-calendar") { this.panel = "calendar"; this.dirty = false; this.render(); return; }
       if (action === "choose-ups") { this.panel = "ups"; this.dirty = false; this.render(); return; }
       if (action === "choose-phone") { await this.openMessages(); return; }
@@ -88,12 +91,12 @@
     }
     setupBody() {
       const data = this.state, protectedMode = data.permissions?.protected;
-      if (this.ready && this.panel !== "setup") return `<div class="setup-ready">${icon("check-circle")}<strong>Pi ready · Wake test passed</strong>${button("review-setup", "Review setup")}</div>`;
+      if (!this.setupExpanded) return `<div class="setup-ready ${this.ready ? "" : "needs-attention"}">${icon(this.ready ? "check-circle" : "alert-circle-outline")}<strong>${this.ready ? "Pi ready · Wake test passed" : "Pi setup needs attention"}</strong>${button("review-setup", "Review setup")}</div>`;
       const stage = protectedMode !== false ? 0 : data.checks.ok ? 2 : 1;
       let content;
       if (stage === 0) content = `<div class="setup-grid"><div><h2>Allow access to your Pi</h2><p>${protectedMode === true ? "Turn off Protection mode on the app's Info page. Then restart the app." : "Check Protection mode on the app's Info page."}</p><ol><li>Stop the app</li><li>Turn Protection mode off</li><li>Start the app</li></ol><div class="actions">${link(this.infoUrl(), "Open app Info ↗")}${button("check", "Check again", "", this.blocked)}</div></div><div class="guide" aria-label="Illustration of the app Info page"><strong>Pi RTC Wakealarm — Info</strong><p class="muted">Stop → change setting → Start</p><div class="switch-row"><span>Protection mode</span><span class="switch" role="img" aria-label="Protection mode is on in this illustration"></span></div><small>Turn this switch off</small></div></div>`;
       else content = `<h2>${this.ready ? "Pi setup complete" : stage === 1 ? "Check this Pi" : data.test_status === "awaiting_confirmation" ? "Did Home Assistant return by itself?" : "Try a wake test"}</h2><p>${esc(data.checks.message)}</p><p class="muted">${esc(data.checks.action)}</p><details><summary>Pi check details</summary><ul class="checks">${(data.checks.items || []).map(item => `<li>${item.ok ? "✓" : "○"} ${esc(item.label)} — ${esc(item.detail)}</li>`).join("")}</ul>${data.checks.details ? `<pre class="preview">${esc(JSON.stringify(data.checks.details, null, 2))}</pre>` : ""}</details><div class="actions">${button("check", "Check again", "", this.blocked)}${data.checks.can_prepare ? button("prepare", "Prepare this Pi", "primary", this.blocked) : ""}${data.checks.needs_reboot ? button("reboot-now", "Reboot Pi", "danger", this.blocked) : ""}${data.checks.ok && data.test_status !== "awaiting_confirmation" ? button("test", this.ready ? "Run test again" : "Run ten-minute test", "primary", this.blocked) : ""}${data.test_status === "awaiting_confirmation" ? button("confirm-test", "Yes, it returned by itself", "primary", this.blocked) + button("reject-test", "No / I'm not sure", "", this.blocked) : ""}</div>`;
-      return `<div class="body"><div class="steps">${["Permissions", "Pi checks", "Wake test"].map((text, index) => `<span class="${index === stage ? "current" : ""}">${index < stage ? "✓" : index + 1} ${text}</span>`).join("")}</div>${content}${!this.ready ? `<p class="notice">Scheduling is off or paused until the wake test passes.</p>` : ""}</div>`;
+      return `<div class="body"><div class="setup-nav">${button("close-panel", "Back to dashboard")}</div><div class="steps">${["Permissions", "Pi checks", "Wake test"].map((text, index) => `<span class="${index === stage ? "current" : ""}">${index < stage ? "✓" : index + 1} ${text}</span>`).join("")}</div>${content}${!this.ready ? `<p class="notice">Scheduling is off or paused until the wake test passes.</p>` : ""}</div>`;
     }
     metricBody() {
       const data = this.state;
@@ -120,7 +123,16 @@
     }
     controlsBody() {
       const data = this.state, countdown = data.pending, emergency = countdown?.emergency;
-      return this.heading() + `<p class="muted">Calendar scheduling ${data.schedule_active ? "enabled" : data.schedule.enabled ? "paused" : "off"}.</p>${countdown ? `<p class="progress"><strong>${emergency ? "Emergency shutdown" : "Shutdown countdown"}</strong><br>${countdown.remaining_seconds} seconds remaining${countdown.wake_epoch ? " · Wake " + esc(this.time(countdown.wake_epoch)) : " · No timed wake"}</p>` : ""}<div class="actions">${button("cancel", countdown?.kind === "ups" ? "Cancel this retry" : "Keep awake", "", !this.admin || this.busy || !countdown || emergency)}${button("reboot-now", icon("restart") + " Reboot Pi", "danger", this.blocked || !data.host_shutdown_supported)}</div><p class="hint muted">Keep awake cancels the current countdown. Future calendar dates and emergency UPS protection stay active.</p>`;
+      const stayAwake = countdown
+        ? button("cancel", countdown.kind === "ups" ? "Cancel this retry" : "Keep awake", "", !this.admin || this.busy || Boolean(this.error) || data.shutdown_requested || emergency)
+        : button("toggle-scheduling", data.schedule.enabled ? "Pause calendar" : "Resume calendar", "", this.blocked || (!data.schedule.enabled && (!this.ready || !data.calendar.ok || !data.schedule.calendar_entity_id)));
+      const explanation = emergency ? "Emergency low-battery shutdown cannot be cancelled here."
+        : countdown?.kind === "ups" ? "Cancel this retry pauses further RTC retries for this outage. Emergency UPS protection is unchanged."
+        : countdown ? "Keep awake cancels this shutdown only. Future calendar dates and emergency UPS protection are unchanged."
+        : !data.schedule.calendar_entity_id ? "Choose a calendar and complete Pi setup to enable scheduling."
+        : data.schedule.enabled ? "No shutdown countdown is running. Pause calendar to stay awake until you resume it. Calendar dates and emergency UPS protection are unchanged."
+        : "Calendar shutdowns are off until you resume them. Review the dates first. Emergency UPS protection is unchanged.";
+      return this.heading() + `<p class="muted">Calendar scheduling ${data.schedule_active ? "enabled" : data.schedule.enabled ? "paused" : "off"}.</p>${countdown ? `<p class="progress"><strong>${emergency ? "Emergency shutdown" : "Shutdown countdown"}</strong><br>${countdown.remaining_seconds} seconds remaining${countdown.wake_epoch ? " · Wake " + esc(this.time(countdown.wake_epoch)) : " · No timed wake"}</p>` : ""}<div class="actions">${stayAwake}${button("reboot-now", icon("restart") + " Reboot Pi", "danger", this.blocked || !data.host_shutdown_supported)}</div><p class="hint muted">${esc(explanation)}</p>`;
     }
     messagesBody() {
       const info = this.state.messages, saved = info.settings;

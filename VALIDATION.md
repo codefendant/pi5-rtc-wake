@@ -1,3 +1,9 @@
+# Validation — 0.9.0-rc.2 navigation fix
+
+The candidate adds browser checks for leaving setup before/after readiness, pausing Calendar without deleting dates, confirmed resume, countdown cancellation availability, emergency protection, and administrator access. **346 simulated backend tests pass.** Regressions confirm that pausing persists and retains wake evidence, and that commissioned emergency shutdown still operates after restarting the app with Calendar paused. Candidate/release checks must pass before publication.
+
+## Earlier release evidence
+
 # Validation — 0.9.0-rc.1 native dashboard preview
 
 Local Python validation passes **344 simulated backend tests**, including dashboard access with AI off, Protection mode before firmware/host inspection, create/reuse Calendar with scheduling off, schema-8 settings and wake-evidence retention, personal-card preservation, authenticated native status, and emergency cancellation boundaries. Python compilation, JavaScript syntax, and the existing DOM interaction checks pass.

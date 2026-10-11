@@ -105,7 +105,7 @@ async def check():
                 assert "csrf" not in status and owner._secret() not in json.dumps(status)
                 resources = await command("lovelace/resources/list")
                 resource = await command("lovelace/resources/create", res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=test")
-                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.9.0-rc.1")
+                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.9.0-rc.2")
                 await command("lovelace/dashboards/create", url_path="pi-wake-sleep", title="Pi Wake & Sleep", icon="mdi:power-sleep", show_in_sidebar=True, require_admin=False)
                 config = starter_config(entry.entry_id)
                 await command("lovelace/config/save", url_path="pi-wake-sleep", config=config)
