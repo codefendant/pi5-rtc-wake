@@ -2,7 +2,11 @@
 
 Local Python validation passes **344 simulated backend tests**, including dashboard access with AI off, Protection mode before firmware/host inspection, create/reuse Calendar with scheduling off, schema-8 settings and wake-evidence retention, personal-card preservation, authenticated native status, and emergency cancellation boundaries. Python compilation, JavaScript syntax, and the existing DOM interaction checks pass.
 
-The candidate/release workflow also runs Chromium against the native cards at desktop and phone sizes, actual Home Assistant 2026.10.1 integration/entity/Assist/dashboard/Calendar APIs, an arm64 build, and public image/import checks. Publication is blocked until those checks pass. Pi, UPS, and phone services in automated checks are simulated. The revised interface still needs observation on the actual Pi and first-time-user onboarding; the interface does not extend the physical UPS recovery guarantee.
+Both the [candidate run 38112132183](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38112132183) and [publishing run 38112284731](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38112284731) passed. Gates covered Chromium desktop/phone interactions, actual Home Assistant 2026.10.1 integration/entity/Assist/dashboard/Calendar APIs, an arm64 build, and public image/import checks. Desktop setup/dashboard and phone screenshots were visually reviewed. Pi, UPS, and phone services in automated checks are simulated. The revised interface still needs observation on the actual Pi and first-time-user onboarding; the interface does not extend the physical UPS recovery guarantee.
+
+- [Published preview v0.9.0-rc.1](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.9.0-rc.1) points to `25b429b86ca2b89e82a0ca0f5ea4eee43afd024b`, tree `b697c74af065155069135a0f8162a50bac930c48`, identical to the verified candidate tree.
+- Public image: `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.9.0-rc.1`; anonymous-pull digest `sha256:50d26e4afda6d9c49ba0a81d959c09184a5e377fce5c3f2cb97fb836cb022f48`.
+- Anonymous download, arm64 architecture, matching production version, and production imports passed before the release was published.
 
 ## Earlier release evidence
 

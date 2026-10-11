@@ -69,7 +69,7 @@ Keep this app's **Protection mode off** during use so it can check the host wake
 
 ## Validation and development
 
-The maintainer reports the preceding release working on their Pi 5, including Assist. This dashboard preview adds checks for permissions, native Calendar creation, card editing, settings preservation, and administrator access. Automated release gates cover simulated backend behavior, Chromium interactions, Home Assistant 2026.10.1 APIs, arm64 builds, anonymous image download, and production imports. The new dashboard still needs a usability check on a real Pi; full UPS power-loss and return behavior depends on the hardware.
+**344 simulated backend tests** pass, including permissions, native Calendar creation, settings preservation, and administrator access. [Publishing run 38112284731](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38112284731) also passed Chromium desktop/phone interactions, actual Home Assistant 2026.10.1 APIs, arm64 builds, anonymous image download, and production imports. The maintainer reports the preceding release working on their Pi 5, including Assist. The new dashboard still needs a usability check on a real Pi; full UPS power-loss and return behavior depends on the hardware.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 
