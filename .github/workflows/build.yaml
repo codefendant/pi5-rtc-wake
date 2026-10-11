@@ -25,7 +25,9 @@ jobs:
           python-version: '3.12'
       - run: python3 -m unittest discover -s tests -v
       - name: Check JavaScript
-        run: node --check pi5_rtc_wake/web/app.js
+        run: |
+          node --check pi5_rtc_wake/web/app.js
+          node --check pi5_rtc_wake/companion/pi5_rtc_wake/frontend/pi-cards.js
       - name: Check UI interactions
         run: node tests/ui_logic.cjs
       - name: Check RTC ABI
@@ -45,6 +47,15 @@ jobs:
       - run: npm install --no-save playwright
       - run: npx playwright install --with-deps chromium
       - run: node tests/ui_smoke.cjs
+      - run: node tests/native_ui_smoke.cjs
+      - name: Save native dashboard screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: native-dashboard-screenshots
+          path: ui-artifacts/*.png
+          if-no-files-found: ignore
+          retention-days: 14
   assist:
     runs-on: ubuntu-latest
     steps:
@@ -56,6 +67,11 @@ jobs:
           docker run --rm -v "$PWD:/workspace" -w /workspace \
             --entrypoint python ghcr.io/home-assistant/home-assistant:2026.10.1 \
             tools/check_ha_assist.py
+      - name: Check real Home Assistant dashboard and Calendar APIs
+        run: |
+          docker run --rm -v "$PWD:/workspace" -w /workspace \
+            --entrypoint python ghcr.io/home-assistant/home-assistant:2026.10.1 \
+            tools/check_ha_dashboard.py
   image:
     needs: [verify, ui, assist]
     runs-on: ubuntu-latest

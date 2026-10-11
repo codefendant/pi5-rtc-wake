@@ -7,8 +7,15 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import Client, Coordinator, validate_connection
 from .const import DOMAIN
+from .dashboard import async_register_dashboard
 
 LOGGER = logging.getLogger(__name__)
+PLATFORMS = ["sensor", "binary_sensor"]
+
+
+async def async_setup(hass, config):
+    await async_register_dashboard(hass)
+    return True
 
 
 async def async_setup_entry(hass, entry):
@@ -17,6 +24,7 @@ async def async_setup_entry(hass, entry):
     coordinator = Coordinator(hass, LOGGER, entry, client)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     @callback
     def updated():
@@ -32,4 +40,4 @@ async def async_reload_entry(hass, entry):
 
 
 async def async_unload_entry(hass, entry):
-    return True
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

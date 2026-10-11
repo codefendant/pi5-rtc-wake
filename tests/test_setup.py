@@ -48,6 +48,23 @@ class FakeSupervisor:
         self.phone_messages = []
 
     def os_info(self): return deepcopy(self.os)
+    def app_info(self): return {"slug": "local_pi5_rtc_wake", "protected": False}
+    def ensure_sleep_calendar(self):
+        entity = "calendar.pi_sleep"
+        if not any(row["entity_id"] == entity for row in self.calendar_list):
+            self.calendar_list.append({"entity_id": entity, "name": "Pi Sleep"})
+        self.events.setdefault(entity, [])
+        return entity
+    def ensure_dashboard(self, entry_id):
+        from dashboard import starter_config
+        if hasattr(self, "dashboard_config"):
+            return {"created": False, "path": "/pi-wake-sleep"}
+        self.dashboard_config = starter_config(entry_id)
+        return {"created": True, "path": "/pi-wake-sleep"}
+    def restore_dashboard(self, entry_id):
+        from dashboard import restore_cards
+        self.dashboard_config = restore_cards(self.dashboard_config, entry_id)
+        return {"ok": True}
     def firmware_info(self): return deepcopy(self.firmware)
     def timezone(self): return "America/Chicago"
     def core_version(self): return "2026.10.1"

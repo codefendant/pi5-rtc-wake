@@ -10,6 +10,15 @@ from state import UserError
 DEVICE_ID = re.compile(r"[a-zA-Z0-9_-]{1,100}")
 
 
+class CoreCommandError(UserError):
+    """A confirmed Core rejection, distinct from an uncertain connection failure."""
+
+    def __init__(self, code):
+        self.code = code
+        super().__init__("Home Assistant did not complete this change.",
+                         "Check its current settings before trying again.")
+
+
 class CoreRegistry:
     def __init__(self, token, connector=None):
         self.token, self.connector = token, connector
@@ -60,15 +69,23 @@ class CoreRegistry:
 
     def command(self, kind, **values):
         # No arbitrary WebSocket command or service supplied by the browser.
-        if kind not in {"config/device_registry/list", "config/entity_registry/list", "config/entity_registry/get", "config/entity_registry/update", "config/area_registry/list"}:
+        if kind not in {"config/device_registry/list", "config/entity_registry/list", "config/entity_registry/get", "config/entity_registry/update", "config/area_registry/list",
+                        "lovelace/dashboards/list", "lovelace/dashboards/create", "lovelace/config", "lovelace/config/save",
+                        "lovelace/resources/list", "lovelace/resources/create", "lovelace/resources/update"}:
             raise ValueError("Unsupported registry operation")
         self.serial += 1
         try:
             self.socket.send(json.dumps({"id": self.serial, "type": kind, **values}))
             result = self._receive()
-            if result.get("id") != self.serial or result.get("type") != "result" or result.get("success") is not True:
+            if result.get("id") != self.serial or result.get("type") != "result":
+                raise ValueError()
+            if result.get("success") is False and isinstance(result.get("error"), dict):
+                raise CoreCommandError(result["error"].get("code"))
+            if result.get("success") is not True:
                 raise ValueError()
             return result["result"]
+        except CoreCommandError:
+            raise
         except Exception:
             raise UserError("Home Assistant did not confirm the sensor change.", "Check this sensor on the NUT device page before trying again. The request may already have succeeded.") from None
 

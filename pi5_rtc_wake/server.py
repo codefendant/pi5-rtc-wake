@@ -27,8 +27,9 @@ from services import Host, Supervisor
 from state import StateStore, UserError, atomic_json, validate_schedule
 from assist import Assistant, PORT as ASSIST_PORT
 from assist_http import AssistHandler
+from dashboard import Dashboard
 
-VERSION = "0.8.0-rc.2"
+VERSION = "0.9.0-rc.1"
 LOG = logging.getLogger("pi5_rtc_wake")
 COUNTDOWN = 30
 TEST_SECONDS = 600
@@ -75,6 +76,8 @@ class Application:
         self.recovery = Recovery(self)
         self.messages = PhoneMessages(self)
         self.assistant = Assistant(self, data)
+        self.permissions = {"protected": None, "slug": None}
+        self.dashboard = Dashboard(self, data)
 
     def _fingerprint(self, snapshot):
         value = snapshot["current_version"] + ":" + snapshot["config_fingerprint"]
@@ -97,6 +100,17 @@ class Application:
                 raise UserError("Home Assistant OS 18 or newer is required.", "Open Settings → System → Updates, update Home Assistant OS, and reboot.")
             items.append({"label": "Home Assistant OS", "detail": version, "ok": True})
             self.host_shutdown_supported = True  # Independent of firmware/RTC readiness.
+            info = self.supervisor.app_info()
+            protected, slug = info.get("protected"), info.get("slug")
+            self.permissions = {"protected": protected if type(protected) is bool else None,
+                                "slug": slug if isinstance(slug, str) and re.fullmatch(r"[a-z0-9]{1,32}_pi5_rtc_wake", slug) else None}
+            if protected is True:
+                raise UserError("Turn off Protection mode to allow access to this Pi.",
+                                "Open the app's Info page. Stop the app, turn Protection mode off, then Start the app. This page will check again automatically.")
+            if protected is not False:
+                raise UserError("Protection mode could not be checked.",
+                                "Open the app's Info page and check that Protection mode is off. Restart the app, then select Check again.")
+            items.append({"label": "Protection mode", "detail": "Off", "ok": True})
             firmware = self.supervisor.firmware_info()
             required = ("update_available", "update_pending", "update_blocked")
             if any(type(firmware.get(key)) is not bool for key in required):
@@ -397,6 +411,8 @@ class Application:
                 except PolicyError:
                     pass
             return {"version": VERSION, "csrf": self.csrf, "checks": checks,
+                    "permissions": deepcopy(self.permissions), "dashboard": self.dashboard.snapshot(),
+                    "uptime_seconds": max(0, int(self.clock() - self.host.boot_epoch(self.clock()))), "current_epoch": int(self.clock()),
                     "host_shutdown_supported": self.host_shutdown_supported,
                     "schedule": schedule, "schedule_active": schedule["enabled"] and self.checks.get("ok", False) and self._test_passed() and not self.store.read_only and self._calendar_ready() and not self.recovery.blocks_calendar(),
                     "calendar": deepcopy(self.calendar_info), "reboot_notice_ok": self.reboot_notice_ok,
@@ -674,9 +690,9 @@ class Application:
                 self.prepare()
             elif kind == "reboot":
                 self.refresh()
-                if payload.get("assist_reviewed") is True and not self.host_shutdown_supported:
+                if (payload.get("assist_reviewed") is True or payload.get("dashboard_reviewed") is True) and not self.host_shutdown_supported:
                     raise UserError("This host could not be verified for a reboot.", "Keep the Pi on and check Setup before requesting another reboot.")
-                if not self.checks.get("needs_reboot") and payload.get("assist_reviewed") is not True:
+                if not self.checks.get("needs_reboot") and payload.get("assist_reviewed") is not True and payload.get("dashboard_reviewed") is not True:
                     raise UserError("A setup reboot is not needed right now.", "Select Check again and continue with the wake test.")
                 self.supervisor.reboot()
             elif kind == "ups":
@@ -772,6 +788,10 @@ class IngressHandler(BaseHTTPRequestHandler):
         try:
             if path == "/api/settings":
                 self.application.save_settings(payload)
+            elif path == "/api/connect-dashboard":
+                self.application.dashboard.connect(payload)
+            elif path == "/api/create-calendar":
+                self.application.dashboard.create_calendar(payload)
             elif path == "/api/power-settings":
                 self.application.save_power_settings(payload)
             elif path == "/api/recovery-settings":

@@ -11,6 +11,10 @@
 <main>
   <header><div class="brand" aria-hidden="true">⏻</div><div><p class="eyebrow">HOME ASSISTANT · RASPBERRY PI 5</p><h1>Pi Wake &amp; Sleep</h1><p>Choose when your Home Assistant Pi rests and wakes.</p></div></header>
   <div class="release">Preview release · Test wake and UPS recovery on your own hardware.</div>
+  <section class="card dashboard-launch" aria-labelledby="dashboard-heading">
+    <div><h2 id="dashboard-heading">Your Pi dashboard</h2><p>Use Pi cards alongside your own Home Assistant pictures, graphs, and controls.</p><p id="dashboard-connection" class="hint" role="status"></p></div>
+    <div class="actions"><button id="connect-dashboard" type="button" class="primary">Connect dashboard</button><a id="open-dashboard" class="calendar-link" href="/pi-wake-sleep" target="_blank" rel="noopener noreferrer" hidden>Open dashboard ↗</a><a id="finish-dashboard" class="text-link" href="/config/integrations/dashboard" target="_blank" rel="noopener noreferrer" hidden>Finish in Devices &amp; services ↗</a></div>
+  </section>
   <div id="connection" class="notice" role="status" hidden>Connecting to Home Assistant…</div>
   <div id="feedback" class="notice" role="status"><strong id="feedback-text">Checking this Pi…</strong><p id="feedback-action"></p></div>
   <section id="countdown" class="card countdown" aria-live="polite" hidden>
@@ -45,7 +49,7 @@
   <section id="view-calendar" aria-label="Calendar" hidden><div class="grid">
     <section class="card schedule-card" aria-labelledby="schedule-heading">
       <div class="section-top"><h2 id="schedule-heading">Calendar settings</h2></div>
-      <div class="actions calendar-actions"><a class="text-link" href="https://my.home-assistant.io/redirect/config_flow_start/?domain=local_calendar" target="_blank" rel="noopener noreferrer">Add Local Calendar ↗</a></div>
+      <div class="actions calendar-actions"><button id="create-calendar" class="primary" type="button">Create Pi Sleep calendar</button><a class="text-link" href="https://my.home-assistant.io/redirect/config_flow_start/?domain=local_calendar" target="_blank" rel="noopener noreferrer">Add another Local Calendar ↗</a></div>
       <p>All shutdown and wake dates are stored in Home Assistant's Calendar. Edit dates and repeats there; this screen shows the upcoming off periods.</p>
       <p id="migration-notice" class="notice" hidden></p>
       <form id="schedule-form">
@@ -175,6 +179,10 @@
     </section>
   </section>
   <section id="view-setup" aria-label="Pi setup" hidden><div class="grid">
+    <section id="permission-guide" class="card permission-guide" aria-labelledby="permission-heading" hidden>
+      <div><p class="eyebrow">FIRST · PERMISSIONS</p><h2 id="permission-heading">Allow access to your Pi</h2><p>Open the app's Info page. Stop the app, turn Protection mode off, then Start the app.</p><div class="actions"><a id="app-info" class="calendar-link" href="/config/apps" target="_blank" rel="noopener noreferrer">Open app Info ↗</a></div><p class="hint">Pi checks continue automatically after the app restarts.</p></div>
+      <div class="info-illustration" aria-label="Illustration of the Protection mode switch"><strong>Pi RTC Wakealarm — Info</strong><p class="muted">Stop → change setting → Start</p><div class="highlight-switch"><span>Protection mode</span><span class="illustrated-switch" role="img" aria-label="Protection mode on"></span></div><p class="hint">Turn this switch off</p></div>
+    </section>
     <section class="card" aria-labelledby="checks-heading">
       <div class="section-top"><span class="step" aria-hidden="true">1</span><h2 id="checks-heading">Check this Pi</h2><span id="ready-badge" class="badge">Checking</span></div>
       <ul id="checks-list" class="checks"></ul>

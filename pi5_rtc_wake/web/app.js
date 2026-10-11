@@ -297,7 +297,7 @@ function renderAssist(data, busy) {
   }));
 }
 async function request(path, payload) {
-  const options = {cache: "no-store", signal: AbortSignal.timeout(["recovery-settings", "connect-assist", "assist-review"].includes(path) ? 90000 : 25000)};
+  const options = {cache: "no-store", signal: AbortSignal.timeout(["recovery-settings", "connect-assist", "connect-dashboard", "create-calendar", "assist-review"].includes(path) ? 90000 : 25000)};
   if (payload !== undefined) Object.assign(options, {method: "POST", headers: {"Content-Type": "application/json", "X-Pi5-CSRF": status?.csrf || ""}, body: JSON.stringify(payload)});
   const response = await fetch("api/" + path, options);
   const data = await response.json();
@@ -308,6 +308,16 @@ function render(data) {
   status = data;
   const busy = Boolean(data.job || data.pending || data.shutdown_requested || loading);
   const ready = Boolean(data.checks.ok), passed = data.test_status === "passed";
+  const dashboard = data.dashboard;
+  $("dashboard-connection").textContent = dashboard?.connection || "Connect once to add the native Home Assistant dashboard. AI access is optional.";
+  $("connect-dashboard").textContent = dashboard?.connected ? "Update / reconnect dashboard" : "Connect dashboard";
+  $("connect-dashboard").disabled = busy;
+  $("open-dashboard").hidden = !dashboard?.connected;
+  $("finish-dashboard").hidden = !dashboard?.connected;
+  $("permission-guide").hidden = data.permissions?.protected === false;
+  $("app-info").href = data.permissions?.slug ? "/config/app/" + encodeURIComponent(data.permissions.slug) + "/info" : "/config/apps";
+  $("create-calendar").hidden = Boolean(data.schedule.calendar_entity_id);
+  $("create-calendar").disabled = busy;
   $("version").textContent = "Pi Wake & Sleep · " + data.version;
   $("ready-badge").textContent = ready ? "Ready" : "Needs attention";
   $("ready-badge").classList.toggle("ok", ready);
@@ -409,6 +419,10 @@ function confirmAction(title, message, label, danger = false) {
   return new Promise(resolve => $("confirm-dialog").addEventListener("close", () => resolve($("confirm-dialog").returnValue === "confirm"), {once: true}));
 }
 $("check").onclick = () => act("check");
+$("connect-dashboard").onclick = async () => {
+  if (await confirmAction("Connect your Pi dashboard?", "This installs or updates the Home Assistant companion. Restart Home Assistant if requested, then add the discovered Pi Wake & Sleep integration in Devices & services. Your existing settings and personal dashboard cards are kept. AI access is optional and is not turned on by this step.", "Connect dashboard")) await act("connect-dashboard", {confirmed: true});
+};
+$("create-calendar").onclick = () => act("create-calendar", {confirmed: true});
 $("connect-assist").onclick = async () => {
   if (await confirmAction("Connect Assist?", "This installs or updates the app's Home Assistant companion. Home Assistant will discover the connection automatically. A Home Assistant restart may be needed. Status access starts on; change requests start off unless you previously enabled them.", "Connect Assist")) { assistDirty = false; await act("connect-assist", {confirmed: true}); }
 };
@@ -461,4 +475,4 @@ form.onsubmit = event => {
   const payload = {source: "calendar", calendar_entity_id: $("calendar-entity").value || null, timezone: $("timezone").value.trim(), enabled: $("enabled").checked};
   act("settings", payload);
 };
-poll().finally(() => setInterval(() => { if (!loading) poll(); }, 1000));
+poll().finally(() => { let hash = globalThis.location?.hash; try { hash = hash || globalThis.parent?.location?.hash; } catch {} const view = hash?.slice(1); if (views.includes(view)) selectView(view); setInterval(() => { if (!loading) poll(); }, 1000); });

@@ -1,21 +1,22 @@
-# Pi 5 Wake & Sleep 0.8.0-rc.2 — Connect Assist repair
+# Pi 5 Wake & Sleep 0.9.0-rc.1 — native dashboard preview
 
-Connect Assist in rc.1 could stop with "Home Assistant's configuration folder is not available" and return to "Not connected." The app expected `/homeassistant_config`, but Supervisor's default mount was `/homeassistant`. This preview explicitly maps the configuration folder to the installer's path and displays failed setup guidance beside the connection button.
+Pi Wake & Sleep now has a native Home Assistant dashboard with guided setup and individual Calendar, UPS, Messages, and Assist cards. **Edit dashboard** lets users add pictures, graphs, and other Home Assistant cards. Completed setup collapses into a small ready strip. Next shutdown/wake cards show local times and how long remains.
 
-[Install](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Update guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/UPDATE.md) · [Connect Assist](https://github.com/codefendant/pi5-rtc-wake/blob/main/ASSIST.md)
+**Create Pi Sleep calendar** creates or reuses a native Local Calendar and selects it without enabling shutdowns. All dates and repeats remain in Home Assistant Calendar. Protection mode is checked before firmware/host access, with an Info-page link and highlighted switch illustration. Reboot Pi is red and requires confirmation.
 
-## Update and connect
+## Update and open
 
-1. Update the **same installed Pi 5 Wake & Sleep app** to **0.8.0-rc.2**. If Update is missing, use the app store's **⋮ → Check for updates** and refresh.
-2. **Stop** and then **Start** the app. Reopen/reload Web UI and confirm its footer shows rc.2.
-3. Open **Assist → Connect Assist** and confirm. Restart **Home Assistant** from Settings → System if requested.
-4. Open **Settings → Devices & services** and add the discovered **Pi Wake & Sleep** integration.
-5. In the AI integration's **Control Home Assistant** option, select **Assist** alongside any existing custom APIs. Start a new chat using that AI agent and ask for the Pi's next shutdown and wake.
+1. Update the same installed app to **0.9.0-rc.1**, then **Stop → Start**.
+2. Open its Web UI and select **Connect dashboard**.
+3. Restart **Home Assistant** if requested, then add the discovered **Pi Wake & Sleep** integration in **Devices & services**. An existing Assist companion is reused.
+4. Open **Pi Wake & Sleep** in the sidebar. The app's entry is now **Pi Wake & Sleep settings** for detailed settings.
 
-Requires Core **2026.10 or newer** and a model with tool support, such as a suitable local Ollama model. Status access starts on when connected; change requests start off. Approved dates remain in Home Assistant Calendar. Settings, Calendar selection, wake evidence, UPS policy, phone preferences, and existing Assist consent remain in schema 8. This repair does not require a new physical wake test.
+[Dashboard guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/DASHBOARD.md) · [Install](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Update guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/UPDATE.md)
 
-## Verification scope
+## Settings and boundaries
 
-[Publishing run 38100690381](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38100690381) passed all 327 simulated backend tests, Chromium interactions, the published YAML mount contract, actual Home Assistant 2026.10.1 discovery/platform/tool loading, the arm64 build, and a fresh anonymous image pull with production imports and version verification. A real HAOS Connect Assist installation and AI/voice response still need confirmation on the user's Pi after updating. No automated check reboots or shuts down real hardware or sends a phone notification.
+Dashboard setup does not enable AI, automatic messages, Calendar shutdowns, or UPS protection. Existing choices and a valid wake test are preserved through schema 8 → 9. Updates keep personal cards; restoring Pi cards keeps other cards. Nine read-only Pi entities support user-created cards and graphs. Native writes and power operations require a Home Assistant administrator and retain the backend checks and confirmations.
 
-Existing UPS long-outage recovery limits remain documented in [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md).
+Detailed UPS commissioning remains in **Set up protection**. Physical RTC/UPS and final-shutdown recovery limits have not changed. This remains a preview pending observation of the new interface on the actual Pi and first-time-user setup.
+
+Publication requires backend regressions, browser/mobile interaction checks, real Home Assistant 2026.10.1 Assist/dashboard/Calendar API checks, an arm64 build, and anonymous image/import verification. Simulated hardware services do not establish physical wake or phone delivery.

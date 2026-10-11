@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 
 class UserError(Exception):
@@ -88,6 +88,7 @@ class StateStore:
         self.data.update(messages=deepcopy(MESSAGE_DEFAULTS), message_boot={})
         from assist import DEFAULTS as ASSIST_DEFAULTS, validate_settings as validate_assist
         self.data["assist"] = deepcopy(ASSIST_DEFAULTS)
+        self.data["dashboard"] = {"connected": False}
         if not self.path.exists() and not self.backup.exists():
             return
         for path in (self.path, self.backup):
@@ -118,6 +119,10 @@ class StateStore:
                 self.data["messages"] = validate_messages(loaded.get("messages", MESSAGE_DEFAULTS))
                 self.data["message_boot"] = validate_record(loaded.get("message_boot", {}))
                 self.data["assist"] = validate_assist(loaded.get("assist", ASSIST_DEFAULTS))
+                dashboard = loaded.get("dashboard", {"connected": False})
+                if not isinstance(dashboard, dict) or set(dashboard) != {"connected"} or type(dashboard["connected"]) is not bool:
+                    raise ValueError("invalid dashboard settings")
+                self.data["dashboard"] = dashboard
                 self.data.pop("last_attempt_date", None)
                 if migration_notice:
                     self.data["migration_notice"] = migration_notice

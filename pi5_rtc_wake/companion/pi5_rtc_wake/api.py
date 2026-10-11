@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from datetime import timedelta
 import json
 import re
+import time
 
 import aiohttp
 
@@ -31,18 +32,18 @@ class Client:
         self.token = config["token"]
 
     async def call(self, path, payload=None):
-        if path not in ("/v1/status", "/v1/request", "/v1/keep-awake"):
+        if path not in ("/v1/status", "/v1/request", "/v1/keep-awake", "/v1/dashboard", "/v1/dashboard/action", "/v1/dashboard/ready", "/v1/message-options"):
             raise HomeAssistantError("That Pi Wake & Sleep action is not supported.")
         try:
             async with self.session.request(
                 "GET" if payload is None else "POST", self.base + path,
                 json=payload, headers={"Authorization": "Bearer " + self.token},
-                timeout=aiohttp.ClientTimeout(total=20, connect=5), allow_redirects=False,
+                timeout=aiohttp.ClientTimeout(total=90 if payload is not None else 20, connect=5), allow_redirects=False,
             ) as response:
                 body = bytearray()
                 async for chunk in response.content.iter_chunked(8192):
                     body.extend(chunk)
-                    if len(body) > 65536:
+                    if len(body) > (2 * 1024 * 1024 if path in ("/v1/dashboard", "/v1/message-options") else 65536):
                         raise ValueError()
                 value = json.loads(body)
                 if not isinstance(value, dict):
@@ -60,15 +61,31 @@ class Client:
             raise HomeAssistantError("Update the Pi Wake & Sleep companion using Connect Assist in the app, then restart Home Assistant.")
         return value
 
+    async def dashboard_status(self):
+        value = await self.call("/v1/dashboard")
+        if value.get("protocol") != PROTOCOL or any(type(value.get(key)) is not bool for key in ("enabled", "allow_requests")):
+            raise HomeAssistantError("Update the companion using Connect dashboard in the app, then restart Home Assistant.")
+        return value
+
 
 class Coordinator(DataUpdateCoordinator):
     def __init__(self, hass, logger, entry, client):
         super().__init__(hass, logger, name=DOMAIN, config_entry=entry,
                          update_interval=timedelta(seconds=30))
         self.client = client
+        self.dashboard_ready = False
+        self.dashboard_attempt = -float("inf")
 
     async def _async_update_data(self):
         try:
-            return await self.client.status()
+            value = await self.client.dashboard_status()
+            if value.get("dashboard", {}).get("connected") and not self.dashboard_ready and time.monotonic() - self.dashboard_attempt >= 60:
+                self.dashboard_attempt = time.monotonic()
+                try:
+                    await self.client.call("/v1/dashboard/ready", {"entry_id": self.config_entry.entry_id})
+                    self.dashboard_ready = True
+                except HomeAssistantError as error:
+                    value["dashboard"]["connection"] = str(error)
+            return value
         except HomeAssistantError as error:
             raise UpdateFailed(str(error)) from error

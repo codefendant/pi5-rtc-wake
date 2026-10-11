@@ -1,3 +1,13 @@
+# 0.9.0-rc.1
+
+- Add native cards, visual card editors, and an editable starter dashboard; preserve user layouts on updates.
+- Connect the dashboard without enabling AI; expose nine read-only Pi entities for other cards and graphs.
+- Guide Protection mode before host inspection, collapse completed setup, and show next times with relative timing.
+- Create/reuse a native Pi Sleep Local Calendar with scheduling off; retain Calendar as the only date store.
+- Add Calendar/UPS/phone/Assist card setup, red confirmed reboot, and safe current-countdown cancellation.
+- Restore Pi cards without removing other cards; retain schema-8 settings and wake evidence in schema 9.
+- Extend browser and real Core 2026.10.1 API checks. Detailed UPS commissioning remains in linked app settings.
+
 # 0.8.0-rc.2
 
 - Fix Connect Assist failing with "Home Assistant's configuration folder is not available" by explicitly mapping the Core configuration folder to the installer's path. Supervisor's default mount is /homeassistant, while the installer expects /homeassistant_config.

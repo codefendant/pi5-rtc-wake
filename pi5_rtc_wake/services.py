@@ -16,7 +16,7 @@ from host_helper import error_details, safe_details, stderr_reason
 from calendar_schedule import CALENDAR_ID, calendar_query_window
 from datetime import datetime, timezone
 from power_sources import DISCOVERY_TEMPLATE
-from ha_registry import CoreRegistry
+from ha_registry import CoreRegistry, CoreCommandError
 
 LOG = logging.getLogger("pi5_rtc_wake")
 
@@ -99,6 +99,92 @@ class Supervisor:
 
     def os_info(self):
         return self.request("/os/info")
+
+    def app_info(self):
+        value = self.request("/addons/self/info")
+        if not isinstance(value, dict):
+            raise UserError("The app's permissions could not be checked.", "Open its Info page and check Protection mode.")
+        return value
+
+    def ensure_sleep_calendar(self):
+        """Create a native Local Calendar once, then resolve its actual entity ID."""
+        def existing(entry_id=None):
+            with CoreRegistry(self.token) as core:
+                rows = core.command("config/entity_registry/list")
+            if not isinstance(rows, list):
+                raise UserError("The calendar list could not be checked.", "Open Calendar in Home Assistant and try again.")
+            matches = [row for row in rows if isinstance(row, dict) and row.get("platform") == "local_calendar"
+                       and CALENDAR_ID.fullmatch(str(row.get("entity_id", "")))
+                       and (row.get("config_entry_id") == entry_id if entry_id else row.get("original_name") == "Pi Sleep")]
+            if len(matches) > 1:
+                raise UserError("More than one Pi Sleep calendar was found.", "Use Choose existing calendar to select the one you want.")
+            if matches:
+                if matches[0].get("disabled_by") is not None:
+                    raise UserError("Pi Sleep already exists but is disabled.", "Enable its calendar entity in Devices & services, then try again.")
+                return matches[0]["entity_id"]
+            return None
+
+        entity = existing()
+        if entity:
+            self.calendar_writable(entity)
+            return entity
+        flow = self.request("/core/api/config/config_entries/flow", {"handler": "local_calendar", "show_advanced_options": False})
+        if not isinstance(flow, dict) or flow.get("type") != "form" or flow.get("step_id") != "user" or not re.fullmatch(r"[a-zA-Z0-9_-]{1,100}", str(flow.get("flow_id", ""))):
+            raise UserError("Home Assistant could not start calendar setup.", "Use Settings → Devices & services → Add integration → Local Calendar and name it Pi Sleep.")
+        result = self.request("/core/api/config/config_entries/flow/" + flow["flow_id"],
+                              {"calendar_name": "Pi Sleep", "import": "create_empty"})
+        entry_id = result.get("result", {}).get("entry_id") if isinstance(result, dict) and isinstance(result.get("result"), dict) else None
+        if not isinstance(result, dict) or result.get("type") not in ("create_entry", "abort"):
+            raise UserError("Home Assistant did not confirm calendar creation.", "Open Calendar and check for Pi Sleep before trying again.")
+        # Core may still be setting up its entity after confirming the entry.
+        for _ in range(12):
+            entity = existing(entry_id)
+            if entity:
+                self.calendar_writable(entity)
+                return entity
+            time.sleep(0.5)
+        raise UserError("Pi Sleep is still getting ready in Home Assistant.", "Wait a moment, then select Create Pi Sleep calendar again. An existing calendar will be reused.")
+
+    def ensure_dashboard(self, entry_id):
+        """Register our cards and create an editable dashboard without replacing one."""
+        from dashboard import PATH, RESOURCE, starter_config
+        resource_url = RESOURCE + "?v=0.9.0-rc.1"
+        try:
+            with CoreRegistry(self.token) as core:
+                rows = core.command("lovelace/resources/list")
+                ours = [row for row in rows if isinstance(row, dict) and str(row.get("url", "")).split("?")[0] == RESOURCE]
+                if not ours:
+                    core.command("lovelace/resources/create", res_type="module", url=resource_url)
+                else:
+                    for row in ours:
+                        if row.get("url") != resource_url or row.get("type") != "module":
+                            core.command("lovelace/resources/update", resource_id=row["id"], res_type="module", url=resource_url)
+                dashboards = core.command("lovelace/dashboards/list")
+                if any(row.get("url_path") == PATH for row in dashboards if isinstance(row, dict)):
+                    try:
+                        core.command("lovelace/config", url_path=PATH)
+                    except CoreCommandError as error:
+                        if error.code != "config_not_found":
+                            raise
+                        # An interrupted first install can leave an empty dashboard.
+                        # Only a confirmed absence of saved layout allows initialization.
+                    else:
+                        return {"created": False, "path": "/" + PATH, "message": "Your existing dashboard and personal cards were kept."}
+                else:
+                    core.command("lovelace/dashboards/create", url_path=PATH, title="Pi Wake & Sleep",
+                                 icon="mdi:power-sleep", show_in_sidebar=True, require_admin=False)
+                core.command("lovelace/config/save", url_path=PATH, config=starter_config(entry_id))
+            return {"created": True, "path": "/" + PATH}
+        except UserError:
+            raise UserError("The native dashboard could not finish setup.",
+                            "Keep the app running. Use storage-mode dashboard resources, then reconnect the integration in Devices & services. Your existing dashboards are kept.") from None
+
+    def restore_dashboard(self, entry_id):
+        from dashboard import PATH, restore_cards
+        with CoreRegistry(self.token) as core:
+            config = core.command("lovelace/config", url_path=PATH)
+            core.command("lovelace/config/save", url_path=PATH, config=restore_cards(config, entry_id))
+        return {"ok": True}
 
     def firmware_info(self):
         return self.request("/os/boards/raspberrypi/firmware")
