@@ -28,13 +28,23 @@ Alternatively, use **Choose existing calendar**. Changing calendars leaves sched
 
 Calendar remains the only store of scheduled dates. After reviewing events and passing the wake test, select **Enable scheduling** and confirm. Cards show local times and a countdown such as “in 2 h.” Paused or stale data is explained rather than shown as an active shutdown.
 
+Select a listed off period to open Home Assistant's native Calendar card at that day and, when available, its event details. Select **Edit** there. Home Assistant handles recurring-event choices and permissions; this app does not create another date store. **Back to Pi dashboard** closes the Calendar view. **Open Calendar** remains available if the event shortcut cannot load.
+
+## Keep awake
+
+**Keep awake** suspends every shutdown and reboot issued by this app, including future Calendar shutdowns, timed UPS retries, emergency low-battery shutdowns, wake tests, and reviewed AI power operations. It cancels a countdown that has not yet been submitted. This choice survives app restarts and updates until you select **Resume shutdowns**. The power icon in **Pi status** toggles the same choice with confirmation.
+
+Calendar dates, enabled/disabled feature choices, wake-test evidence, and other settings are kept. **Resume shutdowns** restores the saved choices; it does not enable previously disabled features or bypass normal readiness/fresh-reading checks. Low UPS reserve can trigger shutdown as soon as protection resumes. An amber state shows when all app shutdowns, including UPS protection, are suspended. Monitoring, phone messages, and status access continue.
+
+Keep awake controls this app's power operations. It cannot retract a shutdown already submitted to Home Assistant or prevent NUT, Home Assistant, or another controller from issuing its own shutdown.
+
 ## Optional cards
 
-- **UPS power:** Find and select the UPS supplying the Pi. Monitoring starts separately from automatic protection. Disabled NUT readings can be enabled from the card. **Set up protection** opens the existing detailed commissioning screen for shutdown ownership, runtime selection, and retry/emergency thresholds.
+- **UPS power:** Find and select the UPS supplying the Pi. Monitoring starts separately from automatic protection. Runtime is displayed in monitoring mode when the saved reading is available or the NUT registry identifies one enabled Battery runtime measurement for this UPS. A duration setting or another UPS's sensor is never guessed. Missing, disabled, unavailable, and stale readings have different explanations. Disabled NUT readings can be enabled from the card. **Set up protection** opens the existing detailed commissioning screen for shutdown ownership, runtime selection, and retry/emergency thresholds.
 - **Messages:** Choose a discovered Companion app phone and up to twelve existing readings. Save and send a confirmed test message. Automatic wake messages are separately enabled. Each message includes uptime and the next shutdown/wake times.
 - **Assist:** Enable status access, then select **Assist** in the existing AI agent's **Control Home Assistant** setting. Change requests are separately enabled and wait for approval in the card or app. Turning AI access off keeps the dashboard available.
-- **Controls:** With no shutdown countdown, **Pause calendar** turns Calendar shutdowns off while retaining every date. **Resume calendar** asks you to review and confirm before enabling them again. During an ordinary countdown, **Keep awake** cancels that shutdown only; future dates are retained. These actions do not change emergency UPS protection. Emergency low-battery shutdowns cannot be cancelled here. **Reboot Pi** has a red background and requires confirmation.
-- **Recent activity:** Collapsed by default; shows recent dashboard setup and action entries in plain language.
+- **Controls:** **Keep awake / Resume shutdowns** suspends or resumes all app power operations as described above. Calendar-only changes still use the Calendar card's scheduling control. **Reboot Pi** has a red background, requires confirmation, and is unavailable while Keep awake is on.
+- **Recent activity:** Collapsed by default; shows recent dashboard setup and action entries in plain language. Open dropdowns, including activity, message previews, Pi checks, NUT readings, and agent setup, remain open during status refreshes until you close them.
 
 ## Personalize and update
 

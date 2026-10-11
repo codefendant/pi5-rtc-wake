@@ -72,6 +72,50 @@ def runtime_candidates(rows):
     return result
 
 
+def monitor_runtime(source, selected_entity, registry, now):
+    """Display a typed reading without commissioning automatic shutdowns."""
+    result = {"seconds": None, "entity_id": None, "state": "unavailable", "observed_epoch": None,
+              "message": "UPS readings are unavailable. Check the UPS connection."}
+    if not source:
+        return result
+    if source["id"].startswith("hook:"):
+        value, epoch = source.get("runtime_seconds"), source.get("observed_epoch")
+        if value is not None and epoch is not None and source.get("ok"):
+            result.update(seconds=value, state="fresh", observed_epoch=epoch, message="Reported by the selected power hook.")
+        else:
+            result.update(state="missing", message="This power hook is not reporting fresh remaining runtime.")
+        return result
+    device_id = source["id"][4:]
+    measurements = [row for row in registry if row.get("device_id") == device_id and row.get("runtime_measurement")]
+    candidates = source.get("runtime_candidates", [])
+    identity = selected_entity
+    if not identity:
+        enabled = [row for row in measurements if row.get("disabled_by") is None]
+        if len(enabled) == 1:
+            identity = enabled[0]["entity_id"]
+        elif measurements and all(row.get("disabled_by") is not None for row in measurements):
+            result.update(state="disabled", message="Battery runtime is disabled. Open Additional NUT readings below and enable it.")
+            return result
+        else:
+            result.update(state="choose" if candidates else "missing", message="Choose the remaining-runtime sensor in Protection settings; protection can stay off." if candidates else "No remaining-runtime sensor is reporting. Check Battery runtime on the NUT device page.")
+            return result
+    result["entity_id"] = identity
+    candidate = next((row for row in candidates if row["entity_id"] == identity), None)
+    if candidate is None:
+        disabled = any(row["entity_id"] == identity and row.get("disabled_by") is not None for row in measurements)
+        result.update(state="disabled" if disabled else "unavailable", message="Battery runtime is disabled. Open Additional NUT readings below and enable it." if disabled else "The selected runtime sensor is unavailable. Check it on the NUT device page.")
+    elif candidate["seconds"] is None:
+        result.update(message="The runtime sensor has no usable reading. Check it on the NUT device page.")
+    elif not fresh(candidate["reported_at"], now) or candidate["observed_epoch"] is None:
+        result.update(state="stale", message="The runtime reading is more than three minutes old. Check the NUT connection.")
+    else:
+        seconds = candidate["seconds"]
+        if source["power_state"] in ("battery", "off"):
+            seconds = max(0, seconds - max(0, now - candidate["observed_epoch"]))
+        result.update(seconds=seconds, state="fresh", observed_epoch=candidate["observed_epoch"], message="Live remaining runtime from " + candidate["name"] + ".")
+    return result
+
+
 def nut_flags(value):
     if not isinstance(value, str) or len(value) > 120:
         return None

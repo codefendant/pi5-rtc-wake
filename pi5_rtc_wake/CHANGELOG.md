@@ -1,3 +1,13 @@
+# 0.9.0-rc.3
+
+- Make Keep awake persistently suspend every app shutdown and reboot, including Calendar dates, UPS retries, emergency UPS shutdowns, wake tests, and reviewed AI power operations. Resume shutdowns restores saved choices without erasing dates or wake evidence.
+- Make the Pi status power icon toggle the same confirmed switch; show suspension clearly and preserve it across restarts and updates in schema 10.
+- Keep activity, message preview, Pi checks, NUT readings, and Assist dropdowns open across status refreshes.
+- Open listed Calendar occurrences in Home Assistant's native Calendar/event view, retaining an Open Calendar fallback.
+- Display verified NUT runtime in monitoring mode without enabling shutdown protection. Explain disabled, missing, unavailable, and stale readings separately.
+- Preserve submitted/uncertain power requests and their alarm; a shutdown already submitted or issued by another controller cannot be cancelled.
+- Extend backend, browser, and actual Home Assistant API checks. Refresh bundled cards with Connect dashboard after updating.
+
 # 0.9.0-rc.2
 
 - Add Back to dashboard to expanded setup. Leaving unfinished setup shows a needs-attention strip and keeps power checks enforced.

@@ -2,6 +2,8 @@
 
 Version 0.6 provides separate opt-in timed RTC retries and emergency low-battery protection for the **Pi running Home Assistant OS**. It requests graceful host shutdown. Verified timed wakes use the Pi 5 RTC and Home Assistant Calendar. It does not switch UPS outlets or send NUT shutdown/output commands.
 
+In 0.9.0-rc.3, the dashboard's **Keep awake** switch suspends **all** shutdowns from this app, including emergency UPS shutdowns. It survives restarts until **Resume shutdowns** restores the saved policy. It does not stop NUT or other apps from issuing independent shutdowns. This global switch is different from the existing **Pause timed retries** or Assist's current-countdown cancellation, which leave emergency protection active. See [DASHBOARD.md](DASHBOARD.md#keep-awake).
+
 ## Update first
 
 Follow UPDATE.md to replace the existing app with 0.6.0-rc.1. Your Calendar, NUT selection, notifications, settings, and wake evidence are preserved. New control starts **off**. An enabled older policy is paused until shutdown ownership is reviewed and saved in the UPS section. Update and review while utility power is available.

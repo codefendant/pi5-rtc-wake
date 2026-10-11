@@ -2,9 +2,9 @@
 
 ## 0.9 native dashboard preview
 
-Update the same app to **0.9.0-rc.2**, then **Stop → Start**. Open its Web UI and select **Connect dashboard**. Restart **Home Assistant** if requested, and add the discovered companion in **Settings → Devices & services**. If Assist was already connected, the existing integration is reused. Open **Pi Wake & Sleep** in the sidebar; the app's entry is now **Pi Wake & Sleep settings**.
+Update the same app to **0.9.0-rc.3**, then **Stop → Start**. Open its Web UI and select **Connect dashboard**. Restart **Home Assistant** if requested, and add the discovered companion in **Settings → Devices & services**. If Assist was already connected, the existing integration is reused. Open **Pi Wake & Sleep** in the sidebar; the app's entry is now **Pi Wake & Sleep settings**.
 
-**0.9.0-rc.2** adds **Back to dashboard** and **Pause calendar / Resume calendar** in Pi controls. Use **Connect dashboard** to update the bundled cards after updating the app, restart Home Assistant if requested, then refresh the browser. Your existing layout updates in place; Restore default Pi cards is not needed.
+**0.9.0-rc.3** makes **Keep awake** a persistent suspension of all app shutdowns and reboots, including emergency UPS protection. **Resume shutdowns** restores your saved choices. The Pi status power icon uses the same switch. Dropdowns stay open during refresh, Calendar items open native Calendar editing, and verified NUT runtime can display while protection is off. Existing installations start with Keep awake off; no feature is silently enabled. Use **Connect dashboard** to update the bundled cards, restart Home Assistant if requested, then refresh the browser. Your existing layout updates in place; Restore default Pi cards is not needed.
 
 Calendar, UPS, phone, AI choices, and valid wake-test evidence are kept. Another physical wake test is needed only when firmware or wake settings changed. Dashboard setup does not enable optional power, messaging, or AI features. Later updates preserve personal cards. See [DASHBOARD.md](DASHBOARD.md).
 

@@ -1,3 +1,15 @@
+# Validation — 0.9.0-rc.3 Keep awake and dashboard fixes
+
+The maintainer requested persistent suspension of all app shutdowns, stable dropdowns, a Pi status toggle, native Calendar editing, and runtime display while monitoring. Schema 10 adds a boolean Keep awake choice, defaulting off on upgrade. Calendar dates, feature choices, wake evidence, and personal cards are retained. Global suspension includes emergency UPS shutdowns and app reboots; normal saved-policy and fresh-reading checks resume when the user confirms Resume shutdowns.
+
+Local validation passes **366 simulated backend tests**. Cases cover suspension across restarts, emergency countdown cancellation and resumed urgent protection, queued Calendar/test/UPS/reboot cancellation, no missed-event replay, preserved dates and policy, atomic save failure, alarm-clear failure with suspension retained, submitted/uncertain request refusal, migration, phone status, and typed runtime display without commissioning protection. JS syntax, compilation, and DOM checks pass. Required hosted browser, real Core, arm64 image, and public-download checks must pass before publication.
+
+Browser coverage includes Keep awake/resume confirmation and Pi status icon, retained settings/dates after reload, open/closed dropdown persistence, runtime updates and disabled guidance, Calendar focus/event handoff and unavailable-helper fallback, administrator boundaries, and phone/mobile behavior. The Calendar frontend bridge is simulated in this harness. The real Core check verifies authenticated Keep awake/resume with settings retention and non-admin denial in Home Assistant 2026.10.1; hardware and phone services remain simulated.
+
+The native Calendar shortcut uses Home Assistant's existing Calendar card, which owns event loading, permissions, recurrence choices, and edits. Its optional focus/event bridge was checked against the [frontend pinned by Core 2026.10.1](https://github.com/home-assistant/core/blob/2026.10.1/homeassistant/components/frontend/manifest.json), [20260930.3 Calendar component](https://github.com/home-assistant/frontend/blob/20260930.3/src/panels/calendar/ha-full-calendar.ts), and [native Calendar card](https://github.com/home-assistant/frontend/blob/20260930.3/src/panels/lovelace/cards/hui-calendar-card.ts). The bridge accesses the current frontend Calendar instance and is guarded; if it changes or cannot load, the native Calendar view/Open Calendar fallback remains. The complete native frontend edit dialog has not been exercised here. No physical Pi or UPS operation was repeated.
+
+## Earlier release evidence
+
 # Validation — 0.9.0-rc.2 navigation fix
 
 The maintainer's Home Assistant screenshots show the expanded setup without an exit control and Keep awake disabled before a countdown. This repair adds Back to dashboard and Pause calendar / Resume calendar without changing power prerequisites or deleting Calendar dates. **346 simulated backend tests pass.** Regressions confirm that pausing persists and retains wake evidence, and that commissioned emergency shutdown still operates after restarting the app with Calendar paused.

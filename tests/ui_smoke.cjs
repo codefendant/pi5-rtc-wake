@@ -45,8 +45,14 @@ async function main() {
     await page.getByRole('button', {name: 'Run ten-minute test', exact: true}).click();
     await page.getByRole('button', {name: 'Start wake test', exact: true}).click();
     await page.locator('#countdown:not([hidden])').waitFor();
-    await page.getByRole('button', {name: 'Keep Pi awake', exact: true}).click();
+    await page.locator('#cancel').click();
+    await page.locator('#dialog-confirm').click();
     await page.locator('#countdown').waitFor({state: 'hidden'});
+    await page.waitForFunction(() => document.getElementById('keep-awake').textContent === 'Resume shutdowns');
+    assert.equal((await (await page.request.get(url + 'api/status')).json()).keep_awake,true);
+    await page.locator('#keep-awake').click();
+    await page.locator('#dialog-confirm').click();
+    await page.waitForFunction(() => document.getElementById('keep-awake').textContent === 'Keep awake');
     await page.locator('#nav-ups').click();
     await page.getByRole('button', {name: 'Find power sources', exact: true}).click();
     await page.waitForFunction(() => document.getElementById('scan-ups').disabled === false && document.getElementById('ups-source').options.length > 1);

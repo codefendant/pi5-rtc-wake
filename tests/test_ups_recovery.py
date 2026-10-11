@@ -76,6 +76,56 @@ class PolicyValidationTests(unittest.TestCase):
 
 
 class RecoveryTests(unittest.TestCase, Fixture):
+    def test_keep_awake_suspends_emergency_shutdown_across_restart_then_resume_restores_policy(self):
+        saved = deepcopy(self.app.store.data["recovery"])
+        self.reading("battery", 300, low_battery=True)
+        self.app.tick()
+        self.app.process_task()
+        self.assertTrue(self.app.pending["emergency"])
+        self.app.dashboard.action("keep-awake", {"active": True, "confirmed": True})
+        self.assertIsNone(self.app.pending)
+        self.assertEqual(self.app.store.data["outage"]["phase"], "observing")
+        self.app = self.new_app()
+        self.app.refresh()
+        self.reading("battery", 90, low_battery=True, shutdown_requested=True)
+        self.app.tick()
+        self.assertFalse(self.app.recovery.poll())
+        self.assertIsNone(self.app.job)
+        self.assertFalse(self.app.snapshot()["recovery"]["emergency_active"])
+        self.assertEqual(self.app.store.data["recovery"], saved)
+        self.app.dashboard.action("keep-awake", {"active": False, "confirmed": True})
+        self.app.tick()
+        self.app.process_task()
+        self.app.tick()
+        self.assertIsNotNone(self.app.shutdown_requested_at)
+        self.assertEqual(self.supervisor.shutdowns, 2)  # Commissioning plus resumed emergency protection.
+
+    def test_keep_awake_cancels_rtc_retry_without_disabling_saved_retry_policy(self):
+        pending = self.start(1800)
+        self.assertTrue(pending["retry"])
+        saved = deepcopy(self.app.store.data["recovery"])
+        dates = deepcopy(self.supervisor.events)
+        self.app.dashboard.action("keep-awake", {"active": True, "confirmed": True})
+        self.assertFalse(self.rtc.enabled)
+        self.assertIsNone(self.app.pending)
+        self.assertEqual(self.supervisor.events, dates)
+        self.assertEqual(self.app.store.data["recovery"], saved)
+        self.assertTrue(self.app.store.data["keep_awake"])
+        self.advance(31)
+        self.app.tick()
+        self.assertEqual(self.supervisor.shutdowns, 1)
+
+    def test_keep_awake_cancels_queued_ups_preparation_before_it_creates_a_calendar_event(self):
+        self.reading("battery", 1800)
+        self.app.tick()
+        self.assertEqual(self.app.job["kind"], "ups")
+        dates = deepcopy(self.supervisor.events)
+        self.app.dashboard.action("keep-awake", {"active": True, "confirmed": True})
+        self.app.process_task()
+        self.assertEqual(self.supervisor.events, dates)
+        self.assertIsNone(self.app.pending)
+        self.assertFalse(self.rtc.enabled)
+
     def setUp(self):
         self.setup_app()
         self.pass_test()

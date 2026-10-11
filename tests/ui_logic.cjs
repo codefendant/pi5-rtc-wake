@@ -106,7 +106,7 @@ async function main() {
   ui.fixture.recovery.protection_eligible=true; ui.fixture.recovery.emergency_active=true;
   ui.fixture.pending={kind:'ups',emergency:true,wake_epoch:null,remaining_seconds:30}; ui.render();
   assert.equal(ui.node('overview-protection').textContent,'Active');
-  assert.equal(ui.node('cancel').hidden,true);
+  assert.equal(ui.node('cancel').hidden,false);
   assert.equal(ui.node('recovery-badge').textContent,'Enabled');
   ui.fixture.pending=null; ui.render();
   ui.node('recovery-enabled').checked=false; ui.node('recovery-form').dispatch('input');

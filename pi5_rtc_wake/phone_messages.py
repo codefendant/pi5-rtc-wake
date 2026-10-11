@@ -188,7 +188,10 @@ def build_message(status, fields, states, choices, now, boot_epoch, *, wake=Fals
     uptime = (str(days) + "d " if days else "") + str(hours) + "h " + str(minutes) + "m"
     lines = ["Pi 5 is awake." if wake else "Pi 5 status.", "Uptime: " + uptime]
     pending = status.get("pending")
-    if pending:
+    if status.get("keep_awake"):
+        lines.extend(["Next shutdown: Keep awake is on; all app shutdowns are suspended, including UPS protection.",
+                      "Next wake: No app shutdown or wake is planned until you resume."])
+    elif pending:
         lines.extend(["Next shutdown: " + date_text(now + pending["remaining_seconds"], zone),
                       "Next wake: " + (date_text(pending["wake_epoch"], zone) if pending.get("wake_epoch") else "No timed wake; final UPS shutdown.")])
     elif status.get("recovery", {}).get("calendar_paused"):

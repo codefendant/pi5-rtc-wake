@@ -20,6 +20,24 @@ async function main() {
   const first = await start(['--protected']), ready = await start(['--ready']);
   try {
     const page = await browser.newPage({viewport:{width:1536,height:1050},locale:'en-US'}), errors = [], posts=[];
+    // Simulated native-calendar bridge. Actual Core/calendar APIs are checked
+    // separately; this does not claim to test Home Assistant's complete frontend.
+    await page.addInitScript(()=>{
+      class CalendarBridge extends HTMLElement {
+        constructor(){super();this.attachShadow({mode:'open'});}
+        async connectedCallback(){
+          const status=await this.hass.callWS({type:'pi5_rtc_wake/status',entry_id:'demo-entry'});
+          const native=document.createElement('ha-full-calendar');
+          const view={activeStart:new Date(),activeEnd:new Date(Date.now()+86400000),type:'dayGridDay'};
+          native.calendar={view,gotoDate(date){window.focusedCalendarDate=date.toISOString();view.activeStart=date;},
+            getEvents:()=>status.calendar.periods.map(item=>({start:new Date(item.start_epoch*1000),end:new Date(item.end_epoch*1000),extendedProps:{calendar:this.config.entities[0],eventData:{summary:item.title}}})),
+            getOption:()=>info=>{window.openedCalendarEvent={calendar:info.event.extendedProps.calendar,title:info.event.extendedProps.eventData.summary,start:info.event.start.toISOString()};}};
+          this.shadowRoot.append(native);
+        }
+      }
+      customElements.define('preview-native-calendar',CalendarBridge);
+      window.loadCardHelpers=async()=>({createCardElement(config){window.createdCalendarConfig=config;const widget=document.createElement('preview-native-calendar');widget.config=config;return widget;}});
+    });
     page.on('pageerror', error => errors.push(error.message));
     page.on('request',request=>{if(request.url().endsWith('/demo/ha-ws')&&request.method()==='POST')posts.push(request.postDataJSON());});
     await page.goto(first.url+'native');
@@ -50,24 +68,57 @@ async function main() {
     assert.equal(await page.locator('[data-kind="setup"]').getByRole('button',{name:'Review setup'}).isVisible(),true);
     await page.getByRole('button',{name:'Review setup',exact:true}).click();
     await page.getByRole('heading',{name:'Pi setup complete',exact:true}).waitFor();
+    await page.locator('[data-kind="setup"] summary').click();
+    await page.waitForTimeout(5500);
+    assert.equal(await page.locator('[data-kind="setup"] details').evaluate(el=>el.open),true);
     await page.getByRole('button',{name:'Back to dashboard',exact:true}).click();
     await page.getByText('Pi ready · Wake test passed',{exact:true}).waitFor();
+    const controls=page.locator('[data-kind="controls"]'), piStatus=page.locator('[data-kind="status"]');
     const beforePause = (await (await page.request.get(ready.url+'api/status')).json());
-    assert.equal(await page.getByRole('button',{name:'Keep awake',exact:true}).count(),0);
-    await page.getByRole('button',{name:'Pause calendar',exact:true}).click();
-    await page.getByRole('button',{name:'Resume calendar',exact:true}).waitFor();
+    await controls.getByRole('button',{name:'Keep awake',exact:true}).click();
+    await page.getByRole('button',{name:'Go back',exact:true}).click();
+    assert.equal((await (await page.request.get(ready.url+'api/status')).json()).keep_awake,false);
+    await controls.getByRole('button',{name:'Keep awake',exact:true}).click();
+    await page.getByRole('dialog').getByRole('button',{name:'Keep awake',exact:true}).click();
+    await controls.getByRole('button',{name:'Resume shutdowns',exact:true}).waitFor();
     const paused = (await (await page.request.get(ready.url+'api/status')).json());
-    assert.equal(paused.schedule.enabled,false);
+    assert.equal(paused.keep_awake,true);
+    assert.equal(paused.schedule.enabled,true);
+    assert.equal(paused.schedule_active,false);
     assert.deepEqual(paused.calendar.periods,beforePause.calendar.periods);
     assert.deepEqual(paused.recovery.settings,beforePause.recovery.settings);
     assert.equal(paused.test_status,beforePause.test_status);
-    await page.getByRole('button',{name:'Resume calendar',exact:true}).click();
+    await page.reload();
+    await controls.getByRole('button',{name:'Resume shutdowns',exact:true}).waitFor();
+    assert.equal(await controls.getByRole('button',{name:'Reboot Pi',exact:true}).isDisabled(),true);
+    await piStatus.getByRole('button',{name:'Resume all shutdowns',exact:true}).click();
     await page.getByRole('button',{name:'Go back',exact:true}).click();
-    assert.equal((await (await page.request.get(ready.url+'api/status')).json()).schedule.enabled,false);
-    await page.getByRole('button',{name:'Resume calendar',exact:true}).click();
-    await page.getByRole('dialog').getByRole('button',{name:'Enable scheduling',exact:true}).click();
-    await page.getByRole('button',{name:'Pause calendar',exact:true}).waitFor();
+    assert.equal((await (await page.request.get(ready.url+'api/status')).json()).keep_awake,true);
+    await piStatus.getByRole('button',{name:'Resume all shutdowns',exact:true}).click();
+    await page.getByRole('dialog').getByRole('button',{name:'Resume shutdowns',exact:true}).click();
+    await controls.getByRole('button',{name:'Keep awake',exact:true}).waitFor();
     assert.equal((await (await page.request.get(ready.url+'api/status')).json()).schedule.enabled,true);
+    const activity=page.locator('[data-kind="activity"]');
+    await activity.locator('summary').click();
+    await page.waitForTimeout(5500);
+    assert.equal(await activity.locator('details').evaluate(el=>el.open),true);
+    await activity.locator('summary').click();
+    await page.waitForTimeout(5500);
+    assert.equal(await activity.locator('details').evaluate(el=>el.open),false);
+    const calendar=page.locator('[data-kind="calendar"]');
+    await calendar.getByRole('button',{name:/Demo Pi off/}).first().click();
+    await page.waitForFunction(()=>Boolean(window.openedCalendarEvent));
+    assert.deepEqual(await page.evaluate(()=>window.createdCalendarConfig),{type:'calendar',entities:['calendar.demo_pi_sleep'],initial_view:'dayGridDay'});
+    assert.equal(await page.evaluate(()=>window.openedCalendarEvent.start),new Date(beforePause.calendar.periods[0].start_epoch*1000).toISOString());
+    await page.waitForTimeout(5500);
+    assert.equal(await calendar.getByRole('button',{name:'Back to Pi dashboard'}).isVisible(),true);
+    await calendar.getByRole('button',{name:'Back to Pi dashboard'}).click();
+    await page.evaluate(()=>{window.savedCalendarHelpers=window.loadCardHelpers;window.loadCardHelpers=undefined;});
+    await calendar.getByRole('button',{name:/Demo Pi off/}).first().click();
+    await calendar.getByText('Open Calendar below to edit this event in Home Assistant.',{exact:true}).waitFor();
+    assert.equal(await calendar.locator('.settings').getByRole('link',{name:'Open Calendar ↗'}).getAttribute('href'),'/calendar');
+    await calendar.getByRole('button',{name:'Back to Pi dashboard'}).click();
+    await page.evaluate(()=>{window.loadCardHelpers=window.savedCalendarHelpers;});
     await page.locator('[data-kind="ups"]').getByText('Monitoring only',{exact:true}).waitFor();
     assert.equal(await page.getByRole('button',{name:'Connect Assist',exact:true}).isVisible(),true);
     await page.getByRole('button',{name:'Reboot Pi',exact:true}).click();
@@ -90,6 +141,15 @@ async function main() {
     const saved = (await (await page.request.get(ready.url+'api/status')).json()).messages.settings;
     assert.equal(saved.enabled,false);
     assert.equal(saved.fields.length,1);
+    const messages=page.locator('[data-kind="messages"]');
+    await messages.getByRole('button',{name:'Preview',exact:true}).click();
+    await messages.locator('pre').waitFor();
+    assert.equal(await messages.locator('details').evaluate(el=>el.open),true);
+    await page.waitForTimeout(5500);
+    assert.equal(await messages.locator('details').evaluate(el=>el.open),true);
+    await messages.locator('summary').click();
+    await page.waitForTimeout(5500);
+    assert.equal(await messages.locator('details').evaluate(el=>el.open),false);
     await page.getByRole('button',{name:'Send status now',exact:true}).click();
     await page.getByRole('button',{name:'Go back',exact:true}).click();
     assert.equal(posts.some(post=>post.action==='send-message'),false);
@@ -101,25 +161,40 @@ async function main() {
     await page.screenshot({path:'ui-artifacts/dashboard-mobile.png',fullPage:true});
     // Replay pending states without starting any simulated or real shutdown.
     let pending = {kind:'schedule',emergency:false,remaining_seconds:30,wake_epoch:beforePause.next_wake_epoch};
+    let runtime={seconds:4320,state:'fresh',message:'Live runtime from Battery runtime.'};
     await page.route('**/demo/ha-ws',async route=>{
       if(route.request().postDataJSON()?.type!=='pi5_rtc_wake/status')return route.fallback();
       const response=await route.fetch();const state=await response.json();
-      await route.fulfill({response,json:{...state,pending}});
+      await route.fulfill({response,json:{...state,pending,
+        ups:{...state.ups,runtime,selected:{...state.ups.selected,id:'nut:device_apc'},sensor_settings:{...state.ups.sensor_settings,sensors:[{entity_id:'sensor.battery_runtime',device_id:'device_apc',name:'Battery runtime',can_enable:true}]}},
+        assist:{...state.assist,settings:{...state.assist.settings,enabled:true}}}});
     });
     await page.getByRole('button',{name:'Keep awake',exact:true}).waitFor();
     assert.equal(await page.getByRole('button',{name:'Keep awake',exact:true}).isEnabled(),true);
     pending = {...pending,kind:'ups',emergency:true};
-    await page.getByText('Emergency low-battery shutdown cannot be cancelled here.',{exact:true}).waitFor();
-    assert.equal(await page.getByRole('button',{name:'Cancel this retry',exact:true}).isDisabled(),true);
+    await controls.getByText('Emergency shutdown',{exact:true}).waitFor();
+    assert.equal(await controls.getByRole('button',{name:'Keep awake',exact:true}).isEnabled(),true);
+    const ups=page.locator('[data-kind="ups"]'), assist=page.locator('[data-kind="assist"]');
+    await ups.getByText('72 min',{exact:true}).waitFor();
+    runtime={...runtime,seconds:3900};
+    await ups.getByText('65 min',{exact:true}).waitFor();
+    runtime={seconds:null,state:'disabled',message:'Enable Battery runtime below.'};
+    await ups.getByText('Battery runtime disabled',{exact:true}).waitFor();
+    await ups.locator('summary').click();
+    await assist.locator('summary').click();
+    await page.waitForTimeout(5500);
+    assert.equal(await ups.locator('details').evaluate(el=>el.open),true);
+    assert.equal(await assist.locator('details').evaluate(el=>el.open),true);
     pending = null;
-    await page.getByRole('button',{name:'Pause calendar',exact:true}).waitFor();
+    await controls.getByText('Calendar scheduling enabled.',{exact:true}).waitFor();
     await page.evaluate(()=>{window.previewHass.user.is_admin=false;});
     await page.waitForTimeout(5500);
     assert.equal(await page.getByRole('button',{name:'Reboot Pi',exact:true}).isDisabled(),true);
-    assert.equal(await page.getByRole('button',{name:'Connect Assist',exact:true}).isDisabled(),true);
-    assert.equal(await page.getByRole('button',{name:'Pause calendar',exact:true}).isDisabled(),true);
+    assert.equal(await page.getByRole('button',{name:'Assist settings',exact:true}).isDisabled(),true);
+    assert.equal(await controls.getByRole('button',{name:'Keep awake',exact:true}).isDisabled(),true);
+    assert.equal(await piStatus.getByRole('button',{name:'Suspend all shutdowns',exact:true}).isDisabled(),true);
     assert.deepEqual(errors,[]);
-    console.log('Native cards passed: setup exit before/after readiness, calendar pause/resume preserving dates and protection, countdown-only cancellation, emergency and admin boundaries, editor, phone setup, confirmations, and mobile fit. Hardware and HA frontend chrome are simulated.');
+    console.log('Native cards passed: setup exit, persistent global Keep awake/resume and Pi status icon, preserved settings/dates, dropdown persistence, Calendar bridge/focus, runtime updates, emergency/admin controls, editor, phone setup, confirmations, and mobile fit. Hardware, Calendar frontend bridge, and HA chrome are simulated; real Core APIs are checked separately.');
   } finally {await browser.close();first.child.kill('SIGTERM');ready.child.kill('SIGTERM');}
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

@@ -110,7 +110,8 @@ function renderPower(data, busy) {
   $("ups-mode").textContent = power.mode === "rtc_recovery" ? data.recovery.protection_eligible ? "UPS protection enabled" : "Protection needs review" : "Monitor only";
   const protectionText = power.mode !== "rtc_recovery" ? "Off · monitor only" : !data.recovery.protection_eligible ? "Paused · review the saved UPS and shutdown ownership" : data.recovery.settings.retry_enabled ? "RTC retries and configured emergency protection" : "Emergency protection only";
   const rows = [["Source", source?.name || (power.settings.source_id ? "Saved source unavailable" : "Not selected")], ["Power", source ? stateText[source.power_state] : "Unknown"], ["Battery", source?.battery_percent != null ? source.battery_percent + "%" : "Not available"], ["Protection", protectionText]];
-  if (source?.runtime_seconds != null) rows.push(["Runtime", Math.round(source.runtime_seconds / 60) + " minutes"]);
+  if (data.ups.runtime?.seconds != null) rows.push(["Runtime", Math.round(data.ups.runtime.seconds / 60) + " minutes"]);
+  else if (source && data.ups.runtime?.message) rows.push(["Runtime", data.ups.runtime.message]);
   $("ups-summary").replaceChildren(...rows.map(([name, value]) => { const li = document.createElement("li"), label = document.createElement("strong"); label.textContent = name + ": "; li.append(label, document.createTextNode(value)); return li; }));
   $("ups-readings").hidden = !source?.readings?.length;
   $("ups-readings-list").replaceChildren(...(source?.readings || []).map(item => { const li = document.createElement("li"); li.textContent = item.name + ": " + item.value + (item.unit ? " " + item.unit : ""); return li; }));
@@ -180,7 +181,7 @@ function renderRecovery(data, busy) {
   $("recovery-badge").textContent = !settings.enabled ? "Off" : recovery.protection_eligible ? "Enabled" : "Needs review";
   $("recovery-badge").classList.toggle("ok", settings.enabled && recovery.protection_eligible);
   const phaseNames = {idle: "Ready", observing: "Watching UPS reserve", planning: "Preparing shutdown", countdown: "Shutdown countdown", submitted: "Shutdown requested", blocked: "RTC retry blocked", paused: "Timed retries paused", stopped: "Final shutdown requested"};
-  const rows = [["Saved policy", settings.enabled ? "Enabled" : "Off"], ["Emergency protection", recovery.emergency_active ? "Active · independent of RTC readiness" : settings.emergency_enabled && settings.enabled ? "Needs review" : "Off"], ["RTC retries", recovery.eligible ? "Available when reserve permits" : "Off / paused"], ["State", phaseNames[recovery.phase] || "Needs review"], ["Remaining runtime", recovery.runtime_seconds != null ? Math.round(recovery.runtime_seconds / 60) + " minutes" : "Not available"], ["RTC attempts this outage", recovery.attempts + " / " + settings.max_retries], ["Next conditional interval", recovery.next_retry_minutes + " minutes"]];
+  const rows = [["Saved policy", settings.enabled ? "Enabled" : "Off"], ["Emergency protection", data.keep_awake ? "Suspended · Keep awake on" : recovery.emergency_active ? "Active · independent of RTC readiness" : settings.emergency_enabled && settings.enabled ? "Needs review" : "Off"], ["RTC retries", recovery.eligible ? "Available when reserve permits" : "Off / paused"], ["State", phaseNames[recovery.phase] || "Needs review"], ["Remaining runtime", recovery.runtime_seconds != null ? Math.round(recovery.runtime_seconds / 60) + " minutes" : "Not available"], ["RTC attempts this outage", recovery.attempts + " / " + settings.max_retries], ["Next conditional interval", recovery.next_retry_minutes + " minutes"]];
   if (recovery.next_wake_epoch) rows.push(["Calendar wake", dateText(recovery.next_wake_epoch)]);
   $("recovery-summary").replaceChildren(...rows.map(([name, value]) => { const li = document.createElement("li"), label = document.createElement("strong"); label.textContent = name + ": "; li.append(label, document.createTextNode(value)); return li; }));
   $("recovery-message").textContent = recovery.message + (recovery.notifications_ok ? "" : " The Home Assistant recovery notification could not be updated.");
@@ -338,10 +339,10 @@ function render(data) {
   $("prepare").hidden = Boolean(data.checks.wake_configured);
   $("prepare-description").textContent = data.checks.wake_configured ? "Your wake settings are already prepared." : "Wake settings are checked automatically. Preparation keeps your existing boot order.";
   $("reboot").hidden = !data.checks.needs_reboot;
-  $("reboot").disabled = busy;
+  $("reboot").disabled = busy || data.keep_awake;
   $("reboot-reminder").hidden = !data.checks.needs_reboot;
   $("reboot-reminder").textContent = data.reboot_notice_ok ? "A reboot reminder also appears in Home Assistant's Notifications and clears after reboot and successful checks." : "The Home Assistant notification could not be updated. Use Reboot Pi here, or reboot the system from Settings → System.";
-  $("test").disabled = busy || !ready;
+  $("test").disabled = busy || !ready || data.keep_awake;
   $("test").textContent = passed ? "Run test again" : "Run ten-minute test";
   $("test").hidden = data.test_status === "awaiting_confirmation";
   $("confirm-test").hidden = data.test_status !== "awaiting_confirmation";
@@ -374,8 +375,13 @@ function render(data) {
   renderAssist(data, busy);
   renderOverview(data);
   $("countdown").hidden = !data.pending;
-  $("cancel").hidden = Boolean(data.pending?.emergency);
-  $("cancel").textContent = data.pending?.kind === "ups" ? "Cancel this retry" : "Keep Pi awake";
+  $("awake-state").textContent = data.keep_awake ? "Keep awake is on · all app shutdowns and reboots, including emergency UPS shutdowns, are suspended." : "Your saved Calendar and UPS settings control shutdowns.";
+  $("keep-awake").textContent = data.keep_awake ? "Resume shutdowns" : "Keep awake";
+  $("keep-awake").disabled = loading || data.shutdown_requested || Boolean(data.storage_notice);
+  $("keep-awake").setAttribute("aria-pressed", Boolean(data.keep_awake));
+  $("cancel").hidden = false;
+  $("cancel").textContent = "Keep awake";
+  $("cancel").disabled = loading || data.shutdown_requested;
   if (data.pending) {
     $("countdown-title").textContent = "Shutting down in " + data.pending.remaining_seconds + " seconds";
     $("countdown-wake").textContent = data.pending.wake_epoch ? "Wake time: " + dateText(data.pending.wake_epoch) + ". Home Assistant will be offline until the Pi returns." : "Final shutdown · no timed wake. Restart may require restored UPS output, a power cycle, or the Pi's power button.";
@@ -428,7 +434,13 @@ $("connect-assist").onclick = async () => {
 };
 $("assist-form").addEventListener("input", () => { assistDirty = true; $("assist-unsaved").hidden = false; });
 $("assist-form").onsubmit = event => { event.preventDefault(); act("assist-settings", {enabled: $("assist-enabled").checked, allow_requests: $("assist-requests-enabled").checked}); };
-$("cancel").onclick = () => act("cancel");
+async function toggleKeepAwake() {
+  const active = !status.keep_awake;
+  const message = active ? "Suspend every shutdown and reboot from this app, including emergency low-battery UPS shutdowns. This stays on until you resume, even after an app restart. Calendar dates and settings are kept. Other apps retain their own power controls." : "Resume your saved Calendar and UPS settings. Normal setup and fresh-reading checks still apply. Low UPS reserve may trigger an immediate shutdown.";
+  if (await confirmAction(active ? "Keep awake?" : "Resume shutdowns?", message, active ? "Keep awake" : "Resume shutdowns", active && status.recovery.settings.enabled)) await act("keep-awake", {active, confirmed: true});
+}
+$("cancel").onclick = toggleKeepAwake;
+$("keep-awake").onclick = toggleKeepAwake;
 $("scan-ups").onclick = () => act("scan-ups");
 $("scan-messages").onclick = () => act("scan-messages");
 $("message-recipient").onchange = messageEdited;
