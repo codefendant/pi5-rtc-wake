@@ -28,7 +28,7 @@ from state import StateStore, UserError, atomic_json, validate_schedule
 from assist import Assistant, PORT as ASSIST_PORT
 from assist_http import AssistHandler
 
-VERSION = "0.8.0-rc.1"
+VERSION = "0.8.0-rc.2"
 LOG = logging.getLogger("pi5_rtc_wake")
 COUNTDOWN = 30
 TEST_SECONDS = 600

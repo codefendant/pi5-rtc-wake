@@ -2,11 +2,11 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.8.0-rc.1 · Public preview · MIT license**
+**0.8.0-rc.2 · Public preview · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-This preview adds optional tools for your existing Home Assistant AI conversation agent. See [ASSIST.md](ASSIST.md) for screen-only setup and supported requests. The [0.8.0-rc.1 public preview](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.8.0-rc.1) and matching arm64 image are published. See [VALIDATION.md](VALIDATION.md) for observed results and [PUBLICATION.md](PUBLICATION.md) for the publishing process.
+This preview fixes Connect Assist failing to find Home Assistant's configuration folder. Update the same app, Stop and Start it, and select Connect Assist again. See [ASSIST.md](ASSIST.md) for screen-only setup and supported requests, [VALIDATION.md](VALIDATION.md) for observed results, and [PUBLICATION.md](PUBLICATION.md) for the publishing process. Publication of the 0.8.0-rc.2 image is pending verification.
 
 ## Install and set up
 

@@ -1,3 +1,13 @@
+# Validation — 11 October 2026, 0.8.0-rc.2
+
+The maintainer's rc.1 screenshots show Connect Assist failing before installation with "Home Assistant's configuration folder is not available." Supervisor maps `homeassistant_config` to `/homeassistant` by default, while the installer expected `/homeassistant_config`. The app now explicitly sets the mount path, and failed setup shows the error and next action in the Assist connection summary.
+
+Verification and publication are pending. A new regression checks that the missing folder leaves settings and credentials untouched, reports the failure, releases the operation lock, and permits a successful retry. The actual Core CI check now parses the published app YAML and checks the explicit writable mount against the installer before running its simulated app/native-interface checks. This contract check would reject rc.1's missing path.
+
+A live HAOS companion installation and actual AI/voice conversation remain unobserved. This repair preserves schema 8 and existing Calendar, UPS, phone, wake-test, and Assist settings. Existing physical-operation and UPS recovery limits below remain applicable.
+
+Sources: [Supervisor container mapping](https://github.com/home-assistant/supervisor/blob/main/supervisor/docker/app.py), [Supervisor mount tests](https://github.com/home-assistant/supervisor/blob/main/tests/docker/test_app.py), and [app configuration path override](https://developers.home-assistant.io/docs/apps/configuration/).
+
 # Validation — 10 October 2026, 0.8.0-rc.1
 
 Verification and publication succeeded. **326 simulated backend tests**, JavaScript syntax, Python compilation, DOM interactions, and RTC ABI checks pass. New cases cover read-only defaults, no secrets in tool/UI responses, authenticated API boundaries, unsupported approval/firmware routes, precise time-zone offsets, expiry, restart/migration, live revocation, approval-time Calendar checks, read-back after a timeout, truthful uncertain-save results, no duplicate writes, queued emergency preparation and low-battery protection, supported-host reboot guards, and safe companion installation.

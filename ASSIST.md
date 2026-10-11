@@ -6,11 +6,11 @@ Requires **Home Assistant Core 2026.10 or newer** and a model that supports tool
 
 ## Connect through Home Assistant screens
 
-1. Update the **same installed Pi 5 Wake & Sleep app** to **0.8.0-rc.1** and reload its Web UI.
+1. Update the **same installed Pi 5 Wake & Sleep app** to **0.8.0-rc.2** and reload its Web UI. If upgrading from rc.1, Stop and then Start the app to apply the corrected configuration-folder mapping.
 2. Open **Assist → Connect Assist** and accept the explanation. It installs the companion and offers a connection through Home Assistant's authenticated Supervisor discovery. No address or token needs to be copied.
 3. If prompted, restart **Home Assistant** from **Settings → System** to load the companion. A Pi reboot is not required.
 4. Open **Settings → Devices & services**, find the discovered **Pi Wake & Sleep** integration, and select **Add/Configure**. Confirm the connection.
-5. Open your existing AI integration's settings, such as **Ollama**, and select **Assist** under **Control Home Assistant**. Use that agent in your existing voice assistant or Assist chat.
+5. Open your existing AI integration's settings, such as **Ollama**, and select **Assist** under **Control Home Assistant**. If other custom APIs are already selected, keep them selected alongside Assist. Use that agent in your existing voice assistant or a new Assist chat.
 6. Ask: **“When will the Home Assistant Pi next shut down and wake?”** Compare the answer with Overview.
 
 Connecting starts with **status only**. To use controls, enable **Allow Assist change requests and countdown cancellation** in the app and save. These settings are consent for the app's tools; keep using Home Assistant's exposed-entities settings for household temperatures, lights, and other readings.
@@ -50,7 +50,8 @@ The app mounts Home Assistant's configuration folder for installation of its fix
 ## Connection help
 
 - **Core update needed:** use Settings → System → Updates, then try Connect Assist again.
-- **Configuration folder unavailable after updating:** Stop and then Start the app, reopen Assist, and try again.
+- **Configuration folder unavailable on 0.8.0-rc.1:** update the same app to **0.8.0-rc.2**. This fixes an app folder-mapping error. Stop and then Start the app, reopen Assist, and select Connect Assist. Reinstalling the app or editing Home Assistant files is not required.
+- **Configuration folder still unavailable on 0.8.0-rc.2:** Stop and then Start the app to apply its updated mapping. Confirm the Web UI footer shows rc.2; if the error persists, contact the maintainer with the app version and displayed error.
 - **No discovered integration:** restart Home Assistant after installing the companion, keep the app running, wait for its discovery retry, and reopen Devices & services.
 - **AI answers without a tool call:** choose Assist in the AI integration's Control Home Assistant setting, confirm its model supports tools, and confirm your voice assistant uses that agent. Assist's debug/trace view shows tool calls.
 - **Change request refused:** enable and save change requests in the app, then review the requested action there.

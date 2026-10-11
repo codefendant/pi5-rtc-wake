@@ -74,6 +74,25 @@ class AssistTests(unittest.TestCase, Fixture):
         self.assertFalse(self.assist.installer.destination.exists())
         self.assertFalse(self.app.store.data["assist"]["enabled"])
 
+    def test_missing_config_folder_explains_failure_and_allows_reconnect(self):
+        self.config.rmdir()
+        settings = deepcopy(self.app.store.data)
+        with self.assertRaises(UserError) as error:
+            self.assist.connect({"confirmed": True})
+        self.assertIn("configuration folder", error.exception.message)
+        connection = self.assist.snapshot()["connection"]
+        self.assertIn(error.exception.message, connection)
+        self.assertIn(error.exception.action, connection)
+        self.assertNotIn("Select Connect Assist to begin", connection)
+        self.assertEqual(self.app.store.data, settings)
+        self.assertFalse(self.assist.secret_path.exists())
+        self.assertFalse(hasattr(self.supervisor, "assist_connection"))
+        self.config.mkdir()
+        self.assist.connect({"confirmed": True})
+        self.assertTrue(self.assist.installer.installed())
+        self.assertIn("Connection offered", self.assist.snapshot()["connection"])
+        self.assertTrue(self.app.store.data["assist"]["enabled"])
+
     def test_fresh_status_includes_uptime_timezone_and_active_dates(self):
         self.connect()
         self.supervisor.events[ENTITY] = [event(self.now + 3600, self.now + 7200)]
