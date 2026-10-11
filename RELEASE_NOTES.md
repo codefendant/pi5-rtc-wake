@@ -16,6 +16,6 @@ Requires Core **2026.10 or newer** and a model with tool support, such as a suit
 
 ## Verification scope
 
-The release workflow checks simulated backend behavior, Chromium interactions, the published YAML mount against the installer, actual Home Assistant 2026.10.1 discovery/platform/tool loading, the arm64 build, and a fresh anonymous image pull. A real HAOS Connect Assist installation and AI/voice response still need confirmation on the user's Pi after updating. No automated check reboots or shuts down real hardware or sends a phone notification.
+[Publishing run 38100690381](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38100690381) passed all 327 simulated backend tests, Chromium interactions, the published YAML mount contract, actual Home Assistant 2026.10.1 discovery/platform/tool loading, the arm64 build, and a fresh anonymous image pull with production imports and version verification. A real HAOS Connect Assist installation and AI/voice response still need confirmation on the user's Pi after updating. No automated check reboots or shuts down real hardware or sends a phone notification.
 
 Existing UPS long-outage recovery limits remain documented in [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md).

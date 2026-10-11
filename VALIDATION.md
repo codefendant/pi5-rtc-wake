@@ -2,7 +2,13 @@
 
 The maintainer's rc.1 screenshots show Connect Assist failing before installation with "Home Assistant's configuration folder is not available." Supervisor maps `homeassistant_config` to `/homeassistant` by default, while the installer expected `/homeassistant_config`. The app now explicitly sets the mount path, and failed setup shows the error and next action in the Assist connection summary.
 
-Verification and publication are pending. A new regression checks that the missing folder leaves settings and credentials untouched, reports the failure, releases the operation lock, and permits a successful retry. The actual Core CI check now parses the published app YAML and checks the explicit writable mount against the installer before running its simulated app/native-interface checks. This contract check would reject rc.1's missing path.
+Verification and publication succeeded. **327 simulated backend tests**, DOM/syntax and RTC ABI checks, Chromium, the explicit published mount contract, actual Home Assistant 2026.10.1 native-interface checks, arm64 build, and public download/import checks passed. The missing-folder regression leaves settings and credentials untouched, reports the failure, releases the operation lock, and permits a successful retry. The actual Core CI check parses the published YAML and checks the explicit writable mount against the installer before using simulated app services; it rejects rc.1's omitted path.
+
+- Candidate [38100537674](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38100537674) passed all required checks at `d9272d12c885d3a7d4a912d4bb62f29f6df33e74`.
+- Publishing [38100690381](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38100690381) passed every verification/publication gate at `b265189f30a849f6cffc36dec9f1b35ad0ae1441`, tree `62b38c3653e8aefe2e7efb0e735d7de7db7c439d`, identical to the candidate source tree.
+- [v0.8.0-rc.2](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.8.0-rc.2) is non-draft and marked pre-release, published at **01:08:44 UTC on 11 October 2026**. Its tag points to that verified release commit.
+- The pushed and anonymously pulled rc.2 image digest matches: `sha256:567344c9edb2b095e1c1b28459947bb72337bbc1b0b6a94e4b3d71ceec826225`. The pull used an empty Docker configuration, then checked arm64, production imports, and server.VERSION.
+- The preceding rc.1 tag remains `d6b42c83617cd3334513532807b7621b60b92a56`.
 
 A live HAOS companion installation and actual AI/voice conversation remain unobserved. This repair preserves schema 8 and existing Calendar, UPS, phone, wake-test, and Assist settings. Existing physical-operation and UPS recovery limits below remain applicable.
 

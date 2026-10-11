@@ -6,7 +6,7 @@ Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assista
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-This preview fixes Connect Assist failing to find Home Assistant's configuration folder. Update the same app, Stop and Start it, and select Connect Assist again. See [ASSIST.md](ASSIST.md) for screen-only setup and supported requests, [VALIDATION.md](VALIDATION.md) for observed results, and [PUBLICATION.md](PUBLICATION.md) for the publishing process. Publication of the 0.8.0-rc.2 image is pending verification.
+This preview fixes Connect Assist failing to find Home Assistant's configuration folder. Update the same app, Stop and Start it, and select Connect Assist again. See [ASSIST.md](ASSIST.md) for screen-only setup and supported requests, [VALIDATION.md](VALIDATION.md) for observed results, and [PUBLICATION.md](PUBLICATION.md) for the publishing process. The [0.8.0-rc.2 preview](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.8.0-rc.2) and matching public arm64 image are published and verified.
 
 ## Install and set up
 
