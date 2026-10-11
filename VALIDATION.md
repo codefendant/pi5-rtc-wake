@@ -2,7 +2,16 @@
 
 Local checks pass 402 simulated backend cases, JavaScript syntax, compilation, and the maintenance DOM fixture. New cases cover schema-10 migration, settings/backup preservation, no request on saving, next-boot-only enabling, recorded Calendar wakes, ordinary/test boot exclusion, startup delay and expiry, per-boot deduplication, uncertain responses across restart, stable entity identity, storage failures, fresh mains checks, post-request Ping observations, stale/restored/replaced Ping rejection, emergency interruption, power-lock isolation, and additive card migration/removal.
 
-The publication workflow must additionally pass Chromium, actual Home Assistant 2026.10.1 registry/button/template/permission checks, arm64 build, and anonymous public image verification. This entry will record the candidate and publishing run identities when those checks finish. Physical target waking and a beginner's complete install/activation path remain untested here. UDP sending is patched in the actual Core test; Pi, UPS, and phone services are simulated.
+Publication is complete. The exact candidate and release source passed all required checks:
+
+- [Candidate workflow 38158194655](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38158194655) passed 402 backend cases, JavaScript/DOM and RTC ABI checks, Chromium desktop/mobile, actual Core 2026.10.1 checks, and arm64 build. Candidate commit `48a66a745000906bff9e99f8d773692fddc09cf7` has tree `8d1b26944b635e6a4996b78585c2d80d1d9301b1`.
+- [Publishing workflow 38158539646](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38158539646) passed the same checks, pushed the image, verified an anonymous download and production imports, and created the public preview. Release commit `4ef31171e7846262eb0e3a230105e12749bc045f` has the identical verified candidate tree.
+- [Published preview v0.10.0-rc.1](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.10.0-rc.1) is non-draft and marked pre-release, published at **17:14:39 UTC on 11 October 2026**. The tag points to the release commit above and is not moved by this documentation record.
+- Public image: `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.10.0-rc.1`; pushed and anonymously pulled digest `sha256:15bd26df280afef6c1b15fcf7cb41ea270e8a59193215a2885145703b86d4fec`.
+
+Chromium covers device discovery, choosing a Ping sensor, draft/detail persistence, refresh with choices retained, no packet on saving or cancelled consent, one manual request with fresh reachability confirmation, explicit automatic enablement, administrator controls, and mobile fit. Desktop and mobile screenshots were inspected. Actual Core covers the native Wake on LAN config flow, registry identity, fixed button.press service, disabled-button rejection, last-reported Ping templates, additive layout upgrade, and non-admin option/wake denial, in addition to the existing Calendar/Assist checks.
+
+Physical target waking and a beginner's complete install/activation path remain untested here. UDP sending is patched in the actual Core test; Pi, UPS, phone, and the browser's Home Assistant chrome are simulated.
 
 The new feature is disabled on upgrade. Calendar remains the planned-date store, with a historical submitted Calendar shutdown receipt used to recognize the corresponding boot. Device requests run in a separate worker and cannot occupy the RTC/UPS network worker. Existing shutdown behavior is retained; recording an optional device-wake receipt cannot cancel the Pi's verified RTC alarm.
 
