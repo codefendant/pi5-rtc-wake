@@ -512,6 +512,7 @@ class Recovery:
             app.shutdown_requested_at = app.monotonic()
             if not pending.get("urgent"):
                 self.notice()
+            app.wake_devices.other_power_action()
             app.supervisor.shutdown()
             app.pending = None
             app.message = {"text": session["message"], "action": "Leave the UPS connected.", "error": False}

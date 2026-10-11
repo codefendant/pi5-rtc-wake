@@ -224,7 +224,7 @@ async def check():
                 assert not denied["success"] and denied["error"]["code"] == "unauthorized", denied
                 await socket.close()
                 assert fixture.supervisor.reboots == 0
-            print("Real Core passed: dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, and non-admin power/Keep awake denial.")
+            print("Real Core passed: dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, native Wake on LAN flow/registry/button with UDP patched, Ping last-reported template, additive layout upgrade, and non-admin power/device-option/wake denial.")
     finally:
         await hass.async_stop(force=True)
         server.shutdown()

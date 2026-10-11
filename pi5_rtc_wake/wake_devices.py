@@ -170,11 +170,24 @@ class WakeDevices:
         """Historical receipt only: all future date editing remains in Calendar."""
         trace = deepcopy(self.trace)
         trace["receipt"] = {"boot_id": self.app.host.boot_id(), "wake_epoch": pending["wake_epoch"]}
+        trace["boot"] = {"boot_id": self.app.host.boot_id(), "phase": "shutdown"}
         try:
             self._persist(trace)
         except OSError:
             self.result = {"message": "This scheduled wake could not be recorded for other devices.",
                            "action": "Check the app's storage. The Pi's own wake alarm is unchanged.", "error": True}
+
+    def other_power_action(self):
+        """An app test, reboot, or UPS stop supersedes any Calendar receipt."""
+        trace = deepcopy(self.trace)
+        trace["receipt"] = {}
+        trace["boot"] = {"boot_id": self.app.host.boot_id(), "phase": "other_power_action"}
+        try:
+            self._persist(trace)
+        except OSError:
+            self.storage_error = True
+            self.result = {"message": "Device wake history could not be updated. Automatic waking is paused.",
+                           "action": "Review and save device settings when the Pi is running again.", "error": True}
 
     def _read(self):
         return states_by_id(self.app.supervisor.message_states()), self.app.supervisor.wake_metadata()
@@ -263,7 +276,8 @@ class WakeDevices:
                 return
             receipt = self.trace["receipt"]
             boot_epoch = self.app.host.boot_epoch(self.app.clock())
-            scheduled = (receipt.get("boot_id") != boot and type(receipt.get("wake_epoch")) is int
+            scheduled = (receipt.get("boot_id") != boot and receipt.get("boot_id") == self.trace["boot"].get("boot_id")
+                         and type(receipt.get("wake_epoch")) is int
                          and -30 <= boot_epoch - receipt["wake_epoch"] <= 300)
             if not (settings["after_every_boot"] or settings["after_scheduled_wake"] and scheduled):
                 self._boot_claim("skipped")

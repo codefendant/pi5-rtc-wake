@@ -22,6 +22,6 @@ Do not uninstall or restore default cards. Schema 11 preserves existing settings
 
 ## Verification and scope
 
-400 simulated backend cases pass locally, with JavaScript syntax and maintenance UI logic checks. Publication also requires Chromium desktop/mobile checks, actual Home Assistant 2026.10.1 registry/button/template and admin-boundary checks, an arm64 image build, and anonymous public image/import verification. Network packet sending is patched in the real Core check; no physical computer was woken during automated tests.
+402 simulated backend cases pass locally, with JavaScript syntax and maintenance UI logic checks. Publication also requires Chromium desktop/mobile checks, actual Home Assistant 2026.10.1 registry/button/template and admin-boundary checks, an arm64 image build, and anonymous public image/import verification. Network packet sending is patched in the real Core check; no physical computer was woken during automated tests.
 
 This remains a public preview. Test the chosen computers and Ping sensors on your own network before relying on automatic waking. This feature adds no remote shutdown, PoE switching, or external RTC support. See [WAKE_DEVICES.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/WAKE_DEVICES.md), [UPDATE.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/UPDATE.md), and [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md).

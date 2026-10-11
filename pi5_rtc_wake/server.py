@@ -641,6 +641,8 @@ class Application:
             # Supervisor handles graceful host shutdown, without forcing a DB migration.
             if pending["kind"] == "schedule":
                 self.wake_devices.scheduled_shutdown(pending)
+            else:
+                self.wake_devices.other_power_action()
             self.pending["shutdown_requested"] = True
             self.shutdown_requested_at = self.monotonic()
             self.supervisor.shutdown()
@@ -746,6 +748,7 @@ class Application:
                     if serial != self.cancel_serial or self.store.data["keep_awake"]:
                         return True
                     self.shutdown_requested_at = self.monotonic()
+                    self.wake_devices.other_power_action()
                     self.supervisor.reboot()
             elif kind == "ups":
                 self.recovery.start(serial, payload["retry"], payload["reason"], payload.get("emergency", False))

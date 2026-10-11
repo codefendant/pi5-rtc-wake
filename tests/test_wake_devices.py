@@ -143,6 +143,25 @@ class WakeDeviceTests(unittest.TestCase, Fixture):
         self.assertEqual(self.worker.trace["last_run"]["trigger"], "Calendar wake")
         self.assertEqual(set(self.worker.trace["receipt"]), {"boot_id", "wake_epoch"})
 
+    def test_test_reboot_or_ups_action_supersedes_a_calendar_receipt(self):
+        self.save(enabled=True)
+        self.worker.scheduled_shutdown({"wake_epoch": self.now + 600})
+        self.worker.other_power_action()
+        self.advance(600)
+        self.next_boot()
+        self.worker.poll_boot()
+        self.assertEqual(self.supervisor.wake_buttons, [])
+
+    def test_old_calendar_receipt_cannot_match_after_an_intervening_manual_boot(self):
+        self.save(enabled=True)
+        self.worker.scheduled_shutdown({"wake_epoch": self.now + 600})
+        self.next_boot()
+        self.worker.poll_boot()
+        self.advance(539)
+        self.next_boot()
+        self.worker.poll_boot()
+        self.assertEqual(self.supervisor.wake_buttons, [])
+
     def test_early_or_late_boot_does_not_match_scheduled_receipt(self):
         self.save(enabled=True)
         self.worker.scheduled_shutdown({"wake_epoch": self.now + 600})
