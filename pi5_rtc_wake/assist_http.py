@@ -1,4 +1,4 @@
-"""Private, authenticated companion API; it has no approval or firmware endpoints."""
+"""Private, authenticated companion API for native cards and Assist."""
 
 from http.server import BaseHTTPRequestHandler
 import json
