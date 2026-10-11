@@ -1,3 +1,11 @@
+# 0.9.0-rc.4
+
+- Make the native dashboard the main interface for every feature; reduce the app Web UI to Setup & maintenance and rename its optional sidebar shortcut.
+- Move full UPS commissioning, conditional retry requirements, emergency-disable/enable confirmations, status/attempts, and pause-timed-retries into the UPS card. Retain active readings, disabled NUT sensors, refresh, and device links.
+- Open phone settings automatically after discovery; add all/category readings, draft preview, and discovery refresh with unsaved choices retained.
+- Hide connection instructions only with recent authenticated companion contact; retain repair, protection-mode guidance, diagnostics, and persistent support dropdowns. Point companion/Assist errors to the current repair screen.
+- Preserve schema 10, every existing power-policy guard, Keep awake, Calendar dates, feature choices, qualified wake evidence, outage state, and personal cards. Add simulated backend connection and browser onboarding/settings regressions.
+
 # 0.9.0-rc.3
 
 - Make Keep awake persistently suspend every app shutdown and reboot, including Calendar dates, UPS retries, emergency UPS shutdowns, wake tests, and reviewed AI power operations. Resume shutdowns restores saved choices without erasing dates or wake evidence.

@@ -102,6 +102,7 @@ async def check():
 
                 status = await command("pi5_rtc_wake/status", entry_id=entry.entry_id)
                 assert status["test_status"] == "passed" and not status["enabled"]
+                assert status["dashboard"]["active"], "Authenticated companion contact must be visible to setup UI"
                 assert "csrf" not in status and owner._secret() not in json.dumps(status)
                 original_schedule = dict(status["schedule"])
                 await command("pi5_rtc_wake/action", entry_id=entry.entry_id, action="keep-awake", payload={"active": True, "confirmed": True})
@@ -112,7 +113,7 @@ async def check():
                 assert not (await command("pi5_rtc_wake/status", entry_id=entry.entry_id))["keep_awake"]
                 resources = await command("lovelace/resources/list")
                 resource = await command("lovelace/resources/create", res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=test")
-                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.9.0-rc.3")
+                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.9.0-rc.4")
                 await command("lovelace/dashboards/create", url_path="pi-wake-sleep", title="Pi Wake & Sleep", icon="mdi:power-sleep", show_in_sidebar=True, require_admin=False)
                 config = starter_config(entry.entry_id)
                 await command("lovelace/config/save", url_path="pi-wake-sleep", config=config)

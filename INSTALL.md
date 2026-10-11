@@ -1,58 +1,53 @@
 # Install Pi 5 Wake & Sleep
 
-**Public preview 0.9.0-rc.3.** You need Home Assistant OS 18 or newer on a Raspberry Pi 5, Core 2026.10 or newer for the dashboard, and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
+**Public preview 0.9.0-rc.4.** Use Home Assistant OS 18 or newer on a Raspberry Pi 5, Home Assistant Core 2026.10 or newer, and a main power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
 
-After installation, select **Connect dashboard** in the Web UI. Restart Home Assistant if requested and add the discovered **Pi Wake & Sleep** integration in Devices & services. The sidebar dashboard provides guided setup, **Create Pi Sleep calendar**, and editable cards. An existing Assist companion is reused. See [DASHBOARD.md](DASHBOARD.md) for the screen-by-screen path. The detailed app controls below remain in **Pi Wake & Sleep settings**.
+## Install once
 
-The repository and matching arm64 image are public. The installation image passed its anonymous-download and production-import checks. Use the link below to add the repository.
+1. Open [Add to Home Assistant](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake), confirm the repository, and install **Pi 5 Wake & Sleep** from the app store.
+2. On the app's Info page, turn **Protection mode off**, enable **Start on boot**, and select **Start**. If it was already running with Protection mode on, use **Stop → turn Protection mode off → Start**.
+3. Select **Open Web UI**. This opens **Setup & maintenance**. Select **Connect dashboard** and confirm.
+4. Restart **Home Assistant** from **Settings → System** if requested. This connection step needs a Home Assistant restart, not a Pi reboot.
+5. Open **Settings → Devices & services** and add the discovered **Pi Wake & Sleep** integration. An existing Assist companion is reused.
+6. Open **Pi Wake & Sleep** in the sidebar. Continue Pi setup and activate the features you want on its cards.
 
-## Install
+No terminal, YAML, personal API token, extra card download, or AI account is needed. The dashboard works with AI access off. If the repository link cannot open your Home Assistant, use the app store's **⋮ → Repositories** to add `https://github.com/codefendant/pi5-rtc-wake`, then **⋮ → Check for updates**.
 
-1. Open [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake). Select your Home Assistant and add the repository.
-2. Open **Settings → Apps → App store**, find **Pi 5 Wake & Sleep**, and select **Install**. Older versions call Apps **Add-ons**.
-3. On the app's **Info** page, turn off **Protection mode**. Enable **Start on boot** and **Show in sidebar**, then select **Start**.
-4. Select **Open Web UI** or open **Pi Wake & Sleep** from the sidebar.
+The app's separate sidebar shortcut is optional. Once the dashboard works, you can turn off **Show in sidebar** on the app's Info page. **Setup & maintenance** remains available through **Open Web UI** and the dashboard's setup area. Keep Protection mode off during normal use: it grants access to wake settings and the RTC; a firmware update does not grant those permissions.
 
-Keep this app's **Protection mode off** during use. It needs access to the Pi's wake settings and built-in RTC hardware; updating firmware does not grant that access. Each installation has its own Protection mode setting. If you started the app with it on, select **Stop**, turn it off, then select **Start** and **Setup → Check again**.
+## Confirm this Pi can wake
 
-If the link cannot open your Home Assistant, open the app store's **⋮ → Repositories**, add `https://github.com/codefendant/pi5-rtc-wake`, then select **⋮ → Check for updates** and look for the app again.
+1. The dashboard's setup card checks **Permissions → Pi checks → Wake test**. Follow the next action beside a failed check. Home Assistant handles firmware version updates.
+2. Select **Prepare this Pi** only if requested, then the red **Reboot Pi** button if requested. Keep power connected and wait for Home Assistant to return.
+3. Run the **ten-minute wake test**, wait for Home Assistant to return, and confirm whether it returned by itself.
+4. If it did not return automatically, leave timed scheduling disabled and follow the setup guidance.
 
-## Confirm that this Pi can wake
-
-1. Open **Setup** and wait for the checks. Follow the next action beside any failed check. If firmware needs updating, use Home Assistant's normal update screen, reboot, and return.
-2. If requested, select **Prepare Pi for wake**. When complete, select the red **Reboot Pi** button and wait for Home Assistant to return.
-3. Run the **ten-minute wake test**. Home Assistant shuts down for the test; wait for the Pi to wake and Home Assistant to return.
-4. Confirm the successful wake in the app. If it did not wake automatically, leave scheduling disabled and follow Setup's instructions.
+Completed setup becomes **Pi ready · Wake test passed**. **Review setup** opens it again; **Back to dashboard** closes it. A later readiness problem brings guidance back.
 
 ## Add dates and repeating times
 
-1. Open **Settings → Devices & services → Add integration → Local Calendar** in Home Assistant. Create a dedicated calendar, such as **Pi Sleep**.
-2. Return to the app's **Calendar** section, select **Check again**, choose that calendar, and save.
-3. Select **Open Home Assistant Calendar**. Add a timed event with **All day** off. Set **start** to shutdown and **end** to wake. For 11 PM to 7 AM, the end date is the following day. Use Calendar's repeat options for recurring times.
-4. Return to the app, select **Check again**, and review the upcoming off periods. Enable scheduling and save.
+1. On the Calendar card, select **Create Pi Sleep calendar**, or **Choose existing calendar**. Creating a calendar leaves scheduling off.
+2. Open Calendar and add a timed event with **All day off**. Event **start = shutdown**, **end = wake**. For an overnight period, choose the following day as the end date. Use Home Assistant's repeat options for recurring times.
+3. Review the upcoming list, then select **Enable scheduling** and confirm.
 
-Events must last ten minutes to seven days and must not overlap or touch. All dates and repeat rules stay in Home Assistant Calendar. Use the same Calendar to edit or delete them.
+Periods must last ten minutes to seven days and must not overlap or touch. All dates and repeat rules remain in Home Assistant Calendar. Select a listed period to open its native Calendar view and edit it there.
 
-## Optional UPS features
+**Keep awake** suspends every shutdown and reboot from this app, including future Calendar dates and emergency UPS shutdowns, until **Resume shutdowns**. Dates and feature choices are kept. Independent NUT/Home Assistant shutdowns remain outside this app's control.
 
-If you already have a working NUT server and Home Assistant's NUT integration, open **UPS → Find power sources**, select the UPS supplying this Pi, and save. You can enable power notices and additional NUT readings there. Follow the app's messages if enabling a sensor requires a reload or Home Assistant restart.
+## Activate optional features on the dashboard
 
-Shutdown protection starts disabled. Before enabling it, read [UPS_RECOVERY.md](UPS_RECOVERY.md) and complete the runtime and shutdown-ownership checks shown in the app. This release does not switch UPS output back on after a final shutdown.
+- **UPS power:** With a working NUT server and Home Assistant NUT integration, select **Find my UPS**, then **Choose UPS**, and save the source supplying this Pi. Enable wanted NUT readings on this card. **Set up protection** opens runtime, ownership, reserve, and retry settings on the dashboard. Automatic protection starts off; review [UPS_RECOVERY.md](UPS_RECOVERY.md) before enabling it.
+- **Messages:** Connect the Home Assistant Companion app on your phone and allow notifications. Select **Choose phone**; discovery opens the settings automatically. Select a phone and up to twelve readings, preview the draft, save, and confirm **Send status now** to check delivery. Automatic messages after Pi boot are separately enabled. See [PHONE_MESSAGES.md](PHONE_MESSAGES.md).
+- **Assist:** Select **Connect Assist** on its card to enable status access. In your existing AI integration, such as local Ollama, choose **Assist** under **Control Home Assistant**. Change requests are separately enabled and require approval on the dashboard. See [ASSIST.md](ASSIST.md).
 
-## Optional phone messages
-
-Install/open the Home Assistant Companion app on your phone and allow notifications. In **Messages**, select **Find phones and readings**, choose your phone, optionally choose up to twelve readings, and save. **Preview message** sends nothing; **Send status now** lets you check actual delivery. Every message includes uptime and the next shutdown/wake times. Enable **Send a message after this Pi starts** and save for the next Pi boot. Messages start off and app restarts do not duplicate a wake message. See [PHONE_MESSAGES.md](PHONE_MESSAGES.md).
-
-## Optional Home Assistant AI interaction
-
-Requires Home Assistant Core **2026.10 or newer** and an existing AI conversation agent with tool support, such as local Ollama. Open **Assist → Connect Assist**, restart Home Assistant if requested, and add the discovered **Pi Wake & Sleep** integration in Devices & services. Choose **Assist** in your AI integration's **Control Home Assistant** setting. Status access starts on; change requests start off. Approved dates stay in Home Assistant Calendar. Follow [ASSIST.md](ASSIST.md) for the screen-by-screen steps and examples.
+Use **Edit dashboard → Add card** to add your own pictures, graphs, and other Home Assistant cards. Settings, valid wake evidence, and personal cards are kept through ordinary updates. [DASHBOARD.md](DASHBOARD.md) explains every card.
 
 ## Already using the local ZIP installation?
 
-You can keep your tested local app. Adding this public repository does not automatically move its settings. The public app is a separate installation.
+The public app is a separate installation. Adding its repository does not move settings from a local app.
 
-1. Leave the local app installed, but **stop it and turn off its Start on boot before starting the public app**. Run only one Wake & Sleep app at a time.
-2. Install the public app using the steps above. Complete its checks/wake confirmation and reselect your existing Calendar, UPS, and preferences. Your Calendar dates remain in Home Assistant.
-3. Verify the upcoming list and protection settings before enabling scheduling or UPS control. Future updates use Home Assistant's normal Update button.
+1. Keep the local app installed, but **stop it and turn off Start on boot before starting the public app**. Run only one Wake & Sleep app at a time.
+2. Install the public app, complete its checks/wake confirmation, and reselect the existing Calendar, UPS, and preferences. Calendar dates remain in Home Assistant.
+3. Review dates and protection settings before enabling automatic control. Future updates use Home Assistant's Update button on the same app.
 
-Do not uninstall an existing app to update it; uninstalling can remove its stored settings. See [UPDATE.md](UPDATE.md).
+Do not uninstall an existing app to update it. See [UPDATE.md](UPDATE.md).

@@ -64,6 +64,7 @@ class Dashboard:
         self.operation_lock = threading.Lock()
         self.connection = "Connect the dashboard to begin."
         self.restart_needed = False
+        self.last_contact = None
         self.history_path = Path(data) / "activity.json"
         try:
             rows = json.loads(self.history_path.read_text())
@@ -83,6 +84,7 @@ class Dashboard:
 
     def snapshot(self):
         return {"connected": self.app.store.data["dashboard"]["connected"],
+                "active": self.last_contact is not None and self.app.monotonic() - self.last_contact < 90,
                 "connection": self.connection, "restart_needed": self.restart_needed,
                 "path": "/" + PATH, "activity": deepcopy(self.history)}
 
@@ -134,6 +136,10 @@ class Dashboard:
         return result
 
     def status(self):
+        # This endpoint is reached through the authenticated HA companion. A
+        # saved installation choice alone is not evidence of a live connection.
+        with self.app.lock:
+            self.last_contact = self.app.monotonic()
         result = self.app.snapshot()
         result.pop("csrf", None)
         result.update(protocol=1, **deepcopy(self.app.store.data["assist"]),

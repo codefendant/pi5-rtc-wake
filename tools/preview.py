@@ -44,6 +44,8 @@ def main():
             app.store.data["test"] = {"status": "passed", "fingerprint": app.checks.get("fingerprint")}
             app.save_settings({**app.store.data["schedule"], "calendar_entity_id": "calendar.demo_pi_sleep", "enabled": True})
             app.save_power_settings({"source_id": "hook:sensor.demo_local_power", "notifications": False, "low_battery_percent": 25})
+            app.dashboard.connect({"confirmed": True})
+            app.dashboard.ready({"entry_id": "demo-entry"})
             app.dashboard.record("Wake test passed. Calendar scheduling enabled for this simulated preview.")
         supervisor.ensure_dashboard("demo-entry")
 
@@ -77,6 +79,8 @@ def main():
                         raise ValueError()
                     request = json.loads(self.rfile.read(length))
                     if request["type"] == "pi5_rtc_wake/status":
+                        if app.store.data["dashboard"]["connected"] and app.dashboard.restart_needed:
+                            app.dashboard.ready({"entry_id": "demo-entry"})
                         result = app.dashboard.status()
                     elif request["type"] == "pi5_rtc_wake/entries":
                         result = [{"entry_id": "demo-entry", "title": "Home Assistant Pi"}]

@@ -47,7 +47,7 @@ class Installer:
         regular_path(self.destination)
         if not self.root.is_dir():
             raise UserError("Home Assistant's configuration folder is not available.",
-                            "Stop this app and start it again after updating, then select Connect Assist.")
+                            "Stop this app and start it again after updating, then use Maintenance and connection repair → Update / reconnect dashboard.")
         contents = {name: (self.bundle / name).read_bytes() for name in FILES}
         hashes = {name: digest(value) for name, value in contents.items()}
         try:
@@ -94,7 +94,7 @@ class Installer:
                 except OSError:
                     restored = False
             raise UserError("The Assist companion could not be installed.",
-                            "The previous files were restored. Check free disk space and try Connect Assist again." if restored else
+                            "The previous files were restored. Check free disk space and try Update / reconnect dashboard again." if restored else
                             "Some companion files could not be restored. Keep Assist off and contact the app maintainer.") from None
         return changed
 

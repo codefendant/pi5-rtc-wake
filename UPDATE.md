@@ -1,12 +1,18 @@
 # Update Pi 5 Wake & Sleep
 
-## 0.9 native dashboard preview
+## 0.9.0-rc.4 dashboard cleanup
 
-Update the same app to **0.9.0-rc.3**, then **Stop → Start**. Open its Web UI and select **Connect dashboard**. Restart **Home Assistant** if requested, and add the discovered companion in **Settings → Devices & services**. If Assist was already connected, the existing integration is reused. Open **Pi Wake & Sleep** in the sidebar; the app's entry is now **Pi Wake & Sleep settings**.
+1. Update the **same installed app** to **0.9.0-rc.4**, then **Stop → Start**.
+2. Open **Web UI → Maintenance and connection repair → Update / reconnect dashboard** and confirm.
+3. Restart **Home Assistant** if requested, then refresh the browser and open **Pi Wake & Sleep** in the sidebar. An existing companion is reused. Add the discovered integration in Devices & services only for a first connection.
 
-**0.9.0-rc.3** makes **Keep awake** a persistent suspension of all app shutdowns and reboots, including emergency UPS protection. **Resume shutdowns** restores your saved choices. The Pi status power icon uses the same switch. Dropdowns stay open during refresh, Calendar items open native Calendar editing, and verified NUT runtime can display while protection is off. Existing installations start with Keep awake off; no feature is silently enabled. Use **Connect dashboard** to update the bundled cards, restart Home Assistant if requested, then refresh the browser. Your existing layout updates in place; Restore default Pi cards is not needed.
+UPS protection settings now open on the UPS card. Calendar, UPS, Messages, Assist, and Pi controls are managed on the dashboard. The Web UI becomes **Setup & maintenance** for connection and diagnostics, and connected installations hide initial instructions. The optional app sidebar shortcut is renamed **Pi setup & maintenance**; you can turn off Show in sidebar on its Info page. This update keeps your sidebar preference.
 
-Calendar, UPS, phone, AI choices, and valid wake-test evidence are kept. Another physical wake test is needed only when firmware or wake settings changed. Dashboard setup does not enable optional power, messaging, or AI features. Later updates preserve personal cards. See [DASHBOARD.md](DASHBOARD.md).
+Scheduling and protection behavior are unchanged. Schema 10, Keep awake, Calendar dates, saved feature choices, qualified wake evidence, outage records, phones, AI permissions, and personal dashboard cards are kept. No optional feature is automatically enabled. Do not uninstall or Restore default Pi cards. Another physical wake test is needed only when firmware or wake settings changed. See [DASHBOARD.md](DASHBOARD.md).
+
+The earlier 0.9.0-rc.3 release introduced the persistent global **Keep awake / Resume shutdowns** switch, stable dropdowns, Calendar shortcuts, and runtime display while monitoring. Those changes are retained. Independent NUT/Home Assistant shutdowns remain outside this app's control.
+
+The current update path is above; the older sequences below describe the releases that introduced those features.
 
 ## Public repository installation
 
@@ -39,7 +45,7 @@ This update adds optional native AI tools in Assist. Overview, Calendar, UPS, Me
 
 Update the existing app; do not uninstall it. If Update is missing, confirm **config.yaml** in the shared app folder shows **0.8.0-rc.2**, then repeat Check for updates.
 
-After successful setup, the app opens **Overview**. Checks/preparation/test remain available in **Setup** and return when attention is required. Calendar and UPS forms are in their own sections; detailed readings and protection settings are collapsed.
+In the current dashboard, completed Pi setup collapses into a ready strip. Review setup opens checks/preparation/test. Calendar and UPS settings open on their cards; detailed readings remain collapsed until selected.
 
 ## Calendar is the schedule
 
@@ -65,4 +71,4 @@ An RTC retry needs continuous input power. A final stop does not promise a timed
 
 ## Compatibility
 
-Saved settings migrate to schema 8. Assist access starts off; schema 7 preferences are retained. Schema 6 settings keep their commissioned policy, Calendar/UPS selections, notices, wake evidence, and outage attempts; phone messages start off. An enabled 0.5 policy retains its preferences but requires shutdown-ownership review before protection resumes. Calendar events remain in Home Assistant. Changing Calendar pauses RTC retry qualification while emergency protection remains bound to the saved UPS. Changing the physical source requires new qualification and is blocked during a known outage. Older versions protect this newer format, so rollback requires a matching Home Assistant backup. Red reboot controls and the native notification remain.
+Current saved settings use schema 10. Legacy migrations retain preferences; Assist access starts off; schema 7 preferences are retained. Schema 6 settings keep their commissioned policy, Calendar/UPS selections, notices, wake evidence, and outage attempts; phone messages start off. An enabled 0.5 policy retains its preferences but requires shutdown-ownership review before protection resumes. Calendar events remain in Home Assistant. Changing Calendar pauses RTC retry qualification while emergency protection remains bound to the saved UPS. Changing the physical source requires new qualification and is blocked during a known outage. Older versions protect this newer format, so rollback requires a matching Home Assistant backup. Red reboot controls and the native notification remain.

@@ -21,7 +21,7 @@ def validate_connection(config, slug):
             or type(config.get("port")) is not int or config["port"] != PORT
             or type(config.get("protocol")) is not int or config["protocol"] != PROTOCOL
             or not isinstance(config.get("token"), str) or not re.fullmatch(r"[A-Za-z0-9_-]{43,128}", config["token"])):
-        raise HomeAssistantError("Reconnect Assist from the Pi Wake & Sleep app. The discovered connection is invalid.")
+        raise HomeAssistantError("Use Update / reconnect dashboard in the app Web UI’s Maintenance and connection repair. The discovered connection is invalid.")
     return {key: config[key] for key in ("host", "port", "protocol", "token")}
 
 
@@ -50,7 +50,7 @@ class Client:
                     raise ValueError()
                 if response.status != 200:
                     raise HomeAssistantError(" ".join(str(value.get(key, "")) for key in ("message", "action")).strip() or
-                                             "Reconnect Assist from the Pi Wake & Sleep app.")
+                                             "Use Update / reconnect dashboard in the app Web UI’s Maintenance and connection repair.")
                 return value
         except (aiohttp.ClientError, TimeoutError, ValueError, UnicodeError):
             raise HomeAssistantError("Pi Wake & Sleep is unavailable. Keep the Pi powered and check that its app is running.") from None
@@ -58,13 +58,13 @@ class Client:
     async def status(self):
         value = await self.call("/v1/status")
         if value.get("protocol") != PROTOCOL or any(type(value.get(key)) is not bool for key in ("enabled", "allow_requests")):
-            raise HomeAssistantError("Update the Pi Wake & Sleep companion using Connect Assist in the app, then restart Home Assistant.")
+            raise HomeAssistantError("Update the Pi Wake & Sleep companion using Update / reconnect dashboard in Setup & maintenance, then restart Home Assistant if requested.")
         return value
 
     async def dashboard_status(self):
         value = await self.call("/v1/dashboard")
         if value.get("protocol") != PROTOCOL or any(type(value.get(key)) is not bool for key in ("enabled", "allow_requests")):
-            raise HomeAssistantError("Update the companion using Connect dashboard in the app, then restart Home Assistant.")
+            raise HomeAssistantError("Update the companion using Update / reconnect dashboard in Setup & maintenance, then restart Home Assistant if requested.")
         return value
 
 

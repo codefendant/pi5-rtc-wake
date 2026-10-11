@@ -36,6 +36,26 @@ class DashboardTests(unittest.TestCase, Fixture):
         self.assertNotIn(self.app.assistant._secret(), json.dumps(self.app.dashboard.status()))
         self.assertNotIn("csrf", self.app.dashboard.status())
 
+    def test_saved_installation_is_not_a_live_connection_and_contact_expires(self):
+        self.app.dashboard.connect({"confirmed": True})
+        self.assertFalse(self.app.snapshot()["dashboard"]["active"])
+        self.assertTrue(self.app.dashboard.status()["dashboard"]["active"])
+        self.assertTrue(self.app.snapshot()["dashboard"]["restart_needed"])
+        self.app.dashboard.ready({"entry_id": "entry-a"})
+        self.assertFalse(self.app.snapshot()["dashboard"]["restart_needed"])
+        self.advance(90)
+        self.assertFalse(self.app.snapshot()["dashboard"]["active"])
+        self.assertTrue(self.app.store.data["dashboard"]["connected"])
+        self.assertTrue(self.app.dashboard.status()["dashboard"]["active"])
+
+    def test_live_connection_status_does_not_change_saved_feature_choices(self):
+        before = deepcopy(self.app.store.data)
+        self.app.dashboard.status()
+        self.app.dashboard.ready({"entry_id": "entry-a"})
+        self.assertEqual(self.app.store.data, before)
+        self.assertEqual(self.supervisor.shutdowns, 0)
+        self.assertEqual(self.supervisor.reboots, 0)
+
     def test_permissions_gate_precedes_firmware_and_host_inspection(self):
         with patch.object(self.supervisor, "app_info", return_value={"protected": True, "slug": "local_pi5_rtc_wake"}), \
              patch.object(self.host, "inspect") as inspect, patch.object(self.supervisor, "firmware_info") as firmware:

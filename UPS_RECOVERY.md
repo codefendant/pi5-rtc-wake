@@ -2,21 +2,21 @@
 
 Version 0.6 provides separate opt-in timed RTC retries and emergency low-battery protection for the **Pi running Home Assistant OS**. It requests graceful host shutdown. Verified timed wakes use the Pi 5 RTC and Home Assistant Calendar. It does not switch UPS outlets or send NUT shutdown/output commands.
 
-In 0.9.0-rc.3, the dashboard's **Keep awake** switch suspends **all** shutdowns from this app, including emergency UPS shutdowns. It survives restarts until **Resume shutdowns** restores the saved policy. It does not stop NUT or other apps from issuing independent shutdowns. This global switch is different from the existing **Pause timed retries** or Assist's current-countdown cancellation, which leave emergency protection active. See [DASHBOARD.md](DASHBOARD.md#keep-awake).
+Since 0.9.0-rc.3, the dashboard's **Keep awake** switch suspends **all** shutdowns from this app, including emergency UPS shutdowns. It survives restarts until **Resume shutdowns** restores the saved policy. It does not stop NUT or other apps from issuing independent shutdowns. This global switch is different from the existing **Pause timed retries** or Assist's current-countdown cancellation, which leave emergency protection active. See [DASHBOARD.md](DASHBOARD.md#keep-awake).
 
 ## Update first
 
-Follow UPDATE.md to replace the existing app with 0.6.0-rc.1. Your Calendar, NUT selection, notifications, settings, and wake evidence are preserved. New control starts **off**. An enabled older policy is paused until shutdown ownership is reviewed and saved in the UPS section. Update and review while utility power is available.
+Follow UPDATE.md to update the same app to 0.9.0-rc.4 and update its dashboard companion. Your Calendar, NUT selection, notifications, settings, and wake evidence are preserved. New control starts **off**. An enabled older policy is paused until shutdown ownership is reviewed and saved in the UPS section. Update and review while utility power is available.
 
 ## Home Assistant setup
 
-1. Open **UPS**. Confirm the saved power source is the UPS supplying this Pi and that fresh utility/battery readings appear.
-2. Expand **Additional NUT readings you can enable**. Enable **Battery runtime** if disabled, accept the confirmation, wait for readings to return, and select **Find power sources**. Home Assistant may reload NUT; follow the message if it requires a Home Assistant restart instead. The linked UPS device page is available as a fallback. Sensor changes are blocked during a known outage.
-3. Expand **Configure UPS protection**. Select the remaining **Battery runtime** reading. Low battery runtime, Minimum runtime to start, and startup/shutdown delays are different readings. A compatible hook supplies typed runtime automatically.
+1. Open the dashboard’s **UPS power** card. Confirm the saved power source is the UPS supplying this Pi and that fresh utility/battery readings appear.
+2. Expand **Enable additional NUT readings** on the card. Enable **Battery runtime** if disabled, accept the confirmation, wait for readings to return, and select **Refresh UPS readings**. Home Assistant may reload NUT; follow the message if it requires a Home Assistant restart instead. The linked UPS device page is available as a fallback. Sensor changes are blocked during a known outage.
+3. Select **Set up protection** or **Protection settings** on the same card. Select the remaining **Battery runtime** reading. Low battery runtime, Minimum runtime to start, and startup/shutdown delays are different readings. A compatible hook supplies typed runtime automatically.
 4. Review **Who shuts down this Pi?** and any other controllers. For timed retries, turn off the community NUT app's **Host shutdown** option and restart NUT. Confirm that review on this screen. See the ownership limits below.
 5. For timed retries, select a dedicated writable Local Calendar in **Calendar**, retain **Allow timed RTC retries during an outage**, and confirm a wake test on this exact continuous UPS supply path. Normal Calendar scheduling can be off while UPS protection is enabled.
 6. Review the runtime requirement table. Early shutdown is optional under **Advanced recovery settings**. Keep emergency protection enabled if you want a graceful low-battery stop even when timed retries are paused. For emergency protection only, uncheck timed retries; RTC and Calendar readiness are then unnecessary.
-7. Confirm the final-stop limit, enable **Automatic UPS protection**, select **Save UPS recovery**, and accept the enable confirmation while utility power is available.
+7. Confirm the final-stop limit, enable **Automatic UPS protection**, select **Save UPS protection**, and accept the enable confirmation while utility power is available.
 
 Emergency protection is qualified against the saved UPS/device identity and reviewed shutdown ownership. RTC retries also require the selected Calendar and current confirmed Pi wake settings. Changing Calendar or losing RTC readiness pauses retries while commissioned emergency protection remains active for the same UPS. Changing UPS turns control off and requires new qualification; source changes are blocked during a known outage. A separate ten-minute test turns normal scheduling and UPS control off; review and re-enable afterward.
 
