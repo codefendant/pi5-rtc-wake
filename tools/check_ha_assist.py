@@ -21,14 +21,33 @@ from homeassistant.config_entries import SOURCE_HASSIO, ConfigEntryState
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.helpers import llm
 from homeassistant.helpers.service_info.hassio import HassioServiceInfo
+from homeassistant.util import yaml as yaml_util
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_assist import AssistTests
 from assist_http import AssistHandler
+from assist_install import Installer
+
+
+def check_companion_mapping():
+    """The published app must mount Core's folder where the installer writes.
+
+    Supervisor defaults homeassistant_config to /homeassistant, so omitting
+    path does not satisfy the installer even when the map type is correct.
+    """
+    config = yaml_util.load_yaml(str(ROOT / "pi5_rtc_wake" / "config.yaml"))
+    mappings = config["map"]
+    core = [item for item in mappings if item["type"] == "homeassistant_config"]
+    assert len(core) == 1, "Map exactly one Home Assistant configuration folder"
+    assert core[0].get("path") == str(Installer(ROOT).root), "Mount and installer paths must match explicitly"
+    assert core[0].get("read_only") is False, "Companion installation needs a writable configuration mount"
+    assert not any(item["type"] == "config" for item in mappings), "Legacy config mapping overrides homeassistant_config"
+    print("Published app configuration passed: explicit writable Core folder matches the companion installer.")
 
 
 async def check():
+    check_companion_mapping()
     fixture = AssistTests("test_request_is_a_draft_and_approval_saves_only_in_calendar")
     fixture.setUp()
     fixture.connect(writes=False)

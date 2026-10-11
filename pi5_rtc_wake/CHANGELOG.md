@@ -1,3 +1,9 @@
+# 0.8.0-rc.2
+
+- Fix Connect Assist failing with "Home Assistant's configuration folder is not available" by explicitly mapping the Core configuration folder to the installer's path. Supervisor's default mount is /homeassistant, while the installer expects /homeassistant_config.
+- Show setup errors and their next action beside Connect Assist instead of leaving the initial "Not connected" prompt after a failed attempt.
+- Check the published YAML mount against the installer in the actual Home Assistant CI check, before using simulated hardware. Add a missing-folder/reconnect regression and retain schema 8, Calendar, UPS, phone, wake-test, and Assist preferences.
+
 # 0.8.0-rc.1
 
 - Add an optional Assist section and a bundled Home Assistant companion using Core 2026.10's native LLM tool platform. Connect through screens and authenticated Supervisor discovery; no user token or YAML is needed.

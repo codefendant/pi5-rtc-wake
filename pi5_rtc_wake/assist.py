@@ -107,6 +107,9 @@ class Assistant:
             self.app.message = {"text": "Assist companion installed." if changed else "Assist connection offered to Home Assistant.",
                                 "action": "Restart Home Assistant from Settings → System, then open Devices & services and add the discovered Pi Wake & Sleep integration." if changed else
                                           "Open Settings → Devices & services and add the discovered Pi Wake & Sleep integration. Choose Assist in your AI conversation agent's Control Home Assistant option.", "error": False}
+        except UserError as error:
+            self.connection = f"Assist setup needs attention. {error.message} {error.action}"
+            raise
         finally:
             self.operation_lock.release()
 
