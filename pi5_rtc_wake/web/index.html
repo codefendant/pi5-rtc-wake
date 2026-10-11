@@ -17,9 +17,14 @@
   </section>
   <div id="connection" class="notice" role="status" hidden>Connecting to Home Assistant…</div>
   <div id="feedback" class="notice" role="status"><strong id="feedback-text">Checking this Pi…</strong><p id="feedback-action"></p></div>
+  <section class="card" aria-labelledby="awake-heading">
+    <h2 id="awake-heading">Pi power controls</h2><p id="awake-state" role="status"></p>
+    <button id="keep-awake" type="button" class="primary">Keep awake</button>
+    <p class="hint">Keep awake suspends all shutdowns and reboots from this app, including emergency UPS shutdowns, until you resume. Dates and settings are kept. Monitoring and messages continue. Other apps retain their own power controls.</p>
+  </section>
   <section id="countdown" class="card countdown" aria-live="polite" hidden>
     <p class="eyebrow">SHUTDOWN COUNTDOWN</p><h2 id="countdown-title"></h2><p id="countdown-wake"></p>
-    <button id="cancel" class="primary">Keep Pi awake</button>
+    <button id="cancel" class="primary">Keep awake</button>
   </section>
   <nav class="view-nav" aria-label="App sections">
     <button id="nav-overview" type="button" aria-controls="view-overview" aria-pressed="false">Overview</button>
@@ -168,7 +173,7 @@
       <form id="assist-form">
         <label class="toggle"><input id="assist-enabled" type="checkbox"><span>Allow Assist to read Pi, Calendar, and selected UPS status</span></label>
         <label class="toggle"><input id="assist-requests-enabled" type="checkbox"><span>Allow Assist change requests and countdown cancellation</span></label>
-        <p class="hint">Change requests start off. Calendar changes, scheduling on/off, wake tests, and reboots wait for your approval here. “Keep the Pi awake” can cancel an ordinary current countdown immediately; emergency UPS protection remains active.</p>
+        <p class="hint">Change requests start off. Calendar changes, scheduling on/off, wake tests, and reboots wait for your approval here. “Cancel the current shutdown” can cancel an ordinary countdown immediately; emergency UPS protection remains active. Use Pi power controls for the persistent Keep awake switch that suspends all app shutdowns.</p>
         <p id="assist-unsaved" class="hint" hidden>You have unsaved Assist settings.</p>
         <button id="save-assist" type="submit">Save Assist settings</button>
       </form>

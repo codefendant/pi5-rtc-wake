@@ -2,7 +2,7 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.9.0-rc.2 · Native dashboard preview · MIT license**
+**0.9.0-rc.3 · Native dashboard preview · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
@@ -69,7 +69,7 @@ Keep this app's **Protection mode off** during use so it can check the host wake
 
 ## Validation and development
 
-**346 simulated backend tests** pass, including Calendar pause persistence and emergency protection after an app restart. Release gates additionally cover Chromium desktop/phone interactions, actual Home Assistant 2026.10.1 APIs, arm64 builds, anonymous image download, and production imports. [VALIDATION.md](VALIDATION.md) records verified publication results. The maintainer reports the native dashboard working on their Pi 5; full UPS power-loss and return behavior depends on the hardware.
+**366 simulated backend tests** pass, including persistent Keep awake, suspension of emergency UPS shutdowns, saved-policy resume, and runtime display in monitoring mode. Release gates additionally cover Chromium desktop/phone interactions, actual Home Assistant 2026.10.1 APIs, arm64 builds, anonymous image download, and production imports. [VALIDATION.md](VALIDATION.md) records verified publication results. The maintainer reports the native dashboard working on their Pi 5; full UPS power-loss and return behavior depends on the hardware.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 

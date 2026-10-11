@@ -1,6 +1,6 @@
 # Install Pi 5 Wake & Sleep
 
-**Public preview 0.9.0-rc.2.** You need Home Assistant OS 18 or newer on a Raspberry Pi 5, Core 2026.10 or newer for the dashboard, and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
+**Public preview 0.9.0-rc.3.** You need Home Assistant OS 18 or newer on a Raspberry Pi 5, Core 2026.10 or newer for the dashboard, and a power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
 
 After installation, select **Connect dashboard** in the Web UI. Restart Home Assistant if requested and add the discovered **Pi Wake & Sleep** integration in Devices & services. The sidebar dashboard provides guided setup, **Create Pi Sleep calendar**, and editable cards. An existing Assist companion is reused. See [DASHBOARD.md](DASHBOARD.md) for the screen-by-screen path. The detailed app controls below remain in **Pi Wake & Sleep settings**.
 

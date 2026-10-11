@@ -196,6 +196,8 @@ class Dashboard:
             if self.app.pending and self.app.pending.get("emergency"):
                 raise UserError("Emergency low-battery protection is active.", "Review UPS protection settings to change that policy.")
             self.app.cancel()
+        elif action == "keep-awake":
+            self.app.set_keep_awake(payload)
         elif action == "reboot-now":
             if payload != {"confirmed": True}:
                 raise UserError("The reboot was not confirmed.", "Read the reboot confirmation.")
@@ -213,5 +215,6 @@ class Dashboard:
             self.record({"settings": "Calendar settings saved.", "power-settings": "UPS settings saved.",
                          "message-settings": "Phone settings saved.", "assist-settings": "Assist settings saved.",
                          "cancel": "Current shutdown cancelled; future dates and emergency protection are kept.",
+                         "keep-awake": "Keep awake enabled; all app shutdowns suspended." if self.app.store.data["keep_awake"] else "Shutdowns resumed using saved settings.",
                          "confirm-test": "Wake test passed."}.get(action, "Requested: " + action.replace("-", " ") + "."))
         return {"ok": True}

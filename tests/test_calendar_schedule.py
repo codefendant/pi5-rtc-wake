@@ -264,7 +264,7 @@ class CalendarSchedulingTests(unittest.TestCase, Fixture):
         before["schedule"] = {"sleep_time": "23:00", "wake_time": "07:00", "timezone": "America/Chicago", "enabled": True}
         atomic_json(self.app.store.path, before)
         store = StateStore(self.temp.name)
-        self.assertEqual(store.data["schema_version"], 9)
+        self.assertEqual(store.data["schema_version"], 10)
         self.assertFalse(store.data["schedule"]["enabled"])
         self.assertNotIn("sleep_time", store.data["schedule"])
         self.assertIn("23:00", store.data["migration_notice"])

@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 
 
 class UserError(Exception):
@@ -78,7 +78,7 @@ class StateStore:
         self.backup = self.path.with_name("settings.previous.json")
         self.read_only = False
         self.notice = None
-        default = {"schema_version": SCHEMA_VERSION,
+        default = {"schema_version": SCHEMA_VERSION, "keep_awake": False,
                    "schedule": {"source": "calendar", "calendar_entity_id": None, "timezone": "UTC", "enabled": False},
                    "timezone_detected": False, "test": {}, "preparation": {}, "ups": {"source_id": None, "notifications": False, "low_battery_percent": 25}}
         self.data = deepcopy(default)
@@ -110,6 +110,10 @@ class StateStore:
                     from power_sources import validate_settings
                     self.data["ups"] = validate_settings(loaded["ups"])
                 self.data["schema_version"] = SCHEMA_VERSION
+                keep_awake = loaded.get("keep_awake", False)
+                if type(keep_awake) is not bool:
+                    raise ValueError("invalid Keep awake setting")
+                self.data["keep_awake"] = keep_awake
                 self.data["schedule"] = schedule
                 self.data["recovery"] = validate_policy(loaded.get("recovery", DEFAULTS))
                 if version < 6 and self.data["recovery"]["enabled"]:

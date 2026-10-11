@@ -170,7 +170,7 @@ class Recovery:
         app, policy = self.app, self.policy()
         qualification = policy["qualification"]
         known = next((source for source in app.power_info["sources"] if source["id"] == app.store.data["ups"]["source_id"]), None)
-        return bool(policy["enabled"] and policy["owner_confirmed"] and qualification
+        return bool(not app.store.data["keep_awake"] and policy["enabled"] and policy["owner_confirmed"] and qualification
                     and qualification["source_id"] == app.store.data["ups"]["source_id"]
                     and (known is None or qualification["source_fingerprint"] == source_fingerprint(known))
                     and app.host_shutdown_supported and not app.store.read_only)
@@ -274,7 +274,9 @@ class Recovery:
         period = next((row for row in app.calendar_info["periods"] if row.get("power_token") == session.get("token")), None) if session else None
         eligible = self.eligible()
         protected = self.protection_eligible()
-        if policy["enabled"] and not protected:
+        if app.store.data["keep_awake"]:
+            message = "Keep awake is on. All app shutdowns, including emergency UPS shutdowns, are suspended."
+        elif policy["enabled"] and not protected:
             message = "Automatic protection needs review. Confirm the saved UPS and shutdown ownership."
         else:
             message = session.get("message") or self.message
@@ -291,7 +293,9 @@ class Recovery:
 
     def notice(self):
         snapshot = self.snapshot()
-        if not self.policy()["enabled"]:
+        if self.app.store.data["keep_awake"]:
+            value = {"message": "Keep awake is on. All Pi Wake & Sleep shutdowns are suspended, including emergency low-battery protection. Select Resume shutdowns in the Pi dashboard to restore your saved policy."}
+        elif not self.policy()["enabled"]:
             value = None
         elif (self.app.store.data["outage"] or not snapshot["protection_eligible"]
               or self.policy()["retry_enabled"] and not snapshot["eligible"]):
@@ -311,7 +315,7 @@ class Recovery:
 
     def poll(self):
         app, policy = self.app, self.policy()
-        if not policy["enabled"] or app.store.read_only:
+        if app.store.data["keep_awake"] or not policy["enabled"] or app.store.read_only:
             self.notice()
             return False
         self.reconcile()

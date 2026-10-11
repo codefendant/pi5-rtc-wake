@@ -17,7 +17,7 @@ import time
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 from calendar_schedule import due_period, parse_periods
-from power_sources import discover_sources, notice_for, validate_settings as validate_power_settings
+from power_sources import discover_sources, monitor_runtime, notice_for, validate_settings as validate_power_settings
 from ups_recovery import Recovery
 from phone_messages import PhoneMessages
 
@@ -29,7 +29,7 @@ from assist import Assistant, PORT as ASSIST_PORT
 from assist_http import AssistHandler
 from dashboard import Dashboard
 
-VERSION = "0.9.0-rc.2"
+VERSION = "0.9.0-rc.3"
 LOG = logging.getLogger("pi5_rtc_wake")
 COUNTDOWN = 30
 TEST_SECONDS = 600
@@ -403,21 +403,22 @@ class Application:
                 checks["action"] = "Confirm below whether Home Assistant returned by itself."
             next_sleep = None
             next_wake = None
-            if schedule["enabled"]:
+            if schedule["enabled"] and not state["keep_awake"]:
                 try:
                     future = next((period for period in self.calendar_info["periods"] if not period.get("power_action") and period["start_epoch"] > self.clock()), None) if self._calendar_ready() else None
                     if future:
                         next_sleep, next_wake = future["start_epoch"], future["end_epoch"]
                 except PolicyError:
                     pass
-            return {"version": VERSION, "csrf": self.csrf, "checks": checks,
+            return {"version": VERSION, "csrf": self.csrf, "checks": checks, "keep_awake": state["keep_awake"],
                     "permissions": deepcopy(self.permissions), "dashboard": self.dashboard.snapshot(),
                     "uptime_seconds": max(0, int(self.clock() - self.host.boot_epoch(self.clock()))), "current_epoch": int(self.clock()),
                     "host_shutdown_supported": self.host_shutdown_supported,
-                    "schedule": schedule, "schedule_active": schedule["enabled"] and self.checks.get("ok", False) and self._test_passed() and not self.store.read_only and self._calendar_ready() and not self.recovery.blocks_calendar(),
+                    "schedule": schedule, "schedule_active": schedule["enabled"] and not state["keep_awake"] and self.checks.get("ok", False) and self._test_passed() and not self.store.read_only and self._calendar_ready() and not self.recovery.blocks_calendar(),
                     "calendar": deepcopy(self.calendar_info), "reboot_notice_ok": self.reboot_notice_ok,
                     "ups": {**deepcopy(self.power_info), "settings": deepcopy(state["ups"]), "selected": deepcopy(self._selected_power()), "notifications_ok": self.power_notice_ok, "mode": "rtc_recovery" if state["recovery"]["enabled"] else "monitor_only",
-                            "sensor_settings": deepcopy(self.nut_sensor_info), "shutdown_controller": deepcopy(self.shutdown_controller_info)},
+                            "sensor_settings": deepcopy(self.nut_sensor_info), "shutdown_controller": deepcopy(self.shutdown_controller_info),
+                            "runtime": monitor_runtime(self._selected_power(), state["recovery"]["runtime_entity_id"], self.nut_sensor_info["sensors"], self.clock())},
                     "recovery": self.recovery.snapshot(),
                     "messages": self.messages.snapshot(),
                     "assist": self.assistant.snapshot(),
@@ -478,6 +479,8 @@ class Application:
 
     def begin_job(self, kind, payload):
         with self.lock:
+            if self.store.data["keep_awake"] and kind in ("reboot", "test", "sleep", "schedule", "ups"):
+                raise UserError("Keep awake is on. Shutdowns and reboots are suspended.", "Select Resume shutdowns when you are ready. Your saved settings are kept.")
             if self.shutdown_requested_at is not None and (kind != "check" or self.monotonic() - self.shutdown_requested_at < 120):
                 raise UserError("Shutdown has already been requested.", "Leave the power connected. If the Pi stays on, wait two minutes and select Check again.")
             if self.job or self.pending:
@@ -511,6 +514,43 @@ class Application:
                     self.controller.clear({"request_id": pending["request_id"]})
             self.message = {"text": "Shutdown cancelled. The Pi will stay on.", "action": "", "error": False}
 
+    def set_keep_awake(self, payload):
+        if (not isinstance(payload, dict) or set(payload) != {"active", "confirmed"}
+                or type(payload["active"]) is not bool or payload["confirmed"] is not True):
+            raise UserError("Keep awake was not confirmed.", "Read the Keep awake or Resume shutdowns explanation and confirm your choice.")
+        with self.lock:
+            if self.shutdown_requested_at is not None:
+                raise UserError("A power operation has already been requested.", "It cannot be cancelled now. Leave power connected and check again after Home Assistant returns.")
+            active = payload["active"]
+            if self.store.data["keep_awake"] == active:
+                return
+            old = deepcopy(self.store.data)
+            self.store.data["keep_awake"] = active
+            session = self.store.data["outage"]
+            if active and session.get("phase") in ("planning", "countdown"):
+                session.update(phase="observing", submitted=False, message="Keep awake is on. All app shutdowns are suspended.")
+            elif not active and session.get("message") == "Keep awake is on. All app shutdowns are suspended.":
+                session["message"] = "Shutdowns resumed. Waiting for fresh UPS readings."
+            try:
+                self.store.save()
+            except Exception:
+                self.store.data = old
+                raise
+            if active:
+                self.cancel_serial += 1
+                pending, self.pending = self.pending, None
+                if pending and pending.get("wake_epoch") is not None:
+                    try:
+                        self.controller.clear({"request_id": pending["request_id"]})
+                    except (PolicyError, OSError, ValueError, KeyError, TypeError):
+                        self.stale_alarm_checked = False
+                        self.message = {"text": "Keep awake is on. All app shutdowns are suspended, but the previous wake alarm could not be cleared.", "action": "Select Check again while the Pi remains on.", "error": True}
+                        return
+            else:
+                self.recovery.battery_since = self.recovery.mains_since = self.recovery.unknown_since = None
+            self.message = {"text": "Keep awake is on. All app shutdowns are suspended, including emergency UPS shutdowns." if active else "Shutdowns resumed using your saved Calendar and UPS settings.", "action": "Monitoring and messages continue." if active else "Normal setup and fresh-reading checks still apply.", "error": False}
+        self.recovery.notice()
+
     def prepare(self):
         self.refresh()
         if not self.checks.get("can_prepare"):
@@ -537,7 +577,7 @@ class Application:
     def start_shutdown(self, kind, serial, calendar_key=None):
         self._require_ready(require_test=kind != "test")
         with self.lock:
-            if serial != self.cancel_serial:
+            if serial != self.cancel_serial or self.store.data["keep_awake"]:
                 return
             if kind == "schedule" and not self.store.data["schedule"]["enabled"]:
                 return
@@ -578,7 +618,7 @@ class Application:
             return
         self._require_ready(require_test=pending["kind"] != "test")
         with self.lock:
-            if self.pending != pending or pending["serial"] != self.cancel_serial:
+            if self.pending != pending or pending["serial"] != self.cancel_serial or self.store.data["keep_awake"]:
                 return
             if self.checks["fingerprint"] != pending["fingerprint"]:
                 raise UserError("The Pi's wake settings changed during the countdown.", "Keep the Pi on and run Check again followed by a new wake test.")
@@ -640,7 +680,7 @@ class Application:
 
     def tick(self):
         with self.lock:
-            if self.shutdown_requested_at is not None:
+            if self.shutdown_requested_at is not None or self.store.data["keep_awake"]:
                 return
             pending = self.pending
         if pending and self.monotonic() >= pending["deadline"]:
@@ -679,6 +719,9 @@ class Application:
         except queue.Empty:
             return False
         try:
+            with self.lock:
+                if kind in ("reboot", "test", "sleep", "schedule", "ups") and (serial != self.cancel_serial or self.store.data["keep_awake"]):
+                    return True
             if kind == "check":
                 self.refresh(force_calendar_discovery=True)
                 with self.lock:
@@ -694,7 +737,11 @@ class Application:
                     raise UserError("This host could not be verified for a reboot.", "Keep the Pi on and check Setup before requesting another reboot.")
                 if not self.checks.get("needs_reboot") and payload.get("assist_reviewed") is not True and payload.get("dashboard_reviewed") is not True:
                     raise UserError("A setup reboot is not needed right now.", "Select Check again and continue with the wake test.")
-                self.supervisor.reboot()
+                with self.lock:
+                    if serial != self.cancel_serial or self.store.data["keep_awake"]:
+                        return True
+                    self.shutdown_requested_at = self.monotonic()
+                    self.supervisor.reboot()
             elif kind == "ups":
                 self.recovery.start(serial, payload["retry"], payload["reason"], payload.get("emergency", False))
             else:
@@ -816,6 +863,8 @@ class IngressHandler(BaseHTTPRequestHandler):
                 self.application.reject_test()
             elif path == "/api/cancel":
                 self.application.cancel()
+            elif path == "/api/keep-awake":
+                self.application.set_keep_awake(payload)
             elif path in ("/api/check", "/api/scan-ups", "/api/prepare", "/api/reboot", "/api/test"):
                 self.application.begin_job(path.rsplit("/", 1)[1], payload)
             else:

@@ -103,9 +103,16 @@ async def check():
                 status = await command("pi5_rtc_wake/status", entry_id=entry.entry_id)
                 assert status["test_status"] == "passed" and not status["enabled"]
                 assert "csrf" not in status and owner._secret() not in json.dumps(status)
+                original_schedule = dict(status["schedule"])
+                await command("pi5_rtc_wake/action", entry_id=entry.entry_id, action="keep-awake", payload={"active": True, "confirmed": True})
+                paused = await command("pi5_rtc_wake/status", entry_id=entry.entry_id)
+                assert paused["keep_awake"] and not paused["schedule_active"] and not paused["recovery"]["emergency_active"], paused
+                assert paused["schedule"] == original_schedule and paused["test_status"] == "passed"
+                await command("pi5_rtc_wake/action", entry_id=entry.entry_id, action="keep-awake", payload={"active": False, "confirmed": True})
+                assert not (await command("pi5_rtc_wake/status", entry_id=entry.entry_id))["keep_awake"]
                 resources = await command("lovelace/resources/list")
                 resource = await command("lovelace/resources/create", res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=test")
-                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.9.0-rc.2")
+                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.9.0-rc.3")
                 await command("lovelace/dashboards/create", url_path="pi-wake-sleep", title="Pi Wake & Sleep", icon="mdi:power-sleep", show_in_sidebar=True, require_admin=False)
                 config = starter_config(entry.entry_id)
                 await command("lovelace/config/save", url_path="pi-wake-sleep", config=config)
@@ -140,9 +147,14 @@ async def check():
                                         "action": "reboot-now", "payload": {"confirmed": True}})
                 denied = await socket.receive_json()
                 assert not denied["success"] and denied["error"]["code"] == "unauthorized", denied
+                await socket.send_json({"id": 3, "type": "pi5_rtc_wake/action", "entry_id": entry.entry_id,
+                                        "action": "keep-awake", "payload": {"active": True, "confirmed": True}})
+                denied = await socket.receive_json()
+                assert not denied["success"] and denied["error"]["code"] == "unauthorized", denied
+                assert not fixture.app.store.data["keep_awake"]
                 await socket.close()
                 assert fixture.supervisor.reboots == 0
-            print("Real Core passed: dashboard without AI, 9 native entities, authenticated card API, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, and non-admin power denial.")
+            print("Real Core passed: dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, and non-admin power/Keep awake denial.")
     finally:
         await hass.async_stop(force=True)
         server.shutdown()
