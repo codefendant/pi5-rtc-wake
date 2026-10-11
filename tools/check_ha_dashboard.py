@@ -74,10 +74,10 @@ async def check():
             assert not any(tool.integration == "pi5_rtc_wake" for tool in api.tools), "Dashboard connection must not enable AI tools"
 
             admin = await hass.auth.async_create_user("Dashboard test admin", group_ids=[GROUP_ID_ADMIN])
-            admin_refresh = await hass.auth.async_create_refresh_token(admin)
+            admin_refresh = await hass.auth.async_create_refresh_token(admin, client_id="http://127.0.0.1:8123/")
             admin_token = hass.auth.async_create_access_token(admin_refresh)
             viewer = await hass.auth.async_create_user("Dashboard test viewer")
-            viewer_refresh = await hass.auth.async_create_refresh_token(viewer)
+            viewer_refresh = await hass.auth.async_create_refresh_token(viewer, client_id="http://127.0.0.1:8123/")
             viewer_token = hass.auth.async_create_access_token(viewer_refresh)
 
             async with aiohttp.ClientSession() as session:

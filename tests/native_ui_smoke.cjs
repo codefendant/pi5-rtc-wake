@@ -44,7 +44,7 @@ async function main() {
     await page.screenshot({path:'ui-artifacts/dashboard-desktop.png',fullPage:true});
     assert.equal(await page.locator('[data-kind="setup"]').getByRole('button',{name:'Review setup'}).isVisible(),true);
     assert.equal(await page.getByRole('button',{name:'Keep awake',exact:true}).isDisabled(),true);
-    assert.match(await page.locator('[data-kind="ups"]').innerText(),/Monitoring only/);
+    await page.locator('[data-kind="ups"]').getByText('Monitoring only',{exact:true}).waitFor();
     assert.equal(await page.getByRole('button',{name:'Connect Assist',exact:true}).isVisible(),true);
     await page.getByRole('button',{name:'Reboot Pi',exact:true}).click();
     await page.getByRole('button',{name:'Go back',exact:true}).click();
