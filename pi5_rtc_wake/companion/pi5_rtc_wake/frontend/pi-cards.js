@@ -146,7 +146,7 @@
     }
     upsBody() {
       const data = this.state, source = data.ups.selected, recovery = data.recovery, runtime = data.ups.runtime || {seconds: null, state: "unavailable", message: "Check the UPS runtime reading."};
-      if (!source) return this.heading(badge("Optional")) + `<div class="metric"><div class="symbol">${icon("battery")}</div><p>Find your UPS and check its readings.</p></div><div class="actions">${button("scan-ups", "Find my UPS", "", this.blocked)}${button("choose-ups", "Choose UPS", "", this.blocked)}</div><p class="hint muted">Automatic protection off.</p>`;
+      if (!source) return this.heading(badge("Optional")) + `<div class="metric"><div class="symbol">${icon("battery")}</div><p>Find your UPS and check its readings.</p></div><div class="actions">${button("scan-ups", "Find my UPS", "", this.blocked)}${button("choose-ups", "Choose UPS", "", this.blocked)}</div><p class="hint muted">Automatic protection off. Connect your UPS to Home Assistant, then find it here.</p>${data.ups.sources.length ? "" : `<p class="hint muted">No UPS found. Check the Network UPS Tools integration in Devices & services, then select Find my UPS. ${link("/config/integrations/dashboard", "Open Devices & services ↗")}</p>`}`;
       const battery = source.ok && source.battery_percent != null ? source.battery_percent + "%" : "—";
       const power = {mains: "Utility power", battery: "On battery", off: "Output off", unknown: "Unknown"}[source.power_state] || "Unknown";
       const sensors = data.ups.sensor_settings.sensors.filter(item => source.id === "nut:" + item.device_id && (item.can_enable || item.disabled_by != null));

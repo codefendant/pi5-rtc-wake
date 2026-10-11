@@ -62,7 +62,7 @@ async function main() {
   connecting=ui.node('connect-dashboard').onclick(); ui.close('confirm'); await connecting;
   const post=ui.requests.find(request=>request.url==='api/connect-dashboard');
   assert.deepEqual(JSON.parse(post.options.body),{confirmed:true});
-  assert.equal(post.options.headers['X-CSRF-Token'],ui.fixture.csrf);
+  assert.equal(post.options.headers['X-Pi5-CSRF'],ui.fixture.csrf);
   assert.equal(ui.node('restart-link').hidden,false);
   assert.equal(ui.node('connect-dashboard').hidden,true);
   assert.equal(ui.node('connection-steps').hidden,false); // Installation is not a live connection.

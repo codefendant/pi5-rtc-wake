@@ -65,7 +65,7 @@ async function act(path, payload = {}) {
   if (loading || !status) return;
   loading = true; actionError = ""; operation = path === "check" ? "Checking this Pi…" : "Connecting the dashboard…"; render(status);
   try {
-    const response = await fetch("api/" + path, {method: "POST", cache: "no-store", headers: {"Content-Type": "application/json", "X-CSRF-Token": status.csrf}, body: JSON.stringify(payload), signal: AbortSignal.timeout(path === "connect-dashboard" ? 90000 : 25000)});
+    const response = await fetch("api/" + path, {method: "POST", cache: "no-store", headers: {"Content-Type": "application/json", "X-Pi5-CSRF": status.csrf}, body: JSON.stringify(payload), signal: AbortSignal.timeout(path === "connect-dashboard" ? 90000 : 25000)});
     const result = await response.json();
     if (!response.ok) throw new Error([result.message, result.action].filter(Boolean).join(" ") || "The request did not finish.");
     loading = false;

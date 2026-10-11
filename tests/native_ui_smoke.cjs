@@ -62,6 +62,23 @@ async function main() {
     await page.getByRole('heading',{name:'Demo Pi Sleep',exact:true}).waitFor();
     assert.equal((await (await page.request.get(first.url+'api/status')).json()).schedule.enabled,false);
 
+    // Emergency-only setup remains available without RTC readiness. Saving
+    // disabled settings here cannot initiate a shutdown or enable a feature.
+    const firstUps=page.locator('[data-kind="ups"]');
+    await firstUps.getByRole('button',{name:'Find my UPS',exact:true}).click();
+    await firstUps.getByRole('button',{name:'Choose UPS',exact:true}).waitFor({state:'visible'});
+    await page.waitForFunction(()=>!document.querySelector('[data-kind="ups"]').shadowRoot.querySelector('[data-action="choose-ups"]').disabled);
+    await firstUps.getByRole('button',{name:'Choose UPS',exact:true}).click();
+    await page.getByLabel(/^Power source/).selectOption('hook:sensor.demo_local_power');
+    await page.getByRole('button',{name:'Save UPS',exact:true}).click();
+    await firstUps.getByRole('button',{name:'Set up protection',exact:true}).click();
+    assert.equal(await page.getByRole('checkbox',{name:'Enable automatic UPS protection',exact:true}).isDisabled(),true);
+    await page.getByRole('checkbox',{name:'Allow timed RTC retries during an outage',exact:true}).uncheck();
+    assert.equal(await page.getByRole('checkbox',{name:'Enable automatic UPS protection',exact:true}).isEnabled(),true);
+    assert.equal(await firstUps.locator('.retry-plan').isVisible(),false);
+    await page.getByRole('button',{name:'Save UPS protection',exact:true}).click();
+    assert.equal((await (await page.request.get(first.url+'api/status')).json()).recovery.settings.enabled,false);
+
     await page.goto(ready.url+'native');
     await page.getByText('Pi ready · Wake test passed',{exact:true}).waitFor();
     await page.screenshot({path:'ui-artifacts/dashboard-desktop.png',fullPage:true});
