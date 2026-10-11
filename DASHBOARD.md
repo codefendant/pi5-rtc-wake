@@ -1,6 +1,6 @@
 # Pi Wake & Sleep dashboard
 
-The 0.9 preview adds a native Home Assistant dashboard. Move, resize, remove, and add cards with **Edit dashboard**, including ordinary pictures, history graphs, weather, and other Home Assistant cards. The app continues to run the RTC, Calendar, UPS, phone, and Assist functions.
+The dashboard preview adds a native Home Assistant dashboard. Move, resize, remove, and add cards with **Edit dashboard**, including ordinary pictures, history graphs, weather, and other Home Assistant cards. The app continues to run the RTC, Calendar, UPS, phone, and Assist functions.
 
 ## Connect once
 
@@ -14,7 +14,7 @@ No terminal, YAML, personal API token, or extra card download is needed. AI acce
 
 ## One place to manage features
 
-The **Pi Wake & Sleep** dashboard holds Pi status, everyday power controls, Calendar settings, UPS monitoring/protection, Messages, and Assist. Each feature opens its settings on its card. The add-on Web UI is **Setup & maintenance** and holds connection, companion update/reconnection, and support diagnostics only. An active connection hides initial installation instructions.
+The **Pi Wake & Sleep** dashboard holds Pi status, everyday power controls, Calendar settings, UPS monitoring/protection, Messages, Wake other devices, and Assist. Each feature opens its settings on its card. The add-on Web UI is **Setup & maintenance** and holds connection, companion update/reconnection, and support diagnostics only. An active connection hides initial installation instructions.
 
 The optional app sidebar entry is named **Pi setup & maintenance**. Turn off **Show in sidebar** on its Info page if you want just the dashboard entry. That preference is kept; this update does not alter your sidebar choices. Open Web UI and the dashboard setup area still open maintenance.
 

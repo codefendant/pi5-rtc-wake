@@ -1,5 +1,14 @@
 # Update Pi 5 Wake & Sleep
 
+## 0.10.0-rc.1 Wake other devices
+
+1. Update the **same installed app** to **0.10.0-rc.1**, then **Stop → Start**.
+2. Open **Web UI → Maintenance and connection repair → Update / reconnect dashboard** and confirm.
+3. Restart **Home Assistant** if requested, refresh the browser, and open **Pi Wake & Sleep**.
+4. On **Wake other devices**, select **Choose devices**, select your existing Home Assistant Wake on LAN buttons, optionally associate Ping sensors, and save. Test **Wake selected** before enabling automatic waking.
+
+The new card is added once while preserving your custom layout and personal cards. Device waking starts off. Existing Calendar dates, Keep awake, UPS protection, messages, Assist choices, and valid wake evidence are retained in schema 11. No new Pi wake test is required unless firmware or wake settings changed. Do not uninstall or restore default cards. See [WAKE_DEVICES.md](WAKE_DEVICES.md).
+
 ## 0.9.0-rc.4 dashboard cleanup
 
 1. Update the **same installed app** to **0.9.0-rc.4**, then **Stop → Start**.

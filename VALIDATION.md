@@ -1,3 +1,13 @@
+# Validation — 0.10.0-rc.1 Wake other devices
+
+Local checks pass 400 simulated backend cases, JavaScript syntax, compilation, and the maintenance DOM fixture. New cases cover schema-10 migration, settings/backup preservation, no request on saving, next-boot-only enabling, recorded Calendar wakes, ordinary/test boot exclusion, startup delay and expiry, per-boot deduplication, uncertain responses across restart, stable entity identity, storage failures, fresh mains checks, post-request Ping observations, stale/restored/replaced Ping rejection, emergency interruption, power-lock isolation, and additive card migration/removal.
+
+The publication workflow must additionally pass Chromium, actual Home Assistant 2026.10.1 registry/button/template/permission checks, arm64 build, and anonymous public image verification. This entry will record the candidate and publishing run identities when those checks finish. Physical target waking and a beginner's complete install/activation path remain untested here. UDP sending is patched in the actual Core test; Pi, UPS, and phone services are simulated.
+
+The new feature is disabled on upgrade. Calendar remains the planned-date store, with a historical submitted Calendar shutdown receipt used to recognize the corresponding boot. Device requests run in a separate worker and cannot occupy the RTC/UPS network worker. Existing shutdown behavior is retained; recording an optional device-wake receipt cannot cancel the Pi's verified RTC alarm.
+
+Primary implementation references: Home Assistant Core 2026.10.1 [Wake on LAN button](https://github.com/home-assistant/core/blob/2026.10.1/homeassistant/components/wake_on_lan/button.py), [config flow](https://github.com/home-assistant/core/blob/2026.10.1/homeassistant/components/wake_on_lan/config_flow.py), [registry API](https://github.com/home-assistant/core/blob/2026.10.1/homeassistant/components/config/entity_registry.py), [registry serialization](https://github.com/home-assistant/core/blob/2026.10.1/homeassistant/helpers/entity_registry.py), and [template state observation timestamps](https://github.com/home-assistant/core/blob/2026.10.1/homeassistant/helpers/template/states.py).
+
 # Validation — 0.9.0-rc.4 dashboard interface cleanup
 
 The maintainer reports the rc.3 interface and functionality working on their Pi 5 and requested one clear place to manage features. This cleanup moves detailed UPS commissioning to the native card and makes the app Web UI Setup & maintenance. No scheduling, RTC, UPS policy, phone-delivery, or AI power behavior changed. Schema 10 and all saved choices/layouts are retained.

@@ -145,10 +145,10 @@ class Supervisor:
             time.sleep(0.5)
         raise UserError("Pi Sleep is still getting ready in Home Assistant.", "Wait a moment, then select Create Pi Sleep calendar again. An existing calendar will be reused.")
 
-    def ensure_dashboard(self, entry_id):
+    def ensure_dashboard(self, entry_id, *, add_wake_devices=False):
         """Register our cards and create an editable dashboard without replacing one."""
-        from dashboard import PATH, RESOURCE, starter_config
-        resource_url = RESOURCE + "?v=0.9.0-rc.4"
+        from dashboard import PATH, RESOURCE, starter_config, add_wake_devices_card
+        resource_url = RESOURCE + "?v=0.10.0-rc.1"
         try:
             with CoreRegistry(self.token) as core:
                 rows = core.command("lovelace/resources/list")
@@ -162,13 +162,19 @@ class Supervisor:
                 dashboards = core.command("lovelace/dashboards/list")
                 if any(row.get("url_path") == PATH for row in dashboards if isinstance(row, dict)):
                     try:
-                        core.command("lovelace/config", url_path=PATH)
+                        config = core.command("lovelace/config", url_path=PATH)
                     except CoreCommandError as error:
                         if error.code != "config_not_found":
                             raise
                         # An interrupted first install can leave an empty dashboard.
                         # Only a confirmed absence of saved layout allows initialization.
                     else:
+                        if add_wake_devices:
+                            updated = add_wake_devices_card(config, entry_id)
+                            if updated != config:
+                                if core.command("lovelace/config", url_path=PATH) != config:
+                                    raise UserError("Your dashboard was edited while the new card was being added.", "Refresh and reconnect to add the card to the latest layout.")
+                                core.command("lovelace/config/save", url_path=PATH, config=updated)
                         return {"created": False, "path": "/" + PATH, "message": "Your existing dashboard and personal cards were kept."}
                 else:
                     core.command("lovelace/dashboards/create", url_path=PATH, title="Pi Wake & Sleep",
@@ -258,6 +264,37 @@ class Supervisor:
         if recipient.startswith("entity:"):
             return self.request("/core/api/services/notify/send_message", {**message, "entity_id": recipient[7:]})
         return self.request("/core/api/services/notify/" + recipient[8:], message)
+
+    def wake_metadata(self):
+        try:
+            with CoreRegistry(self.token) as registry:
+                return registry.wake_metadata()
+        except UserError:
+            raise UserError("Home Assistant's wake devices could not be reached.",
+                            "Wait for Home Assistant to start, then select Find devices again.") from None
+
+    def press_wake_button(self, entity_id, identity):
+        from wake_devices import BUTTON, IDENTITY, registry_identity
+        if not isinstance(entity_id, str) or not BUTTON.fullmatch(entity_id) or not isinstance(identity, str) or not IDENTITY.fullmatch(identity):
+            raise UserError("Choose a saved Wake on LAN button.", "Find devices again.")
+        row = self.wake_metadata().get(entity_id, {})
+        if row.get("platform") != "wake_on_lan" or row.get("disabled") or registry_identity(row) != identity:
+            raise UserError("The Wake on LAN button changed or is disabled.", "Choose devices again before waking it.")
+        return self.request("/core/api/services/button/press", {"entity_id": entity_id})
+
+    def wake_ping_states(self, entities):
+        from wake_devices import ping_template, registry_identity
+        template = ping_template(entities)
+        metadata = self.wake_metadata()
+        result = self.request("/core/api/template", {"template": template})
+        if not isinstance(result, dict) or not isinstance(result.get("rows"), list) or len(result["rows"]) > 12:
+            raise UserError("Ping readings could not be checked.", "Check the selected Ping sensors in Home Assistant.")
+        for row in result["rows"]:
+            meta = metadata.get(row.get("entity_id"), {}) if isinstance(row, dict) else {}
+            if not isinstance(row, dict) or meta.get("platform") != "ping" or meta.get("disabled"):
+                raise UserError("A selected Ping sensor changed.", "Choose devices again.")
+            row["identity"] = registry_identity(meta)
+        return result
 
     def nut_sensors(self):
         with CoreRegistry(self.token) as registry:

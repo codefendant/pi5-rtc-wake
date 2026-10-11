@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "pi5_rtc_wake"))
 import calendar_schedule as calendar
 from services import Supervisor
-from state import StateStore, UserError, atomic_json, validate_schedule
+from state import SCHEMA_VERSION, StateStore, UserError, atomic_json, validate_schedule
 from test_rtc_wake import epoch
 from test_setup import CONFIG, Fixture
 
@@ -264,7 +264,7 @@ class CalendarSchedulingTests(unittest.TestCase, Fixture):
         before["schedule"] = {"sleep_time": "23:00", "wake_time": "07:00", "timezone": "America/Chicago", "enabled": True}
         atomic_json(self.app.store.path, before)
         store = StateStore(self.temp.name)
-        self.assertEqual(store.data["schema_version"], 10)
+        self.assertEqual(store.data["schema_version"], SCHEMA_VERSION)
         self.assertFalse(store.data["schedule"]["enabled"])
         self.assertNotIn("sleep_time", store.data["schedule"])
         self.assertIn("23:00", store.data["migration_notice"])

@@ -46,6 +46,8 @@ class FakeSupervisor:
         self.phone_services = [{"domain": "notify", "services": {}}]
         self.phone_metadata = {}
         self.phone_messages = []
+        self.wake_buttons = []
+        self.ping_rows = []
 
     def os_info(self): return deepcopy(self.os)
     def app_info(self): return {"slug": "local_pi5_rtc_wake", "protected": False}
@@ -55,9 +57,11 @@ class FakeSupervisor:
             self.calendar_list.append({"entity_id": entity, "name": "Pi Sleep"})
         self.events.setdefault(entity, [])
         return entity
-    def ensure_dashboard(self, entry_id):
-        from dashboard import starter_config
+    def ensure_dashboard(self, entry_id, *, add_wake_devices=False):
+        from dashboard import starter_config, add_wake_devices_card
         if hasattr(self, "dashboard_config"):
+            if add_wake_devices:
+                self.dashboard_config = add_wake_devices_card(self.dashboard_config, entry_id)
             return {"created": False, "path": "/pi-wake-sleep"}
         self.dashboard_config = starter_config(entry_id)
         return {"created": True, "path": "/pi-wake-sleep"}
@@ -98,6 +102,9 @@ class FakeSupervisor:
     def message_metadata(self): return deepcopy(self.phone_metadata)
     def message_temperature_unit(self): return "°F"
     def send_phone_message(self, recipient, message): self.phone_messages.append((recipient, deepcopy(message)))
+    def wake_metadata(self): return deepcopy(getattr(self, "wake_registry", {}))
+    def press_wake_button(self, entity_id, identity): self.wake_buttons.append((entity_id, identity))
+    def wake_ping_states(self, entities): return {"rows": deepcopy(self.ping_rows)}
     def calendar_writable(self, entity_id):
         if not self.calendar_is_writable or entity_id not in self.events:
             raise UserError("Calendar cannot create events.", "Choose a writable Local Calendar.")
