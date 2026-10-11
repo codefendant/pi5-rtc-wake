@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 11
 
 
 class UserError(Exception):
@@ -89,6 +89,8 @@ class StateStore:
         from assist import DEFAULTS as ASSIST_DEFAULTS, validate_settings as validate_assist
         self.data["assist"] = deepcopy(ASSIST_DEFAULTS)
         self.data["dashboard"] = {"connected": False}
+        from wake_devices import DEFAULTS as WAKE_DEFAULTS, validate_settings as validate_wake
+        self.data["wake_devices"] = deepcopy(WAKE_DEFAULTS)
         if not self.path.exists() and not self.backup.exists():
             return
         for path in (self.path, self.backup):
@@ -127,6 +129,7 @@ class StateStore:
                 if not isinstance(dashboard, dict) or set(dashboard) != {"connected"} or type(dashboard["connected"]) is not bool:
                     raise ValueError("invalid dashboard settings")
                 self.data["dashboard"] = dashboard
+                self.data["wake_devices"] = validate_wake(loaded.get("wake_devices", WAKE_DEFAULTS))
                 self.data.pop("last_attempt_date", None)
                 if migration_notice:
                     self.data["migration_notice"] = migration_notice
@@ -136,6 +139,7 @@ class StateStore:
                     self.data["recovery"]["enabled"] = False
                     self.data["recovery"]["qualification"] = None
                     self.data["messages"]["enabled"] = False
+                    self.data["wake_devices"]["enabled"] = False
                     self.data["assist"]["enabled"] = False
                     self.data["assist"]["allow_requests"] = False
                     self.notice = "The last saved settings were restored. Review your times and enable the schedule again."

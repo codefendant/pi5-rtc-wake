@@ -32,7 +32,7 @@ class Client:
         self.token = config["token"]
 
     async def call(self, path, payload=None):
-        if path not in ("/v1/status", "/v1/request", "/v1/keep-awake", "/v1/dashboard", "/v1/dashboard/action", "/v1/dashboard/ready", "/v1/message-options"):
+        if path not in ("/v1/status", "/v1/request", "/v1/keep-awake", "/v1/dashboard", "/v1/dashboard/action", "/v1/dashboard/ready", "/v1/message-options", "/v1/wake-device-options"):
             raise HomeAssistantError("That Pi Wake & Sleep action is not supported.")
         try:
             async with self.session.request(
@@ -43,7 +43,7 @@ class Client:
                 body = bytearray()
                 async for chunk in response.content.iter_chunked(8192):
                     body.extend(chunk)
-                    if len(body) > (2 * 1024 * 1024 if path in ("/v1/dashboard", "/v1/message-options") else 65536):
+                    if len(body) > (2 * 1024 * 1024 if path in ("/v1/dashboard", "/v1/message-options", "/v1/wake-device-options") else 65536):
                         raise ValueError()
                 value = json.loads(body)
                 if not isinstance(value, dict):

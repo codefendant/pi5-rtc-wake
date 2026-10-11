@@ -140,6 +140,32 @@ class CoreRegistry:
                     row["can_enable"] = False
         return result
 
+    def wake_metadata(self):
+        """Identify only native WOL buttons and Ping sensors, with stable identity."""
+        from wake_devices import BUTTON, PING
+        from phone_messages import text
+        entities = self.command("config/entity_registry/list")
+        devices = self.command("config/device_registry/list")
+        areas = self.command("config/area_registry/list")
+        if (not isinstance(entities, list) or len(entities) > 50000 or not isinstance(devices, list)
+                or len(devices) > 20000 or not isinstance(areas, list) or len(areas) > 2000):
+            raise UserError("The wake device list could not be read.", "Find devices again when Home Assistant is ready.")
+        devices = {row["id"]: row for row in devices if isinstance(row, dict) and isinstance(row.get("id"), str)}
+        areas = {row["area_id"]: text(row.get("name")) for row in areas if isinstance(row, dict) and isinstance(row.get("area_id"), str)}
+        result = {}
+        for row in entities:
+            if not isinstance(row, dict) or not isinstance((entity := row.get("entity_id")), str):
+                continue
+            if not (BUTTON.fullmatch(entity) and row.get("platform") == "wake_on_lan" or PING.fullmatch(entity) and row.get("platform") == "ping"):
+                continue
+            device = devices.get(row.get("device_id"), {}) if isinstance(row.get("device_id"), str) else {}
+            result[entity] = {"registry_id": row.get("id"), "unique_id": row.get("unique_id"),
+                              "config_entry_id": row.get("config_entry_id"), "platform": row["platform"],
+                              "name": text(row.get("name") or row.get("original_name")),
+                              "area": areas.get(row.get("area_id") or device.get("area_id"), ""),
+                              "disabled": row.get("disabled_by") is not None or device.get("disabled_by") is not None}
+        return result
+
     def enable_nut_sensor(self, device_id, entity_id):
         if not isinstance(entity_id, str) or not ENTITY_ID.fullmatch(entity_id) or not isinstance(device_id, str) or not DEVICE_ID.fullmatch(device_id):
             raise UserError("Choose a NUT sensor from the saved UPS.", "Refresh the power-source list and choose Enable beside that sensor.")

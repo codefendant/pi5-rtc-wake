@@ -55,6 +55,20 @@ async def message_options(hass, connection, msg):
         connection.send_error(msg["id"], "pi_unavailable", str(error))
 
 
+@websocket_api.websocket_command({probatio.Required("type"): DOMAIN + "/wake_device_options",
+                                  probatio.Optional("entry_id", default=""): str})
+@websocket_api.async_response
+async def wake_device_options(hass, connection, msg):
+    if not connection.user.is_admin:
+        connection.send_error(msg["id"], "unauthorized", "An administrator can choose wake devices and online checks.")
+        return
+    try:
+        entry = entry_for(hass, msg["entry_id"])
+        connection.send_result(msg["id"], await entry.runtime_data.client.call("/v1/wake-device-options"))
+    except HomeAssistantError as error:
+        connection.send_error(msg["id"], "pi_unavailable", str(error))
+
+
 @websocket_api.websocket_command({probatio.Required("type"): DOMAIN + "/action",
                                   probatio.Optional("entry_id", default=""): str,
                                   probatio.Required("action"): str,
@@ -78,5 +92,5 @@ async def action(hass, connection, msg):
 async def async_register_dashboard(hass):
     await hass.http.async_register_static_paths([
         StaticPathConfig("/pi5_rtc_wake/pi-cards.js", str(Path(__file__).with_name("frontend") / "pi-cards.js"), cache_headers=False)])
-    for handler in (entries, status, message_options, action):
+    for handler in (entries, status, message_options, wake_device_options, action):
         websocket_api.async_register_command(hass, handler)

@@ -141,8 +141,8 @@ class DashboardTests(unittest.TestCase, Fixture):
         self.assertIn(other_pi, restored["views"][0]["sections"][4]["cards"][0]["cards"])
         self.assertEqual(restored["views"][0]["background"], "/local/my-photo.jpg")
         self.assertEqual(len([card for section in restored["views"][0]["sections"] for card in section["cards"]
-                              if card.get("type", "").startswith("custom:pi-wake-")]), 10)
-        self.assertEqual(len(config["views"][0]["sections"]), 10)
+                              if card.get("type", "").startswith("custom:pi-wake-")]), 11)
+        self.assertEqual(len(config["views"][0]["sections"]), 11)
 
     def test_restore_preserves_users_changed_view_type(self):
         config = {"views": [{"title": "My layout", "type": "masonry", "path": "overview", "cards": [{"type": "picture", "image": "/local/rv.jpg"}]}]}

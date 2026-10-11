@@ -31,7 +31,7 @@ class AssistHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.allowed():
             return
-        if self.path not in ("/v1/status", "/v1/dashboard", "/v1/message-options"):
+        if self.path not in ("/v1/status", "/v1/dashboard", "/v1/message-options", "/v1/wake-device-options"):
             self.send(404, {"message": "That Assist action is not supported."})
             return
         try:
@@ -41,6 +41,10 @@ class AssistHandler(BaseHTTPRequestHandler):
                 from copy import deepcopy
                 with self.assistant.app.lock:
                     result = deepcopy(self.assistant.app.messages.options)
+            elif self.path == "/v1/wake-device-options":
+                from copy import deepcopy
+                with self.assistant.app.lock:
+                    result = deepcopy(self.assistant.app.wake_devices.options)
             else:
                 result = self.assistant.status()
             self.send(200, result)
@@ -55,7 +59,8 @@ class AssistHandler(BaseHTTPRequestHandler):
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
-            if not 1 <= length <= 4096 or self.headers.get("Content-Type", "").split(";")[0] != "application/json":
+            limit = 16384 if self.path == "/v1/dashboard/action" else 4096
+            if not 1 <= length <= limit or self.headers.get("Content-Type", "").split(";")[0] != "application/json":
                 raise ValueError()
             self.connection.settimeout(5)
             value = json.loads(self.rfile.read(length))

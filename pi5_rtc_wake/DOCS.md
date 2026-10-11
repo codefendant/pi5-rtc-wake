@@ -28,6 +28,10 @@ All existing timings and acknowledgements are on the card. Default 15/30/60-minu
 
 Low reserve, exhausted retries, or lost readings during a known outage can cause a final stop without a timed wake. This app does not switch UPS outputs or implement a complete NUT shutdown handoff. If the UPS keeps supplying a halted Pi, utility power returning alone will not restart it. Test the actual output-return path before relying on unattended recovery. [UPS setup and limits](https://github.com/codefendant/pi5-rtc-wake/blob/main/UPS_RECOVERY.md).
 
+## Wake other devices
+
+On the optional Wake other devices card choose your existing Home Assistant Wake on LAN buttons. Add devices and Ping checks through its Home Assistant links, select the matching online sensor if wanted, and save. Test Wake selected before enabling automatic waking after a recorded Calendar wake or every Pi boot. Automatic waking starts off; saving sends nothing. Only wake on utility power uses fresh readings from the UPS card and also applies to manual requests. The card distinguishes requested packets from fresh confirmed network reachability. [Device wake setup](https://github.com/codefendant/pi5-rtc-wake/blob/main/WAKE_DEVICES.md).
+
 ## Messages and Assist
 
 On Messages select Choose phone; discovery opens the settings automatically. Connect the Home Assistant Companion app on the phone first and allow notifications. Select up to twelve readings using suggestions, all readings, categories, or search. Preview a draft without sending, save, and confirm Send status now to check delivery. Optional boot messages include uptime and the next shutdown/wake times. Discovery refresh preserves your draft; a saved missing phone is never silently replaced. [Phone messages](https://github.com/codefendant/pi5-rtc-wake/blob/main/PHONE_MESSAGES.md).

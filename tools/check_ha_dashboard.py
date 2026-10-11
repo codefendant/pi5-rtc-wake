@@ -28,6 +28,8 @@ sys.path.insert(0, str(ROOT / "tests"))
 from test_assist import AssistTests
 from assist_http import AssistHandler
 from dashboard import starter_config, restore_cards
+from wake_devices import ping_template, registry_identity, discover
+from state import UserError
 
 
 async def check():
@@ -113,7 +115,7 @@ async def check():
                 assert not (await command("pi5_rtc_wake/status", entry_id=entry.entry_id))["keep_awake"]
                 resources = await command("lovelace/resources/list")
                 resource = await command("lovelace/resources/create", res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=test")
-                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.9.0-rc.4")
+                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.10.0-rc.1")
                 await command("lovelace/dashboards/create", url_path="pi-wake-sleep", title="Pi Wake & Sleep", icon="mdi:power-sleep", show_in_sidebar=True, require_admin=False)
                 config = starter_config(entry.entry_id)
                 await command("lovelace/config/save", url_path="pi-wake-sleep", config=config)
@@ -123,11 +125,71 @@ async def check():
                 saved["views"][0]["sections"].append({"type": "grid", "cards": [picture]})
                 restored = restore_cards(saved, entry.entry_id)
                 await command("lovelace/config/save", url_path="pi-wake-sleep", config=restored)
-                assert picture in json.loads(json.dumps(restored))["views"][0]["sections"][10]["cards"]
+                assert any(picture in section.get("cards", []) for section in restored["views"][0]["sections"])
                 response = await session.get("http://127.0.0.1:8123/pi5_rtc_wake/pi-cards.js")
                 assert response.status == 200 and "customCards" in await response.text()
 
                 headers = {"Authorization": "Bearer " + admin_token}
+                # Real native WOL config flow/button service; UDP is patched so
+                # verification never sends a packet to a computer.
+                from homeassistant.config_entries import SOURCE_USER
+                import urllib.request
+                from websocket import create_connection
+                from ha_registry import CoreRegistry
+                from services import Supervisor
+                with patch("wakeonlan.send_magic_packet") as send_packet:
+                    wol_flow = await hass.config_entries.flow.async_init("wake_on_lan", context={"source": SOURCE_USER})
+                    wol_created = await hass.config_entries.flow.async_configure(wol_flow["flow_id"], {"mac": "02:00:00:00:00:01"})
+                    assert wol_created["type"] == "create_entry", wol_created
+                    await hass.async_block_till_done()
+                    wol_entry = wol_created["result"]
+                    wol_entity = next(row.entity_id for row in er.async_get(hass).entities.values() if row.config_entry_id == wol_entry.entry_id and row.domain == "button")
+                    registry = er.async_get(hass)
+                    ping_entry = registry.async_get_or_create("binary_sensor", "ping", "simulated-ping", suggested_object_id="test_pc_ping", config_entry=wol_entry)
+                    hass.states.async_set(ping_entry.entity_id, "on", {"device_class": "connectivity"})
+                    old_reported = hass.states.get(ping_entry.entity_id).last_reported
+                    hass.states.async_set(ping_entry.entity_id, "on", {"device_class": "connectivity"})
+                    assert hass.states.get(ping_entry.entity_id).last_reported >= old_reported
+                    supervisor = Supervisor()
+                    supervisor.token = admin_token
+                    def local_core(_url, **values):
+                        return create_connection("ws://127.0.0.1:8123/api/websocket", **values)
+                    def local_request(path, payload=None):
+                        request = urllib.request.Request("http://127.0.0.1:8123" + path.removeprefix("/core"),
+                            data=json.dumps(payload).encode() if payload is not None else None, headers={**headers, "Content-Type": "application/json"})
+                        with urllib.request.urlopen(request, timeout=15) as response:
+                            return json.loads(response.read())
+                    supervisor.request = local_request
+                    with patch("services.CoreRegistry", side_effect=lambda token: CoreRegistry(token, connector=local_core)):
+                        before_layout = await command("lovelace/config", url_path="pi-wake-sleep")
+                        before_layout["views"][0]["sections"] = [section for section in before_layout["views"][0]["sections"] if not any(card.get("type") == "custom:pi-wake-devices-card" for card in section.get("cards", []))]
+                        await command("lovelace/config/save", url_path="pi-wake-sleep", config=before_layout)
+                        await hass.async_add_executor_job(lambda: supervisor.ensure_dashboard(entry.entry_id, add_wake_devices=True))
+                        after_layout = await command("lovelace/config", url_path="pi-wake-sleep")
+                        assert after_layout["views"][0]["sections"][:-1] == before_layout["views"][0]["sections"]
+                        assert after_layout["views"][0]["sections"][-1]["cards"][0]["type"] == "custom:pi-wake-devices-card"
+                        metadata = await hass.async_add_executor_job(supervisor.wake_metadata)
+                        assert metadata[wol_entity]["platform"] == "wake_on_lan" and registry_identity(metadata[wol_entity])
+                        assert metadata[ping_entry.entity_id]["platform"] == "ping"
+                        response = await session.get("http://127.0.0.1:8123/api/states", headers=headers)
+                        from phone_messages import states_by_id
+                        choices = discover(states_by_id(await response.json()), metadata)
+                        assert any(row["entity_id"] == wol_entity for row in choices["devices"])
+                        await hass.async_add_executor_job(supervisor.press_wake_button, wol_entity, registry_identity(metadata[wol_entity]))
+                        assert send_packet.call_count == 1
+                        readings = await hass.async_add_executor_job(supervisor.wake_ping_states, [ping_entry.entity_id])
+                        assert readings["rows"][0]["state"] == "on" and readings["rows"][0]["last_reported"]
+                        assert readings["rows"][0]["identity"] == registry_identity(metadata[ping_entry.entity_id])
+                        registry.async_update_entity(wol_entity, disabled_by=er.RegistryEntryDisabler.USER)
+                        try:
+                            await hass.async_add_executor_job(supervisor.press_wake_button, wol_entity, registry_identity(metadata[wol_entity]))
+                        except UserError:
+                            pass
+                        else:
+                            raise AssertionError("Disabled WOL button was pressed")
+                        assert send_packet.call_count == 1
+                device_options = await command("pi5_rtc_wake/wake_device_options", entry_id=entry.entry_id)
+                assert device_options == {"devices": [], "pings": []}
                 response = await session.post("http://127.0.0.1:8123/api/config/config_entries/flow", headers=headers,
                                               json={"handler": "local_calendar", "show_advanced_options": False})
                 calendar_flow = await response.json()
@@ -153,9 +215,16 @@ async def check():
                 denied = await socket.receive_json()
                 assert not denied["success"] and denied["error"]["code"] == "unauthorized", denied
                 assert not fixture.app.store.data["keep_awake"]
+                await socket.send_json({"id": 4, "type": "pi5_rtc_wake/wake_device_options", "entry_id": entry.entry_id})
+                denied = await socket.receive_json()
+                assert not denied["success"] and denied["error"]["code"] == "unauthorized", denied
+                await socket.send_json({"id": 5, "type": "pi5_rtc_wake/action", "entry_id": entry.entry_id,
+                                        "action": "wake-devices", "payload": {"confirmed": True}})
+                denied = await socket.receive_json()
+                assert not denied["success"] and denied["error"]["code"] == "unauthorized", denied
                 await socket.close()
                 assert fixture.supervisor.reboots == 0
-            print("Real Core passed: dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, and non-admin power/Keep awake denial.")
+            print("Real Core passed: dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, native Wake on LAN flow/registry/button with UDP patched, Ping last-reported template, additive layout upgrade, and non-admin power/device-option/wake denial.")
     finally:
         await hass.async_stop(force=True)
         server.shutdown()

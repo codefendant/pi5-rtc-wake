@@ -1,6 +1,6 @@
 # Pi Wake & Sleep dashboard
 
-The 0.9 preview adds a native Home Assistant dashboard. Move, resize, remove, and add cards with **Edit dashboard**, including ordinary pictures, history graphs, weather, and other Home Assistant cards. The app continues to run the RTC, Calendar, UPS, phone, and Assist functions.
+The dashboard preview adds a native Home Assistant dashboard. Move, resize, remove, and add cards with **Edit dashboard**, including ordinary pictures, history graphs, weather, and other Home Assistant cards. The app continues to run the RTC, Calendar, UPS, phone, and Assist functions.
 
 ## Connect once
 
@@ -14,7 +14,7 @@ No terminal, YAML, personal API token, or extra card download is needed. AI acce
 
 ## One place to manage features
 
-The **Pi Wake & Sleep** dashboard holds Pi status, everyday power controls, Calendar settings, UPS monitoring/protection, Messages, and Assist. Each feature opens its settings on its card. The add-on Web UI is **Setup & maintenance** and holds connection, companion update/reconnection, and support diagnostics only. An active connection hides initial installation instructions.
+The **Pi Wake & Sleep** dashboard holds Pi status, everyday power controls, Calendar settings, UPS monitoring/protection, Messages, Wake other devices, and Assist. Each feature opens its settings on its card. The add-on Web UI is **Setup & maintenance** and holds connection, companion update/reconnection, and support diagnostics only. An active connection hides initial installation instructions.
 
 The optional app sidebar entry is named **Pi setup & maintenance**. Turn off **Show in sidebar** on its Info page if you want just the dashboard entry. That preference is kept; this update does not alter your sidebar choices. Open Web UI and the dashboard setup area still open maintenance.
 
@@ -47,6 +47,7 @@ Keep awake controls this app's power operations. It cannot retract a shutdown al
 ## Optional cards
 
 - **UPS power:** Find and select the UPS supplying the Pi. Monitoring starts separately from automatic protection. Runtime is displayed in monitoring mode when the saved reading is available or the NUT registry identifies one enabled Battery runtime measurement for this UPS. A duration setting or another UPS's sensor is never guessed. Missing, disabled, unavailable, and stale readings have different explanations. Disabled NUT readings can be enabled from the card. **Set up protection** opens detailed settings on the card for shutdown ownership, runtime selection, every retry/emergency threshold, and supply/final-stop acknowledgements. The conditional retry table updates as you edit. Disabling emergency protection and enabling a new policy keep their existing confirmations. **Protection status** shows outage attempts and the separately confirmed pause-timed-retries control. Active readings, refresh, and the native UPS device link remain available.
+- **Wake other devices:** Reuse Home Assistant Wake on LAN buttons, optionally associate Ping sensors, save, and test **Wake selected**. Automatic waking after a recorded Calendar wake or every Pi boot starts off. A utility-power condition uses fresh readings from the selected UPS. Results distinguish requested packets from confirmed network reachability. Settings open on the card and preserve drafts during refreshes. [Setup and behavior](WAKE_DEVICES.md).
 - **Messages:** Select **Choose phone**; discovery automatically opens the settings. Choose a Companion app phone and up to twelve existing readings using suggestions, all readings, categories, or search. **Find phones and readings** refreshes discovery while retaining the draft. **Preview message** previews the draft without sending. Save and send a confirmed test message. Automatic wake messages are separately enabled. Each message includes uptime and the next shutdown/wake times.
 - **Assist:** Enable status access, then select **Assist** in the existing AI agent's **Control Home Assistant** setting. Change requests are separately enabled and wait for approval in the card or app. Turning AI access off keeps the dashboard available.
 - **Controls:** **Keep awake / Resume shutdowns** suspends or resumes all app power operations as described above. Calendar-only changes still use the Calendar card's scheduling control. **Reboot Pi** has a red background, requires confirmation, and is unavailable while Keep awake is on.

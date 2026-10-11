@@ -11,14 +11,14 @@ from state import UserError, atomic_json
 PATH = "pi-wake-sleep"
 RESOURCE = "/pi5_rtc_wake/pi-cards.js"
 DEFAULT_CALENDAR = "Pi Sleep"
-KINDS = ("setup", "status", "shutdown", "wake", "calendar", "ups", "controls", "messages", "assist", "activity")
+KINDS = ("setup", "status", "shutdown", "wake", "calendar", "ups", "controls", "devices", "messages", "assist", "activity")
 
 
 def starter_config(entry_id=""):
     """A real storage dashboard; subsequent updates never replace its config."""
     sections = []
     for kind in KINDS:
-        span = 3 if kind in ("setup", "activity") else 2 if kind == "calendar" else 1
+        span = 3 if kind in ("setup", "activity") else 2 if kind in ("calendar", "devices") else 1
         sections.append({"type": "grid", "column_span": span, "cards": [
             {"type": f"custom:pi-wake-{kind}-card", "entry_id": entry_id,
              "grid_options": {"columns": 12, "rows": "auto"}}]})
@@ -55,6 +55,29 @@ def restore_cards(config, entry_id):
         result["views"].append(native)
     else:
         target["sections"] = keep(target.get("sections", [])) + starter_config(entry_id)["views"][0]["sections"]
+    return result
+
+
+def add_wake_devices_card(config, entry_id):
+    """One additive upgrade; never replace existing cards or customized views."""
+    if not isinstance(config, dict) or not isinstance(config.get("views"), list) or not config["views"]:
+        raise UserError("The dashboard layout could not be read.", "Use Edit dashboard → Add card → Wake other devices.")
+    def present(value):
+        if isinstance(value, list):
+            return any(present(row) for row in value)
+        if isinstance(value, dict):
+            return (value.get("type") == "custom:pi-wake-devices-card" and value.get("entry_id", "") in ("", entry_id)
+                    or any(present(value.get(key)) for key in ("cards", "sections")))
+        return False
+    if any(present(view) for view in config["views"]):
+        return deepcopy(config)
+    result = deepcopy(config)
+    target = next((view for view in result["views"] if isinstance(view, dict) and view.get("path") == "overview"), result["views"][0])
+    section = next(row for row in starter_config(entry_id)["views"][0]["sections"] if row["cards"][0]["type"] == "custom:pi-wake-devices-card")
+    if target.get("type") == "sections":
+        target.setdefault("sections", []).append(section)
+    else:
+        target.setdefault("cards", []).extend(section["cards"])
     return result
 
 
@@ -128,7 +151,9 @@ class Dashboard:
         if (not isinstance(payload, dict) or set(payload) != {"entry_id"}
                 or not isinstance(payload["entry_id"], str) or not re.fullmatch(r"[a-zA-Z0-9_-]{1,100}", payload["entry_id"])):
             raise UserError("The dashboard connection could not be checked.", "Reconnect the dashboard from the app.")
-        result = self.app.supervisor.ensure_dashboard(payload["entry_id"])
+        entry_id = payload["entry_id"]
+        result = self.app.supervisor.ensure_dashboard(entry_id, add_wake_devices=self.app.wake_devices.layout_needed(entry_id))
+        self.app.wake_devices.layout_done(entry_id)
         self.connection = "Connected to Home Assistant. " + result.get("message", "")
         self.restart_needed = False
         if result.get("created"):
@@ -182,6 +207,10 @@ class Dashboard:
             self.app.recovery.save_settings(payload)
         elif action == "message-settings":
             self.app.messages.save_settings(payload)
+        elif action == "wake-device-settings":
+            self.app.wake_devices.save_settings(payload)
+        elif action in ("scan-wake-devices", "wake-devices"):
+            self.app.wake_devices.begin("scan" if action == "scan-wake-devices" else "wake", payload)
         elif action == "assist-settings":
             self.app.assistant.save_settings(payload)
         elif action == "assist-review":
@@ -217,9 +246,9 @@ class Dashboard:
             self.app.begin_job(action, payload)
         else:
             raise UserError("That dashboard action is not supported.", "Update the app and reconnect its dashboard.")
-        if action not in ("check", "scan-ups", "scan-messages", "preview-message"):
+        if action not in ("check", "scan-ups", "scan-messages", "preview-message", "scan-wake-devices", "wake-devices"):
             self.record({"settings": "Calendar settings saved.", "power-settings": "UPS settings saved.",
-                         "message-settings": "Phone settings saved.", "assist-settings": "Assist settings saved.",
+                         "message-settings": "Phone settings saved.", "wake-device-settings": "Device wake settings saved.", "assist-settings": "Assist settings saved.",
                          "cancel": "Current shutdown cancelled; future dates and emergency protection are kept.",
                          "keep-awake": "Keep awake enabled; all app shutdowns suspended." if self.app.store.data["keep_awake"] else "Shutdowns resumed using saved settings.",
                          "confirm-test": "Wake test passed."}.get(action, "Requested: " + action.replace("-", " ") + "."))

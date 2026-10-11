@@ -29,7 +29,7 @@ from assist import Assistant, PORT as ASSIST_PORT
 from assist_http import AssistHandler
 from dashboard import Dashboard
 
-VERSION = "0.9.0-rc.4"
+VERSION = "0.10.0-rc.1"
 LOG = logging.getLogger("pi5_rtc_wake")
 COUNTDOWN = 30
 TEST_SECONDS = 600
@@ -78,6 +78,8 @@ class Application:
         self.assistant = Assistant(self, data)
         self.permissions = {"protected": None, "slug": None}
         self.dashboard = Dashboard(self, data)
+        from wake_devices import WakeDevices
+        self.wake_devices = WakeDevices(self, data)
 
     def _fingerprint(self, snapshot):
         value = snapshot["current_version"] + ":" + snapshot["config_fingerprint"]
@@ -421,6 +423,7 @@ class Application:
                             "runtime": monitor_runtime(self._selected_power(), state["recovery"]["runtime_entity_id"], self.nut_sensor_info["sensors"], self.clock())},
                     "recovery": self.recovery.snapshot(),
                     "messages": self.messages.snapshot(),
+                    "wake_devices": self.wake_devices.snapshot(),
                     "assist": self.assistant.snapshot(),
                     "test_status": state.get("test", {}).get("status", "not_started"),
                     "next_sleep_epoch": next_sleep, "next_wake_epoch": next_wake, "pending": pending, "job": self.job,
@@ -636,6 +639,10 @@ class Application:
                 self.store.save()
             # The lock serializes cancellation and the actual shutdown request.
             # Supervisor handles graceful host shutdown, without forcing a DB migration.
+            if pending["kind"] == "schedule":
+                self.wake_devices.scheduled_shutdown(pending)
+            else:
+                self.wake_devices.other_power_action()
             self.pending["shutdown_requested"] = True
             self.shutdown_requested_at = self.monotonic()
             self.supervisor.shutdown()
@@ -741,6 +748,7 @@ class Application:
                     if serial != self.cancel_serial or self.store.data["keep_awake"]:
                         return True
                     self.shutdown_requested_at = self.monotonic()
+                    self.wake_devices.other_power_action()
                     self.supervisor.reboot()
             elif kind == "ups":
                 self.recovery.start(serial, payload["retry"], payload["reason"], payload.get("emergency", False))
@@ -758,6 +766,7 @@ class Application:
         # Phone/Core requests must not occupy the RTC/UPS control worker.
         threading.Thread(target=self.messages.run, name="phone-messages", daemon=True).start()
         threading.Thread(target=self.assistant.run, name="assist-discovery", daemon=True).start()
+        threading.Thread(target=self.wake_devices.run, name="wake-devices", daemon=True).start()
         while not self.stop_event.is_set():
             self.process_task()
             self.tick()

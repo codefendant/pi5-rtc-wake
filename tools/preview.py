@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_setup import FakeRTC, FakeSupervisor, FakeHost
 from test_phone_messages import configure_phone
+from test_wake_devices import configure_devices
 from assist_install import Installer
 import server
 
@@ -29,6 +30,13 @@ def main():
         if args.protected:
             supervisor.app_info = lambda: {"slug": "local_pi5_rtc_wake", "protected": True}
         configure_phone(supervisor, time.time())
+        configure_devices(supervisor, time.time())
+        def demo_pings(entities):
+            from wake_devices import registry_identity
+            return {"rows": [{"entity_id": entity, "state": "on", "attributes": {},
+                              "last_reported": datetime.now(timezone.utc).isoformat(),
+                              "identity": registry_identity(supervisor.wake_registry[entity])} for entity in entities]}
+        supervisor.wake_ping_states = demo_pings
         supervisor.calendar_list = [{"entity_id": "calendar.demo_pi_sleep", "name": "Demo Pi Sleep"}]
         start = int(time.time()) + 3600
         stamp = lambda epoch: datetime.fromtimestamp(epoch, timezone.utc).isoformat()
@@ -75,7 +83,7 @@ def main():
                     return super().do_POST()
                 try:
                     length = int(self.headers.get("Content-Length", "0"))
-                    if not 1 <= length <= 4096:
+                    if not 1 <= length <= 16384:
                         raise ValueError()
                     request = json.loads(self.rfile.read(length))
                     if request["type"] == "pi5_rtc_wake/status":
@@ -86,6 +94,8 @@ def main():
                         result = [{"entry_id": "demo-entry", "title": "Home Assistant Pi"}]
                     elif request["type"] == "pi5_rtc_wake/message_options":
                         result = app.messages.options
+                    elif request["type"] == "pi5_rtc_wake/wake_device_options":
+                        result = app.wake_devices.options
                     elif request["type"] == "pi5_rtc_wake/action":
                         payload = request.get("payload", {})
                         if request["action"] == "restore-cards":

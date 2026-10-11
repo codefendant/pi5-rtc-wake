@@ -6,7 +6,7 @@ Since 0.9.0-rc.3, the dashboard's **Keep awake** switch suspends **all** shutdow
 
 ## Update first
 
-Follow UPDATE.md to update the same app to 0.9.0-rc.4 and update its dashboard companion. Your Calendar, NUT selection, notifications, settings, and wake evidence are preserved. New control starts **off**. An enabled older policy is paused until shutdown ownership is reviewed and saved in the UPS section. Update and review while utility power is available.
+Follow UPDATE.md to update the same app to 0.10.0-rc.1 and update its dashboard companion. Your Calendar, NUT selection, notifications, settings, and wake evidence are preserved. New control starts **off**. An enabled older policy is paused until shutdown ownership is reviewed and saved in the UPS section. Update and review while utility power is available.
 
 ## Home Assistant setup
 
