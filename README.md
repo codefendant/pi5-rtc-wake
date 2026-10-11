@@ -2,21 +2,21 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.8.0-rc.2 · Public preview · MIT license**
+**0.9.0-rc.1 · Native dashboard preview · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-This preview fixes Connect Assist failing to find Home Assistant's configuration folder. Update the same app, Stop and Start it, and select Connect Assist again. See [ASSIST.md](ASSIST.md) for screen-only setup and supported requests, [VALIDATION.md](VALIDATION.md) for observed results, and [PUBLICATION.md](PUBLICATION.md) for the publishing process. The [0.8.0-rc.2 preview](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.8.0-rc.2) and matching public arm64 image are published and verified.
+This preview adds the editable native Home Assistant dashboard, guided setup cards, and **Create Pi Sleep calendar**. Update the same app, Stop and Start it, and select **Connect dashboard**. Settings and personal cards are kept; AI access is separate. See [DASHBOARD.md](DASHBOARD.md) for setup and personalization, [VALIDATION.md](VALIDATION.md) for observed results, and [PUBLICATION.md](PUBLICATION.md) for publishing.
 
 ## Install and set up
 
 1. Open **Add to Home Assistant**, add the repository, and install **Pi 5 Wake & Sleep** from the app store.
 2. Turn off **Protection mode**, enable **Start on boot** and **Show in sidebar**, and start the app.
-3. Open its Web UI and follow **Setup**. Prepare the Pi if requested, reboot, run the ten-minute wake test, and confirm the automatic return.
-4. Choose a dedicated **Local Calendar** in **Calendar**. Open Home Assistant Calendar to add dates and repeats: **event start = shutdown; event end = wake**.
+3. Open its Web UI and select **Connect dashboard**. Restart Home Assistant if requested and add the discovered companion in Devices & services. In the new **Pi Wake & Sleep** dashboard, follow **Permissions → Pi checks → Wake test**. Prepare/reboot only if requested, then run and confirm the ten-minute test.
+4. Select **Create Pi Sleep calendar**, or choose an existing dedicated calendar. Open Home Assistant Calendar to add dates and repeats: **event start = shutdown; event end = wake**.
 5. Review the upcoming list and enable scheduling.
 
-No end-user terminal, API token, YAML automation, or extra dashboard card is needed. [INSTALL.md](INSTALL.md) gives the screen-by-screen path and help for blocked steps.
+No end-user terminal, API token, YAML automation, or separate card download is needed. Use **Edit dashboard** to add your own pictures, graphs, and other cards. [INSTALL.md](INSTALL.md) gives the screen-by-screen path.
 
 ## Everyday use
 
@@ -69,7 +69,7 @@ Keep this app's **Protection mode off** during use so it can check the host wake
 
 ## Validation and development
 
-The maintainer tested **0.6.0-rc.1** on their Pi 5 and confirmed that disabling Protection mode resolved the **0.7.0-rc.1** installation error. **326 simulated backend tests**, DOM/JavaScript/RTC ABI checks, actual Home Assistant 2026.10.1 companion/tool checks, Chromium, arm64 build, anonymous image download, and production imports pass. [Publishing run 38075883994](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38075883994) records the results. Live companion setup and an AI/voice conversation, actual phone delivery, novice setup, and the remaining UPS hardware checks still need observation.
+The maintainer reports the preceding release working on their Pi 5, including Assist. This dashboard preview adds checks for permissions, native Calendar creation, card editing, settings preservation, and administrator access. Automated release gates cover simulated backend behavior, Chromium interactions, Home Assistant 2026.10.1 APIs, arm64 builds, anonymous image download, and production imports. The new dashboard still needs a usability check on a real Pi; full UPS power-loss and return behavior depends on the hardware.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 

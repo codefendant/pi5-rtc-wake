@@ -1,5 +1,7 @@
 # Getting started
 
+**0.9 native dashboard:** Select **Connect dashboard** in the Web UI, restart Home Assistant if requested, and add the discovered companion in Devices & services. Open **Pi Wake & Sleep** in the sidebar. Existing Assist connections are reused; AI access remains optional. The cards guide permissions, Pi checks, and the wake test. **Create Pi Sleep calendar** creates/reuses the native calendar and leaves scheduling off. Use **Edit dashboard** to add pictures and graphs. **Pi Wake & Sleep settings** retains detailed UPS commissioning and support controls. [Dashboard guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/DASHBOARD.md).
+
 This is a preview release. Calendar scheduling and automatic UPS protection start off. Timed RTC retries require a confirmed continuous supply path; every automatic protection policy requires reviewed shutdown ownership and acknowledgement of a final stop without a verified timed wake.
 
 1. On this app's Info page turn off **Protection mode**, enable **Start on boot** and **Show in sidebar**, and start the app.

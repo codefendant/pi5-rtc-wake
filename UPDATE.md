@@ -1,5 +1,11 @@
 # Update Pi 5 Wake & Sleep
 
+## 0.9 native dashboard preview
+
+Update the same app to **0.9.0-rc.1**, then **Stop → Start**. Open its Web UI and select **Connect dashboard**. Restart **Home Assistant** if requested, and add the discovered companion in **Settings → Devices & services**. If Assist was already connected, the existing integration is reused. Open **Pi Wake & Sleep** in the sidebar; the app's entry is now **Pi Wake & Sleep settings**.
+
+Calendar, UPS, phone, AI choices, and valid wake-test evidence are kept. Another physical wake test is needed only when firmware or wake settings changed. Dashboard setup does not enable optional power, messaging, or AI features. Later updates preserve personal cards. See [DASHBOARD.md](DASHBOARD.md).
+
 ## Public repository installation
 
 Open **Settings → Apps → Pi 5 Wake & Sleep** and select **Update** when Home Assistant offers a new version. Keep the same installed app so its settings are retained. Do not uninstall it. If an update is missing, open the app store's **⋮ → Check for updates** and refresh.

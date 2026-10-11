@@ -122,7 +122,7 @@ class Assistant:
     def run(self):
         """Discovery retries never occupy the RTC/UPS control worker."""
         while not self.app.stop_event.is_set():
-            if self.app.store.data["assist"]["enabled"] and self.app.monotonic() - self.last_discovery >= 120:
+            if (self.app.store.data["assist"]["enabled"] or self.app.store.data["dashboard"]["connected"]) and self.app.monotonic() - self.last_discovery >= 120:
                 if self.operation_lock.acquire(blocking=False):
                     try:
                         self.discover()

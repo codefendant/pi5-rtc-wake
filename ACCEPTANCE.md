@@ -2,7 +2,7 @@
 
 **A person with no technical background can install, test, and enable this app entirely through Home Assistant screens. Updates preserve their settings. Every error explains the next action in plain language.**
 
-The maintainer reports that 0.6.0-rc.1 works on their Pi 5 and has authorized public preview publication. Version 0.7.0-rc.1 adds opt-in phone messages; actual phone delivery still needs observation. Passing automated tests or one maintainer installation alone does not establish the beginner-release requirement. Complete the remaining checks below before removing the preview label or promising unattended UPS recovery.
+The maintainer reports that the 0.8 companion and existing functionality work on their Pi 5 and has authorized the native dashboard preview. The 0.9 interface requires a fresh usability observation, including dashboard setup with AI off, mobile use, default Calendar creation, and custom-card retention through updates. Version 0.7.0-rc.1 adds opt-in phone messages; actual phone delivery still needs observation. Passing automated tests or one maintainer installation alone does not establish the beginner-release requirement. Complete the remaining checks below before removing the preview label or promising unattended UPS recovery.
 
 | Check | Current evidence | Release gate |
 |---|---|---|

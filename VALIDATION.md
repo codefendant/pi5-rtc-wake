@@ -1,3 +1,11 @@
+# Validation — 0.9.0-rc.1 native dashboard preview
+
+Local Python validation passes **344 simulated backend tests**, including dashboard access with AI off, Protection mode before firmware/host inspection, create/reuse Calendar with scheduling off, schema-8 settings and wake-evidence retention, personal-card preservation, authenticated native status, and emergency cancellation boundaries. Python compilation, JavaScript syntax, and the existing DOM interaction checks pass.
+
+The candidate/release workflow also runs Chromium against the native cards at desktop and phone sizes, actual Home Assistant 2026.10.1 integration/entity/Assist/dashboard/Calendar APIs, an arm64 build, and public image/import checks. Publication is blocked until those checks pass. Pi, UPS, and phone services in automated checks are simulated. The revised interface still needs observation on the actual Pi and first-time-user onboarding; the interface does not extend the physical UPS recovery guarantee.
+
+## Earlier release evidence
+
 # Validation — 11 October 2026, 0.8.0-rc.2
 
 The maintainer's rc.1 screenshots show Connect Assist failing before installation with "Home Assistant's configuration folder is not available." Supervisor maps `homeassistant_config` to `/homeassistant` by default, while the installer expected `/homeassistant_config`. The app now explicitly sets the mount path, and failed setup shows the error and next action in the Assist connection summary.
@@ -89,7 +97,7 @@ The updated publishing workflow supports an explicit main-commit release marker,
 
 - [Publishing workflow 38031186599](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38031186599) completed successfully on 10 October 2026 at 06:32 UTC. Backend tests, DOM checks, JavaScript syntax, RTC ABI, real Chromium smoke test, arm64 build/push, anonymous image verification, and preview creation all passed.
 - Release/tag: [v0.6.0-rc.1](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.6.0-rc.1), published as a non-draft pre-release, targeting commit `890427491b8311616e74df8f6058e0251357c337`. The tag's commit was read back and matches that verified publishing commit.
-- Image: `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.6.0-rc.1`. Pushed and anonymously pulled digest: `sha256:9b38d105188464d24dea50a50350296ccc7cb74206814e342ae7f0b65992a739`.
+- Image: `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.6.0-rc.1`. Pushed and anonymously pulled digest: `sha256:9b38d105188464d24dea50a50350296ccc7cb74206814e344ae7f0b65992a739`.
 - The separate anonymous job used a fresh Docker configuration without registry login. It pulled the release image, checked arm64 architecture, imported `server` and `websocket`, and verified `server.VERSION == 0.6.0-rc.1`. No real Pi/UPS operation was executed in CI.
 - All 45 files in the publishing commit's tree match the prepared local content. App Python files and web assets remain byte-for-byte identical to the Pi-tested ZIP; source and test/documentation changes do not substitute for additional physical acceptance.
 - A fresh Home Assistant app-store installation/update, novice completion, and the full long-outage UPS restart path remain unobserved here. The earlier maintainer report is the available physical Pi evidence.

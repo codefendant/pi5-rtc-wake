@@ -11,7 +11,8 @@ from state import UserError, atomic_json
 DOMAIN = "pi5_rtc_wake"
 BUNDLE = Path(__file__).with_name("companion") / DOMAIN
 FILES = ("__init__.py", "api.py", "config_flow.py", "const.py", "llm.py",
-         "manifest.json", "strings.json", "translations/en.json")
+         "manifest.json", "strings.json", "translations/en.json", "dashboard.py", "entity.py",
+         "sensor.py", "binary_sensor.py", "frontend/pi-cards.js")
 
 
 def digest(value):
