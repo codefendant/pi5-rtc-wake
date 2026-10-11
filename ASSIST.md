@@ -2,18 +2,17 @@
 
 Use your existing Home Assistant AI conversation agent, including local Ollama, to ask about this Pi and request changes. The bundled companion is a custom integration that contributes tools to Home Assistant's built-in **Assist** interface, alongside your normal home controls. No new AI account or API key is needed.
 
-Requires **Home Assistant Core 2026.10 or newer** and a model that supports tool calls. Calendar, UPS, setup, and phone functions remain available on earlier Core versions; Connect Assist explains the needed Core update. This feature adds conversation tools. Home Assistant's built-in sentence-based agent and AI Task automations are not connected by this feature.
+Requires **Home Assistant Core 2026.10 or newer** and a model that supports tool calls. The dashboard works with AI access off. Home Assistant's sentence-based agent and AI Task automations are not connected by these conversation tools.
 
 ## Connect through Home Assistant screens
 
-1. Update the **same installed Pi 5 Wake & Sleep app** to **0.8.0-rc.2** and reload its Web UI. If upgrading from rc.1, Stop and then Start the app to apply the corrected configuration-folder mapping.
-2. Open **Assist → Connect Assist** and accept the explanation. It installs the companion and offers a connection through Home Assistant's authenticated Supervisor discovery. No address or token needs to be copied.
-3. If prompted, restart **Home Assistant** from **Settings → System** to load the companion. A Pi reboot is not required.
-4. Open **Settings → Devices & services**, find the discovered **Pi Wake & Sleep** integration, and select **Add/Configure**. Confirm the connection.
-5. Open your existing AI integration's settings, such as **Ollama**, and select **Assist** under **Control Home Assistant**. If other custom APIs are already selected, keep them selected alongside Assist. Use that agent in your existing voice assistant or a new Assist chat.
-6. Ask: **“When will the Home Assistant Pi next shut down and wake?”** Compare the answer with Overview.
+1. Install/update the same app and connect its dashboard following [INSTALL.md](INSTALL.md) or [UPDATE.md](UPDATE.md). The included companion is shared by the dashboard and Assist.
+2. On the dashboard's Assist card, select **Connect Assist** and confirm status access. AI change requests remain off.
+3. In your existing AI integration, such as local Ollama, choose **Assist** under **Control Home Assistant**. Keep your existing conversation agent and voice devices.
+4. Ask “When will the Home Assistant Pi next shut down and wake?”
+5. If wanted, open **Assist settings**, enable change requests, and save. Requests wait for review/approval on the card.
 
-Connecting starts with **status only**. To use controls, enable **Allow Assist change requests and countdown cancellation** in the app and save. These settings are consent for the app's tools; keep using Home Assistant's exposed-entities settings for household temperatures, lights, and other readings.
+Turning AI access off keeps the dashboard available. Companion updates/reconnection use **Open Web UI → Maintenance and connection repair**, followed by a Home Assistant restart only if requested.
 
 ## What you can ask
 
@@ -37,7 +36,7 @@ Approved dates are saved and read back in **Home Assistant Calendar**. Saving an
 
 If a Calendar save response is uncertain, the same request is never submitted twice. Use **Check saved event** and inspect Calendar. An approved write awaiting confirmation stays reviewable rather than expiring as an unapproved draft. Dismissing it does not remove a possibly saved event.
 
-AI cannot approve its own request, confirm a physical wake test, change firmware, select a different UPS, disable emergency protection, run arbitrary commands, or call arbitrary services through these tools. Existing RTC/UPS checks still apply. Keep-awake cannot cancel an emergency low-battery shutdown.
+AI cannot approve its own request, confirm a physical wake test, change firmware, select a different UPS, disable emergency protection, run arbitrary commands, or call arbitrary services through these tools. Existing RTC/UPS checks still apply. Assist’s current-countdown cancellation cannot cancel emergency low-battery shutdowns. The dashboard’s confirmed global Keep awake switch suspends all app shutdowns until resumed.
 
 ## Updates and access
 

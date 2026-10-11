@@ -137,7 +137,7 @@ class Assistant:
         settings = validate_settings(payload)
         with self.app.lock:
             if settings["enabled"] and not self.installer.installed():
-                raise UserError("Connect Assist before enabling it.", "Select Connect Assist and finish the discovered integration in Home Assistant.")
+                raise UserError("The dashboard companion needs an update before enabling Assist.", "Open the app Web UI → Maintenance and connection repair → Update / reconnect dashboard, then restart Home Assistant if requested.")
             old = self.app.store.data["assist"]
             self.app.store.data["assist"] = settings
             try:
@@ -151,9 +151,9 @@ class Assistant:
 
     def _allowed(self, *, writes=False):
         if not self.app.store.data["assist"]["enabled"]:
-            raise UserError("Assist access is off.", "Enable Assist in the Pi Wake & Sleep app.")
+            raise UserError("Assist access is off.", "Select Connect Assist on the Pi Wake & Sleep dashboard.")
         if writes and not self.app.store.data["assist"]["allow_requests"]:
-            raise UserError("Assist is set to status only.", "Enable change requests in the app before asking Assist to change a schedule or cancel a countdown.")
+            raise UserError("Assist is set to status only.", "Open Assist settings on the dashboard and enable change requests before asking Assist to change a schedule or cancel a countdown.")
 
     def _expire(self):
         for key, item in list(self.requests.items()):

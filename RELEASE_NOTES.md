@@ -1,22 +1,25 @@
-# Pi 5 Wake & Sleep 0.9.0-rc.3 — Keep awake and dashboard fixes
+# Pi 5 Wake & Sleep 0.9.0-rc.4 — Dashboard interface cleanup
 
-**Keep awake** now suspends every shutdown and reboot from this app, including future Calendar shutdowns, UPS retries, emergency low-battery UPS shutdowns, wake tests, and reviewed AI power operations. It cancels an unsubmitted countdown and stays on until you select **Resume shutdowns**, including after an app restart. The **Pi status power icon** toggles the same switch with confirmation. An amber state explains that UPS shutdown protection is suspended.
+Pi Wake & Sleep is now the main place to manage every feature. The add-on Web UI is **Setup & maintenance**, with first-time dashboard connection, companion updates/reconnection, and support diagnostics. It no longer duplicates Calendar, UPS, Messages, Assist, or everyday power controls. Working connections hide installation instructions; a saved installation choice alone is not treated as proof of a live connection.
 
-Resume restores your saved choices without enabling previously disabled features. Calendar dates, wake-test evidence, UPS policy, phones, AI settings, and personal cards are kept. Monitoring, messages, and status access continue. A shutdown already submitted to Home Assistant, or independently issued by NUT or another controller, cannot be cancelled by this app.
+- **UPS protection is on the dashboard:** runtime selection, all timings/thresholds, shutdown ownership, supply/final-stop acknowledgements, enable/disable confirmations, the conditional retry table, and pause-timed-retries control.
+- **UPS details remain available:** active readings, disabled NUT readings, refresh, and the native UPS device link.
+- **Phone setup opens after discovery:** choose a phone, show suggested/all readings or a category, preview a draft without sending, and refresh discovery while preserving unsaved choices.
+- **Completed Pi setup stays compact:** Review setup and Setup & maintenance remain accessible. User-opened details and unsaved forms retain their state during refreshes.
 
-- Activity, message preview, Pi checks, NUT readings, and Assist dropdowns stay open during refresh until you close them.
-- Select a Calendar item to open Home Assistant's native Calendar/event view, then select **Edit**. Home Assistant handles recurrence and permissions. **Open Calendar** remains available if the shortcut cannot load.
-- The UPS card can display verified Battery runtime while protection is off. It uses the saved sensor or one registry-identified runtime measurement for this UPS. Disabled, missing, unavailable, and stale readings give different next actions instead of waiting indefinitely.
-- Phone and Assist status explain when Keep awake is on.
+Scheduling, RTC checks, UPS shutdown policy, phone delivery, and reviewed AI actions retain their existing behavior. **Keep awake**, Calendar dates, feature choices, qualified wake evidence, outage records, and personal dashboard cards are kept. No optional feature is enabled automatically. Calendar remains the only date store.
 
-## Update the existing app and cards
+## Update your existing installation
 
-1. Update the same installed app to **0.9.0-rc.3**, then **Stop → Start**.
-2. Open its Web UI and select **Connect dashboard** to update the companion and cards.
-3. Restart **Home Assistant** if requested, then refresh your browser and open **Pi Wake & Sleep**.
+1. Update the same installed app to **0.9.0-rc.4**, then **Stop → Start**.
+2. Select **Open Web UI → Maintenance and connection repair → Update / reconnect dashboard**, and confirm.
+3. Restart **Home Assistant** if requested, then refresh your browser and open **Pi Wake & Sleep** in the sidebar. An existing integration is reused; add the discovered integration in Devices & services only if this is the first connection.
+4. The optional app sidebar entry is renamed **Pi setup & maintenance**. You can turn off its **Show in sidebar** option once the dashboard works; Open Web UI and the dashboard setup area keep it accessible.
 
-Existing installations start with Keep awake **off**; no power feature is silently enabled. Your personal dashboard layout is preserved. Another physical wake test and **Restore default Pi cards** are not needed for this update.
+Do not uninstall or restore default cards for this update. A new physical wake test is needed only when firmware or wake settings changed.
 
-[Dashboard guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/DASHBOARD.md) · [Update guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/UPDATE.md)
+## Validation and scope
 
-Publication requires backend regressions, Chromium desktop/phone checks, actual Home Assistant 2026.10.1 interface checks, an arm64 build, and anonymous image/import verification. Automated hardware, phone services, and the browser Calendar bridge are simulated; actual Core APIs are checked separately. This remains a preview.
+368 simulated backend tests pass locally. Publication requires the Chromium installation/dashboard/mobile suites, real Home Assistant 2026.10.1 API checks, arm64 image build, and anonymous public image/import checks. The browser's Home Assistant chrome, Calendar focus bridge, Pi/UPS services, and phone are simulated. A new user still needs to try the complete installation/activation path on real HAOS before the beginner acceptance requirement can be declared complete.
+
+This remains a public preview. Existing physical UPS output-return and independent-controller limits apply; this interface cleanup adds no UPS output command or new shutdown policy. See [INSTALL.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/INSTALL.md), [DASHBOARD.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/DASHBOARD.md), and [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md).

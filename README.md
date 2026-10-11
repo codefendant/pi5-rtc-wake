@@ -2,16 +2,16 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.9.0-rc.3 · Native dashboard preview · MIT license**
+**0.9.0-rc.4 · Native dashboard preview · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
-This preview adds the editable native Home Assistant dashboard, guided setup cards, and **Create Pi Sleep calendar**. Update the same app, Stop and Start it, and select **Connect dashboard**. Settings and personal cards are kept; AI access is separate. See [DASHBOARD.md](DASHBOARD.md) for setup and personalization, [VALIDATION.md](VALIDATION.md) for observed results, and [PUBLICATION.md](PUBLICATION.md) for publishing.
+This preview makes the editable Home Assistant dashboard the main interface, including detailed UPS protection settings. The add-on Web UI becomes **Setup & maintenance** for connection and diagnostics. Update the same app, Stop and Start it, and select **Connect dashboard** on first connection, or **Maintenance and connection repair → Update / reconnect dashboard** when updating. Settings and personal cards are kept; AI access is separate. See [DASHBOARD.md](DASHBOARD.md) for setup and personalization, [VALIDATION.md](VALIDATION.md) for observed results, and [PUBLICATION.md](PUBLICATION.md) for publishing.
 
 ## Install and set up
 
 1. Open **Add to Home Assistant**, add the repository, and install **Pi 5 Wake & Sleep** from the app store.
-2. Turn off **Protection mode**, enable **Start on boot** and **Show in sidebar**, and start the app.
+2. Turn off **Protection mode**, enable **Start on boot**, and start the app.
 3. Open its Web UI and select **Connect dashboard**. Restart Home Assistant if requested and add the discovered companion in Devices & services. In the new **Pi Wake & Sleep** dashboard, follow **Permissions → Pi checks → Wake test**. Prepare/reboot only if requested, then run and confirm the ten-minute test.
 4. Select **Create Pi Sleep calendar**, or choose an existing dedicated calendar. Open Home Assistant Calendar to add dates and repeats: **event start = shutdown; event end = wake**.
 5. Review the upcoming list and enable scheduling.
@@ -20,28 +20,30 @@ No end-user terminal, API token, YAML automation, or separate card download is n
 
 ## Everyday use
 
-| Section | What you do |
+| Dashboard card | What you do |
 |---|---|
-| Overview | Check readiness, UPS state, and the next scheduled off periods. |
-| Calendar | Select the calendar, review dates, and open native Calendar editing. |
-| UPS | Choose the power source, enable available NUT readings, and configure optional notices or shutdown protection. |
-| Messages | Choose a Companion app phone and readings, preview/send status, and enable optional messages after Pi boot. |
-| Assist | Connect your existing AI agent, ask status questions, and review requested Calendar changes or Pi operations. |
-| Setup | Review Pi checks, preparation, reboot, and wake-test evidence when needed. |
+| Pi status / controls | Check uptime, Keep awake or resume saved shutdowns, and confirm a reboot. |
+| Next shutdown / wake | See the next active Calendar times. |
+| Calendar | Select/create the calendar, review dates, and open native Calendar editing. |
+| UPS power | Choose the source, view/enable readings, and configure every protection setting on the card. |
+| Messages | Choose a phone/readings, preview drafts, send confirmed status, and enable optional boot messages. |
+| Assist | Enable status access, configure reviewed requests, and approve/dismiss them. |
+| Pi setup | Review checks and wake-test evidence; completed setup stays compact. |
+| Recent activity | Inspect recent actions and optionally restore default Pi cards. |
 
-After a confirmed wake test, Overview opens by default. Setup returns when a problem needs attention. Details stay collapsed until needed.
+**Setup & maintenance** is available from Open Web UI and the dashboard's setup area. It holds connection repair and support details. The optional app sidebar shortcut can be hidden on Info once the dashboard works. User-opened details and unsaved forms stay in place during refreshes.
 
 ## Calendar scheduling
 
 Home Assistant Calendar is the only schedule store. Use timed events, with **All day** off. For an overnight period, choose the next day as the event end. Off periods must last ten minutes to seven days and must not overlap or touch. The app shows the next ten occurrences within 31 days and refreshes about every 30 seconds.
 
-Before shutdown, the app rechecks the event and verifies an RTC alarm for its exact end. Changed, deleted, unavailable, or stale Calendar data keeps the Pi on. **Keep Pi awake** cancels that occurrence. An interrupted countdown is not retried after restart, and firmware or wake-setting changes require a new test.
+Before shutdown, the app rechecks the event and verifies an RTC alarm for its exact end. Changed, deleted, unavailable, or stale Calendar data keeps the Pi on. **Keep awake** persistently suspends every app shutdown/reboot, including future Calendar dates and emergency UPS shutdowns, until **Resume shutdowns**. Saved dates and feature choices are kept. Independent controllers remain outside this app’s control. An interrupted countdown is not retried after restart, and firmware or wake-setting changes require a new test.
 
 ## UPS monitoring and optional protection
 
-A NUT server communicates with the UPS; Home Assistant's **Network UPS Tools** integration supplies its readings. In **UPS**, select **Find power sources**, choose the source supplying this Pi, and save. Power notices and automatic shutdown protection are opt-in.
+A NUT server communicates with the UPS; Home Assistant's **Network UPS Tools** integration supplies its readings. On **UPS power**, select **Find my UPS**, then **Choose UPS**, choose the source supplying this Pi, and save. Power notices and automatic shutdown protection are opt-in.
 
-**Additional NUT readings you can enable** activates actual disabled sensors on the selected NUT device. The app explains any reload or Home Assistant restart needed. Device-level disablement is handled on the linked native device page. Auxiliary status such as `OL TEST` is accepted; conflicting status remains Unknown.
+**Enable additional NUT readings** activates actual disabled sensors on the selected NUT device. The app explains any reload or Home Assistant restart needed. Device-level disablement is handled on the linked native device page. Auxiliary status such as `OL TEST` is accepted; conflicting status remains Unknown.
 
 Optional protection uses an explicitly selected runtime sensor and reviewed shutdown ownership. Conditional RTC retries are separate from emergency low-battery protection: cancelling a retry or failing an RTC check preserves commissioned emergency protection for the same UPS. Default 15/30/60-minute retries require at least **24/39/69 minutes** of estimated remaining runtime at each decision; a 30-minute threshold normally funds only the first retry at unchanged load.
 
@@ -49,13 +51,13 @@ See [UPS_RECOVERY.md](UPS_RECOVERY.md) for the policy and setup. Developers can 
 
 ## Phone messages
 
-In **Messages**, select **Find phones and readings**, choose your Home Assistant Companion app phone, and optionally choose up to twelve existing readings. Every message includes Pi uptime and the next shutdown/wake times, or explains why no time is planned. Preview a draft without sending, save, and use **Send status now** to check your phone. Enable **Send a message after this Pi starts** for the next host boot; app restarts do not duplicate a wake message.
+On **Messages**, select **Choose phone**; discovery opens the settings automatically. Choose your Home Assistant Companion app phone, and optionally choose up to twelve existing readings. Every message includes Pi uptime and the next shutdown/wake times, or explains why no time is planned. Preview a draft without sending, save, and use **Send status now** to check your phone. Enable **Send a message after this Pi starts** for the next host boot; app restarts do not duplicate a wake message.
 
 Suggestions use native entity types, device classes, areas, visibility, and the selected NUT UPS. They do not copy the exact dashboard summary order. For today's energy, select an existing daily sensor. Delivery uses the Companion app's existing connection and may use local or Apple/Google push; acceptance by Home Assistant is not a delivery receipt. Phone work is separate from the RTC/UPS worker. See [PHONE_MESSAGES.md](PHONE_MESSAGES.md).
 
 ## AI and voice interaction
 
-Requires Core **2026.10 or newer** for the optional native tool platform. Select **Assist → Connect Assist**, restart Home Assistant if requested, and add the discovered companion integration. Choose **Assist** under **Control Home Assistant** in your existing AI integration, such as local Ollama. No end-user token, YAML, terminal, or new AI account is needed.
+Requires Core **2026.10 or newer** for the optional native tool platform. After connecting the dashboard, select **Connect Assist** on its card to enable status access. Choose **Assist** under **Control Home Assistant** in your existing AI integration, such as local Ollama. No end-user token, YAML, terminal, or new AI account is needed.
 
 Start with Pi uptime, next shutdown/wake dates, and selected UPS status. Change requests start off. When enabled, dates, scheduling changes, wake tests, and reboots wait for approval in the app. Approved dates go only into Home Assistant Calendar. Cancelling an ordinary current countdown preserves future events and emergency UPS protection. Other household readings use your normal Assist exposed entities. See [ASSIST.md](ASSIST.md).
 
@@ -69,7 +71,7 @@ Keep this app's **Protection mode off** during use so it can check the host wake
 
 ## Validation and development
 
-**366 simulated backend tests** pass, including persistent Keep awake, suspension of emergency UPS shutdowns, saved-policy resume, and runtime display in monitoring mode. Release gates additionally cover Chromium desktop/phone interactions, actual Home Assistant 2026.10.1 APIs, arm64 builds, anonymous image download, and production imports. [VALIDATION.md](VALIDATION.md) records verified publication results. The maintainer reports the native dashboard working on their Pi 5; full UPS power-loss and return behavior depends on the hardware.
+**368 simulated backend tests** pass, including persistent Keep awake, suspension of emergency UPS shutdowns, saved-policy resume, and runtime display in monitoring mode. Release gates additionally cover Chromium desktop/phone interactions, actual Home Assistant 2026.10.1 APIs, arm64 builds, anonymous image download, and production imports. [VALIDATION.md](VALIDATION.md) records verified publication results. The maintainer reports the native dashboard working on their Pi 5; full UPS power-loss and return behavior depends on the hardware.
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 

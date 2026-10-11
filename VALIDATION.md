@@ -1,3 +1,15 @@
+# Validation — 0.9.0-rc.4 dashboard interface cleanup
+
+The maintainer reports the rc.3 interface and functionality working on their Pi 5 and requested one clear place to manage features. This cleanup moves detailed UPS commissioning to the native card and makes the app Web UI Setup & maintenance. No scheduling, RTC, UPS policy, phone-delivery, or AI power behavior changed. Schema 10 and all saved choices/layouts are retained.
+
+Local validation passes **368 simulated backend tests**, including two added cases distinguishing saved installation from recent authenticated contact and proving that connection status never changes power/feature choices. JavaScript syntax and maintenance DOM checks pass. Publication still requires the browser, real Core, arm64 build, and anonymous image/import gates. Verified publication evidence will be recorded after those complete.
+
+Browser coverage is extended for first-time connection/permissions/consent, connected-screen cleanup, support/dropdown persistence, repair errors, full UPS commissioning/thresholds/confirmations/drafts, automatic phone discovery, draft preview, refresh with choices retained, personal card editing, existing Keep awake/Calendar behavior, admin boundaries, and mobile fit. Home Assistant chrome and the Calendar focus bridge are simulated. The required real Home Assistant 2026.10.1 check separately covers native APIs; Pi/UPS/phone services remain simulated.
+
+The beginner acceptance requirement is retained: a new user can install and activate features through Home Assistant screens, and an existing user can manage everything from the dashboard. Automated paths are evidence of the implementation, not observation of a new nontechnical user. Real HAOS novice installation/activation and actual upgraded UI observation remain acceptance checks. No real Pi shutdown/reboot or phone send was performed by the development harness.
+
+## Earlier release evidence
+
 # Validation — 0.9.0-rc.3 Keep awake and dashboard fixes
 
 The maintainer requested persistent suspension of all app shutdowns, stable dropdowns, a Pi status toggle, native Calendar editing, and runtime display while monitoring. Schema 10 adds a boolean Keep awake choice, defaulting off on upgrade. Calendar dates, feature choices, wake evidence, and personal cards are retained. Global suspension includes emergency UPS shutdowns and app reboots; normal saved-policy and fresh-reading checks resume when the user confirms Resume shutdowns.
