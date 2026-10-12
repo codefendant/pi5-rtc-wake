@@ -149,7 +149,9 @@ async def check():
                 entry.runtime_data.dashboard_attempt = -float("inf")
                 with patch("services.CoreRegistry", side_effect=lambda token: CoreRegistry(token, connector=local_core)), \
                      patch.object(fixture.supervisor, "ensure_dashboard", side_effect=supervisor.ensure_dashboard):
-                    await entry.runtime_data.async_request_refresh()
+                    # Simulate the next periodic update directly; a user-requested
+                    # refresh can be debounced while the initial load is recent.
+                    await entry.runtime_data.async_refresh()
                 assert fixture.app.snapshot()["dashboard"]["ready"]
                 assert entry.runtime_data.data["dashboard"]["ready"]
                 assert await command("lovelace/config", url_path="pi-wake-sleep") == restored
@@ -247,7 +249,7 @@ async def check():
                 assert not denied["success"] and denied["error"]["code"] == "unauthorized", denied
                 await socket.close()
                 assert fixture.supervisor.reboots == 0
-            print("Real Core passed: dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, native Wake on LAN flow/registry/button with UDP patched, Ping last-reported template, additive layout upgrade, and non-admin power/device-option/wake denial.")
+            print("Real Core passed: fresh dashboard creation and cached-companion readiness recheck with personal cards retained, dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, native Wake on LAN flow/registry/button with UDP patched, Ping last-reported template, additive layout upgrade, and non-admin power/device-option/wake denial.")
     finally:
         await hass.async_stop(force=True)
         server.shutdown()
