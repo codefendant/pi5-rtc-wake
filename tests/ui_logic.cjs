@@ -66,7 +66,16 @@ async function main() {
   assert.equal(ui.node('restart-link').hidden,false);
   assert.equal(ui.node('connect-dashboard').hidden,true);
   assert.equal(ui.node('connection-steps').hidden,false); // Installation is not a live connection.
-  ui.fixture.dashboard.active=true; ui.fixture.dashboard.restart_needed=false; ui.render();
+  assert.equal(ui.node('open-dashboard').hidden,true); // A new install must not link to a nonexistent dashboard.
+  ui.fixture.dashboard.restart_needed=false; ui.render();
+  assert.match(ui.node('connection-message').textContent,/Under Discovered/);
+  ui.fixture.dashboard.active=true; ui.render();
+  assert.equal(ui.node('open-dashboard').hidden,true); // Contact alone is not successful creation.
+  ui.fixture.dashboard.setup_error={message:'Dashboard could not be created.',action:'Reconnect in Devices & services.'}; ui.render();
+  assert.match(ui.node('connection-message').textContent,/could not be created/);
+  assert.match(ui.node('support-text').value,/Reconnect in Devices/);
+  ui.fixture.dashboard.ready=true; ui.fixture.dashboard.setup_error=null; ui.render();
+  assert.equal(ui.node('open-dashboard').hidden,false);
   assert.equal(ui.node('connection-heading').textContent,'Your dashboard is connected');
   assert.equal(ui.node('connection-steps').hidden,true);
   assert.equal(ui.node('connected-help').hidden,false);

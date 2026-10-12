@@ -365,10 +365,10 @@ class WakeDeviceTests(unittest.TestCase, Fixture):
         self.assertEqual(upgraded["views"][0]["sections"][:-1], config["views"][0]["sections"])
         self.assertEqual(add_wake_devices_card(upgraded, "entry-a"), upgraded)
         self.supervisor.dashboard_config = config
-        self.app.dashboard.ready({"entry_id": "entry-a"})
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
         self.supervisor.dashboard_config["views"][0]["sections"].pop()
         removed = deepcopy(self.supervisor.dashboard_config)
-        self.app.dashboard.ready({"entry_id": "entry-a"})
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
         self.assertEqual(self.supervisor.dashboard_config, removed)
 
 

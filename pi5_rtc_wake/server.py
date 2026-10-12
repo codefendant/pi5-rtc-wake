@@ -29,7 +29,7 @@ from assist import Assistant, PORT as ASSIST_PORT
 from assist_http import AssistHandler
 from dashboard import Dashboard
 
-VERSION = "0.10.0-rc.1"
+VERSION = "0.10.0-rc.2"
 LOG = logging.getLogger("pi5_rtc_wake")
 COUNTDOWN = 30
 TEST_SECONDS = 600
@@ -51,6 +51,7 @@ class Application:
         self.cancel_serial = 0
         self.checks = {"ok": False, "message": "Checking this Pi…", "action": "Keep the Pi on while setup checks finish.", "items": []}
         self.host_snapshot = None
+        self.last_os_identity = None
         self.last_refresh = -math.inf
         self.message = {"text": self.store.notice or "Welcome. Start with the Pi checks below.", "action": "", "error": bool(self.store.notice)}
         self.csrf = secrets.token_urlsafe(32)
@@ -89,7 +90,10 @@ class Application:
         items = []
         try:
             os_info = self.supervisor.os_info()
-            LOG.info("Home Assistant OS detected: board=%r version=%r", os_info.get("board"), os_info.get("version"))
+            os_identity = (os_info.get("board"), os_info.get("version"))
+            if os_identity != self.last_os_identity:
+                LOG.info("Home Assistant OS detected: board=%r version=%r", *os_identity)
+                self.last_os_identity = os_identity
             # /os/info reports HAOS BOARD_ID, not SUPERVISOR_MACHINE.
             # The Pi 5's values are rpi5-64 and raspberrypi5-64 respectively.
             if os_info.get("board") != "rpi5-64":

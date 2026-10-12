@@ -1,3 +1,10 @@
+# 0.10.0-rc.2
+
+- Prevent the fresh-install dashboard link from opening before the integration creates its dashboard. Highlight the required restart and Devices & services confirmation.
+- Require matching loaded companion code before registering cards. Show failed setup checks in the Web UI, logs, and support details.
+- Recheck dashboard readiness after an app restart while preserving personal cards and settings.
+- Reduce repetitive OS-detection logging; hardware checks and power behavior are unchanged.
+
 # 0.9.0-rc.4
 
 - Make the native dashboard the main interface for every feature; reduce the app Web UI to Setup & maintenance and rename its optional sidebar shortcut.

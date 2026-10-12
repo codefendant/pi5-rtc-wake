@@ -11,7 +11,7 @@ import aiohttp
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN, PORT, PROTOCOL
+from .const import COMPANION_VERSION, DOMAIN, PORT, PROTOCOL
 
 
 def validate_connection(config, slug):
@@ -79,11 +79,15 @@ class Coordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         try:
             value = await self.client.dashboard_status()
-            if value.get("dashboard", {}).get("connected") and not self.dashboard_ready and time.monotonic() - self.dashboard_attempt >= 60:
+            if (value.get("dashboard", {}).get("connected")
+                    and (not self.dashboard_ready or not value["dashboard"].get("ready"))
+                    and time.monotonic() - self.dashboard_attempt >= 60):
                 self.dashboard_attempt = time.monotonic()
                 try:
-                    await self.client.call("/v1/dashboard/ready", {"entry_id": self.config_entry.entry_id})
+                    await self.client.call("/v1/dashboard/ready", {"entry_id": self.config_entry.entry_id,
+                                                                "companion_version": COMPANION_VERSION})
                     self.dashboard_ready = True
+                    value["dashboard"].update(ready=True, restart_needed=False, setup_error=None)
                 except HomeAssistantError as error:
                     value["dashboard"]["connection"] = str(error)
             return value
