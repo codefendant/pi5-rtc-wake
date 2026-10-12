@@ -40,18 +40,60 @@ class DashboardTests(unittest.TestCase, Fixture):
         self.app.dashboard.connect({"confirmed": True})
         self.assertFalse(self.app.snapshot()["dashboard"]["active"])
         self.assertTrue(self.app.dashboard.status()["dashboard"]["active"])
+        self.assertFalse(self.app.snapshot()["dashboard"]["ready"])
         self.assertTrue(self.app.snapshot()["dashboard"]["restart_needed"])
-        self.app.dashboard.ready({"entry_id": "entry-a"})
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
         self.assertFalse(self.app.snapshot()["dashboard"]["restart_needed"])
+        self.assertTrue(self.app.snapshot()["dashboard"]["ready"])
         self.advance(90)
         self.assertFalse(self.app.snapshot()["dashboard"]["active"])
         self.assertTrue(self.app.store.data["dashboard"]["connected"])
         self.assertTrue(self.app.dashboard.status()["dashboard"]["active"])
 
+    def test_failed_creation_is_visible_after_contact_and_polling(self):
+        self.app.dashboard.connect({"confirmed": True})
+        self.app.dashboard.status()
+        with patch.object(self.supervisor, "ensure_dashboard", side_effect=UserError("Dashboard could not be created.", "Reconnect in Devices & services.")):
+            with self.assertRaises(UserError):
+                self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
+        status = self.app.dashboard.status()["dashboard"]
+        self.assertTrue(status["active"])
+        self.assertFalse(status["ready"])
+        self.assertEqual(status["setup_error"]["action"], "Reconnect in Devices & services.")
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
+        status = self.app.dashboard.status()["dashboard"]
+        self.assertTrue(status["ready"])
+        self.assertIsNone(status["setup_error"])
+
+    def test_old_loaded_companion_cannot_add_cards_before_update(self):
+        for payload in ({"entry_id": "entry-a"}, {"entry_id": "entry-a", "companion_version": "0.10.0-rc.1"}):
+            with patch.object(self.supervisor, "ensure_dashboard") as ensure:
+                with self.assertRaisesRegex(UserError, "older Pi dashboard companion"):
+                    self.app.dashboard.ready(payload)
+                ensure.assert_not_called()
+            status = self.app.snapshot()["dashboard"]
+            self.assertFalse(status["ready"])
+            self.assertIn("restart Home Assistant", status["setup_error"]["action"])
+
+    def test_restart_requires_dashboard_recheck_and_keeps_personal_cards(self):
+        self.app.dashboard.connect({"confirmed": True})
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
+        user = {"type": "picture", "image": "/local/family.jpg"}
+        self.supervisor.dashboard_config["views"][0]["sections"].append({"type": "grid", "cards": [user]})
+        original = deepcopy(self.supervisor.dashboard_config)
+        self.app = self.new_app()
+        self.assertTrue(self.app.store.data["dashboard"]["connected"])
+        self.assertFalse(self.app.snapshot()["dashboard"]["ready"])
+        self.app.dashboard.status()
+        self.assertFalse(self.app.snapshot()["dashboard"]["ready"])
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
+        self.assertTrue(self.app.snapshot()["dashboard"]["ready"])
+        self.assertEqual(self.supervisor.dashboard_config, original)
+
     def test_live_connection_status_does_not_change_saved_feature_choices(self):
         before = deepcopy(self.app.store.data)
         self.app.dashboard.status()
-        self.app.dashboard.ready({"entry_id": "entry-a"})
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
         self.assertEqual(self.app.store.data, before)
         self.assertEqual(self.supervisor.shutdowns, 0)
         self.assertEqual(self.supervisor.reboots, 0)
@@ -123,11 +165,11 @@ class DashboardTests(unittest.TestCase, Fixture):
             self.assertEqual(original[key], restored.data[key])
 
     def test_dashboard_creation_and_updates_preserve_existing_personal_cards(self):
-        self.app.dashboard.ready({"entry_id": "entry-a"})
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
         user = {"type": "picture", "image": "/local/family.jpg"}
         self.supervisor.dashboard_config["views"][0]["sections"].append({"type": "grid", "cards": [user]})
         original = deepcopy(self.supervisor.dashboard_config)
-        self.app.dashboard.ready({"entry_id": "entry-a"})
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
         self.assertEqual(self.supervisor.dashboard_config, original)
 
     def test_restore_keeps_nested_personal_cards_and_metadata(self):

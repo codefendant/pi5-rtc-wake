@@ -27,7 +27,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_assist import AssistTests
 from assist_http import AssistHandler
-from dashboard import starter_config, restore_cards
+from dashboard import Dashboard, starter_config, restore_cards
+from ha_registry import CoreRegistry
+from services import Supervisor
+from websocket import create_connection
+import urllib.request
 from wake_devices import ping_template, registry_identity, discover
 from state import UserError
 
@@ -115,10 +119,21 @@ async def check():
                 assert not (await command("pi5_rtc_wake/status", entry_id=entry.entry_id))["keep_awake"]
                 resources = await command("lovelace/resources/list")
                 resource = await command("lovelace/resources/create", res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=test")
-                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.10.0-rc.1")
-                await command("lovelace/dashboards/create", url_path="pi-wake-sleep", title="Pi Wake & Sleep", icon="mdi:power-sleep", show_in_sidebar=True, require_admin=False)
+                await command("lovelace/resources/update", resource_id=resource["id"], res_type="module", url="/pi5_rtc_wake/pi-cards.js?v=0.10.0-rc.2")
+                # Exercise first dashboard creation through the actual app
+                # readiness endpoint and real Core APIs, not a prefilled layout.
+                assert not any(row["url_path"] == "pi-wake-sleep" for row in await command("lovelace/dashboards/list"))
+                supervisor = Supervisor()
+                supervisor.token = admin_token
+                def local_core(_url, **values):
+                    return create_connection("ws://127.0.0.1:8123/api/websocket", **values)
+                fixture.app.dashboard.ready_entry_id = None
+                with patch("services.CoreRegistry", side_effect=lambda token: CoreRegistry(token, connector=local_core)), \
+                     patch.object(fixture.supervisor, "ensure_dashboard", side_effect=supervisor.ensure_dashboard):
+                    created = await hass.async_add_executor_job(lambda: fixture.app.dashboard.ready({
+                        "entry_id": entry.entry_id, "companion_version": native.COMPANION_VERSION}))
+                assert created["created"] and fixture.app.snapshot()["dashboard"]["ready"]
                 config = starter_config(entry.entry_id)
-                await command("lovelace/config/save", url_path="pi-wake-sleep", config=config)
                 saved = await command("lovelace/config", url_path="pi-wake-sleep")
                 assert saved == config, saved
                 picture = {"type": "picture", "image": "/local/my-rv.jpg"}
@@ -126,6 +141,20 @@ async def check():
                 restored = restore_cards(saved, entry.entry_id)
                 await command("lovelace/config/save", url_path="pi-wake-sleep", config=restored)
                 assert any(picture in section.get("cards", []) for section in restored["views"][0]["sections"])
+                # The app can restart while the HA companion stays loaded.
+                # Its previous successful check must not hide missing readiness.
+                fixture.app.dashboard = Dashboard(fixture.app, fixture.temp.name)
+                assert not fixture.app.snapshot()["dashboard"]["ready"]
+                assert entry.runtime_data.dashboard_ready
+                entry.runtime_data.dashboard_attempt = -float("inf")
+                with patch("services.CoreRegistry", side_effect=lambda token: CoreRegistry(token, connector=local_core)), \
+                     patch.object(fixture.supervisor, "ensure_dashboard", side_effect=supervisor.ensure_dashboard):
+                    # Simulate the next periodic update directly; a user-requested
+                    # refresh can be debounced while the initial load is recent.
+                    await entry.runtime_data.async_refresh()
+                assert fixture.app.snapshot()["dashboard"]["ready"]
+                assert entry.runtime_data.data["dashboard"]["ready"]
+                assert await command("lovelace/config", url_path="pi-wake-sleep") == restored
                 response = await session.get("http://127.0.0.1:8123/pi5_rtc_wake/pi-cards.js")
                 assert response.status == 200 and "customCards" in await response.text()
 
@@ -133,10 +162,6 @@ async def check():
                 # Real native WOL config flow/button service; UDP is patched so
                 # verification never sends a packet to a computer.
                 from homeassistant.config_entries import SOURCE_USER
-                import urllib.request
-                from websocket import create_connection
-                from ha_registry import CoreRegistry
-                from services import Supervisor
                 with patch("wakeonlan.send_magic_packet") as send_packet:
                     wol_flow = await hass.config_entries.flow.async_init("wake_on_lan", context={"source": SOURCE_USER})
                     wol_created = await hass.config_entries.flow.async_configure(wol_flow["flow_id"], {"mac": "02:00:00:00:00:01"})
@@ -224,7 +249,7 @@ async def check():
                 assert not denied["success"] and denied["error"]["code"] == "unauthorized", denied
                 await socket.close()
                 assert fixture.supervisor.reboots == 0
-            print("Real Core passed: dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, native Wake on LAN flow/registry/button with UDP patched, Ping last-reported template, additive layout upgrade, and non-admin power/device-option/wake denial.")
+            print("Real Core passed: fresh dashboard creation and cached-companion readiness recheck with personal cards retained, dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, native Wake on LAN flow/registry/button with UDP patched, Ping last-reported template, additive layout upgrade, and non-admin power/device-option/wake denial.")
     finally:
         await hass.async_stop(force=True)
         server.shutdown()

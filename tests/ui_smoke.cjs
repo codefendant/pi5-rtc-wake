@@ -36,6 +36,25 @@ async function main() {
     assert.deepEqual(installed.recovery.settings,before.recovery.settings);
     assert.equal(installed.dashboard.active,false);
     assert.equal(await page.locator('#connection-steps').isVisible(),true);
+    assert.equal(await page.locator('#open-dashboard').isVisible(),false);
+    // Restarted app and companion contact without creation must still direct
+    // a first-time user to the native integration confirmation.
+    const waiting=structuredClone(installed);
+    waiting.dashboard.restart_needed=false;
+    await page.route('**/api/status',route=>route.fulfill({json:waiting}));
+    await page.reload();
+    await page.getByRole('link',{name:'Finish in Devices & services ↗'}).waitFor();
+    assert.equal(await page.locator('#open-dashboard').isVisible(),false);
+    assert.match(await page.locator('#connection-message').textContent(),/Under Discovered/);
+    await page.screenshot({path:'ui-artifacts/install-finish-desktop.png',fullPage:true});
+    waiting.dashboard.active=true;
+    await page.reload();
+    assert.equal(await page.locator('#open-dashboard').isVisible(),false);
+    waiting.dashboard.setup_error={message:'Dashboard could not be created.',action:'Reconnect in Devices & services.'};
+    await page.reload();
+    await page.getByText('Dashboard could not be created.',{exact:false}).first().waitFor();
+    assert.equal(await page.locator('#open-dashboard').isVisible(),false);
+    await page.unroute('**/api/status');
     // Simulate the companion completing its connection; real Core does this in
     // the separately required integration/API job.
     await page.goto(url+'native');

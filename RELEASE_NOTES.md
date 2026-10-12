@@ -1,27 +1,15 @@
-# Pi 5 Wake & Sleep 0.10.0-rc.1 — Wake other devices
+# Pi 5 Wake & Sleep 0.10.0-rc.2 — Dashboard connection repair
 
-The optional **Wake other devices** dashboard card reuses Home Assistant's existing Wake on LAN buttons. Choose compatible computers, optionally associate a Ping sensor with each, save, and test **Wake selected**. Automatic waking starts **off**.
+A fresh installation could show **Open Pi Wake & Sleep** after installing its companion, before Home Assistant had created the dashboard. Opening that link returned **404: Not Found**. The setup page now highlights the next required step and waits for successful creation before showing the link.
 
-- Wake manually, after a recorded Calendar RTC wake, or after every Pi boot.
-- Optionally require fresh UPS readings showing utility power before waking other loads.
-- Show each device's result: requested, checking, reachable, or not confirmed. Ping proves network reachability at that time, not application readiness.
-- Add devices and online checks through Home Assistant's integration screens. Device selection and sending require an administrator.
-- Preserve unsaved settings and expanded details during dashboard refreshes. Add the new card once without replacing personal cards or the existing layout.
-- Claim requests on disk before sending; do not repeat uncertain automatic requests after an app restart. Device requests run separately from Pi/UPS power control.
+- Highlight Home Assistant restart and **Finish in Devices & services**. Under Discovered, add Pi Wake & Sleep, then Submit and Finish.
+- Show dashboard setup failures in the app, support details, and logs instead of reporting contact as completed setup.
+- Check the loaded companion version before registering cards; update/restart guidance prevents new cards loading against older companion code.
+- Recheck the dashboard after an app restart without replacing your layout or personal cards.
+- Log OS detection when the board/version changes instead of every routine check.
 
-Calendar remains the date store. Existing RTC setup, Pi shutdown policy, Keep awake, UPS protection, Messages, and Assist behavior are retained. Saving device settings never sends a packet or starts automation on the current boot.
+Update the same app, **Stop → Start**, then open **Web UI → Maintenance and connection repair → Update / reconnect dashboard**. Restart Home Assistant when requested and refresh the browser. For a first connection, finish adding the discovered integration in Devices & services. Open the dashboard when **Your dashboard is connected** appears.
 
-## Update your existing installation
+Schema 11, saved feature choices, Calendar dates, valid wake evidence, and personal cards are kept. RTC/UPS power behavior, Messages, Assist permissions, and Wake other devices are unchanged. This remains a public preview. Automated checks exercise real Home Assistant APIs with simulated Pi/UPS/phone/device services; physical wake and UPS recovery still require testing on the actual installation.
 
-1. Update the same installed app to **0.10.0-rc.1**, then **Stop → Start**.
-2. Open **Web UI → Maintenance and connection repair → Update / reconnect dashboard** and confirm.
-3. Restart **Home Assistant** if requested, refresh your browser, and open **Pi Wake & Sleep**.
-4. Select **Wake other devices → Choose devices**. Select your Wake on LAN buttons and matching Ping sensors if wanted. Choose a UPS or turn off **Only wake on utility power**. Save and test **Wake selected**, then enable automatic waking if wanted.
-
-Do not uninstall or restore default cards. Schema 11 preserves existing settings, dates, wake evidence, and personal cards. A new Pi wake test is needed only when firmware or wake settings changed.
-
-## Verification and scope
-
-402 simulated backend cases pass locally, with JavaScript syntax and maintenance UI logic checks. Publication also requires Chromium desktop/mobile checks, actual Home Assistant 2026.10.1 registry/button/template and admin-boundary checks, an arm64 image build, and anonymous public image/import verification. Network packet sending is patched in the real Core check; no physical computer was woken during automated tests.
-
-This remains a public preview. Test the chosen computers and Ping sensors on your own network before relying on automatic waking. This feature adds no remote shutdown, PoE switching, or external RTC support. See [WAKE_DEVICES.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/WAKE_DEVICES.md), [UPDATE.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/UPDATE.md), and [VALIDATION.md](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md).
+[Install](https://github.com/codefendant/pi5-rtc-wake/blob/main/INSTALL.md) · [Update](https://github.com/codefendant/pi5-rtc-wake/blob/main/UPDATE.md) · [Validation](https://github.com/codefendant/pi5-rtc-wake/blob/main/VALIDATION.md)

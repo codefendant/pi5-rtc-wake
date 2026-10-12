@@ -1,5 +1,17 @@
 # Update Pi 5 Wake & Sleep
 
+## 0.10.0-rc.2 dashboard connection repair
+
+1. Update the **same installed app** to **0.10.0-rc.2**, then **Stop → Start**.
+2. Open **Web UI → Maintenance and connection repair → Update / reconnect dashboard** and confirm.
+3. Restart **Home Assistant** through **Settings → ⋮ → Restart Home Assistant** when requested, then refresh the browser.
+4. For a first connection, select **Finish in Devices & services**. Under **Discovered**, add **Pi Wake & Sleep**, then **Submit** and **Finish**. An existing configured integration is reused; allow up to a minute for its dashboard check.
+5. Open the dashboard after **Your dashboard is connected** appears, or through its sidebar entry.
+
+The setup page previously offered a dashboard link as soon as the companion was installed, before a first-time user had added its integration. That could open **404: Not Found**. The link now waits for successful dashboard creation, and the page highlights the required restart/integration step. Setup errors stay visible in the Web UI and support details. A loaded older companion cannot register new cards until it has been updated and Home Assistant restarted. App restarts trigger another dashboard check without replacing personal cards.
+
+Schema 11, feature choices, valid wake evidence, Calendar dates, and personal cards are retained. RTC/UPS scheduling, phone messages, Assist permissions, and device waking behavior are unchanged. Routine OS detection is logged once per detected board/version change; checks continue normally.
+
 ## 0.10.0-rc.1 Wake other devices
 
 1. Update the **same installed app** to **0.10.0-rc.1**, then **Stop → Start**.

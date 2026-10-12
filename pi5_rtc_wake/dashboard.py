@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 import json
+import logging
 from pathlib import Path
 import re
 import threading
@@ -11,6 +12,7 @@ from state import UserError, atomic_json
 PATH = "pi-wake-sleep"
 RESOURCE = "/pi5_rtc_wake/pi-cards.js"
 DEFAULT_CALENDAR = "Pi Sleep"
+LOG = logging.getLogger("pi5_rtc_wake")
 KINDS = ("setup", "status", "shutdown", "wake", "calendar", "ups", "controls", "devices", "messages", "assist", "activity")
 
 
@@ -88,6 +90,9 @@ class Dashboard:
         self.connection = "Connect the dashboard to begin."
         self.restart_needed = False
         self.last_contact = None
+        self.ready_entry_id = None
+        self.setup_error = None
+        self.companion_version = json.loads((self.app.assistant.installer.bundle / "manifest.json").read_text())["version"]
         self.history_path = Path(data) / "activity.json"
         try:
             rows = json.loads(self.history_path.read_text())
@@ -108,6 +113,8 @@ class Dashboard:
     def snapshot(self):
         return {"connected": self.app.store.data["dashboard"]["connected"],
                 "active": self.last_contact is not None and self.app.monotonic() - self.last_contact < 90,
+                "ready": self.ready_entry_id is not None and not self.restart_needed,
+                "setup_error": deepcopy(self.setup_error),
                 "connection": self.connection, "restart_needed": self.restart_needed,
                 "path": "/" + PATH, "activity": deepcopy(self.history)}
 
@@ -136,11 +143,14 @@ class Dashboard:
                     self.app.store.data["dashboard"] = old
                     raise
                 self.restart_needed = self.restart_needed or changed
+                self.ready_entry_id = None
+                self.setup_error = None
             self.app.supervisor.assist_discovery(8098, token)
             self.connection = "Restart Home Assistant, then add Pi Wake & Sleep in Devices & services." if changed else "Open Devices & services and add the discovered Pi Wake & Sleep integration."
             self.app.message = {"text": "Dashboard companion installed." if changed else "Dashboard connection offered.",
                                 "action": self.connection, "error": False}
             self.record("Dashboard connection offered to Home Assistant.")
+            LOG.info("Dashboard companion %s installed/offered. %s", self.companion_version, self.connection)
         except UserError as error:
             self.connection = f"{error.message} {error.action}"
             raise
@@ -148,16 +158,29 @@ class Dashboard:
             self.operation_lock.release()
 
     def ready(self, payload):
-        if (not isinstance(payload, dict) or set(payload) != {"entry_id"}
+        if (not isinstance(payload, dict) or set(payload) not in ({"entry_id"}, {"entry_id", "companion_version"})
                 or not isinstance(payload["entry_id"], str) or not re.fullmatch(r"[a-zA-Z0-9_-]{1,100}", payload["entry_id"])):
             raise UserError("The dashboard connection could not be checked.", "Reconnect the dashboard from the app.")
         entry_id = payload["entry_id"]
-        result = self.app.supervisor.ensure_dashboard(entry_id, add_wake_devices=self.app.wake_devices.layout_needed(entry_id))
+        try:
+            if payload.get("companion_version") != self.companion_version:
+                raise UserError("Home Assistant is using an older Pi dashboard companion.",
+                                "Open the app Web UI → Maintenance and connection repair → Update / reconnect dashboard, then restart Home Assistant and refresh the browser.")
+            result = self.app.supervisor.ensure_dashboard(entry_id, add_wake_devices=self.app.wake_devices.layout_needed(entry_id))
+        except UserError as error:
+            self.ready_entry_id = None
+            self.setup_error = {"message": error.message, "action": error.action}
+            self.connection = f"{error.message} {error.action}"
+            LOG.warning("Dashboard setup is incomplete: %s %s", error.message, error.action)
+            raise
         self.app.wake_devices.layout_done(entry_id)
         self.connection = "Connected to Home Assistant. " + result.get("message", "")
         self.restart_needed = False
+        self.ready_entry_id = entry_id
+        self.setup_error = None
         if result.get("created"):
             self.record("Pi dashboard created. You can add your own cards through Edit dashboard.")
+            LOG.info("Pi Wake & Sleep dashboard created; open it from the Home Assistant sidebar.")
         return result
 
     def status(self):

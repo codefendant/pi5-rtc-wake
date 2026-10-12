@@ -1,3 +1,13 @@
+# Validation — 0.10.0-rc.2 dashboard connection repair
+
+The maintainer’s fresh-install screenshot shows **404: Not Found** at `/pi-wake-sleep`, with the app running and Protection mode off. The setup page exposed the dashboard link on saved installation consent before the integration had created a dashboard. Authenticated companion contact also did not establish successful registration.
+
+The repair requires successful dashboard creation/reuse and matching loaded companion code before showing the dashboard link. Installation, restart, and integration confirmation are distinct steps. Backend setup failures remain available in the Web UI and support details. A cached companion rechecks readiness after an app restart while preserving personal cards. Schema 11 and all power/feature behavior are retained.
+
+Local validation passes **405 simulated backend tests**, JavaScript syntax, Python compilation, and DOM interaction checks. New cases cover premature links, contact without creation, old loaded companions, retained setup errors, retry success, and restart/settings/personal-card preservation. Required CI additionally checks Chromium desktop/phone behavior, actual Home Assistant 2026.10.1 creation/recheck APIs, and the arm64 image. Publication evidence is recorded after those gates pass. No physical Pi power operation or notification send is performed by these checks.
+
+## Earlier release evidence
+
 # Validation — 0.10.0-rc.1 Wake other devices
 
 Local checks pass 402 simulated backend cases, JavaScript syntax, compilation, and the maintenance DOM fixture. New cases cover schema-10 migration, settings/backup preservation, no request on saving, next-boot-only enabling, recorded Calendar wakes, ordinary/test boot exclusion, startup delay and expiry, per-boot deduplication, uncertain responses across restart, stable entity identity, storage failures, fresh mains checks, post-request Ping observations, stale/restored/replaced Ping rejection, emergency interruption, power-lock isolation, and additive card migration/removal.

@@ -1,15 +1,15 @@
 # Install Pi 5 Wake & Sleep
 
-**Public preview 0.10.0-rc.1.** Use Home Assistant OS 18 or newer on a Raspberry Pi 5, Home Assistant Core 2026.10 or newer, and a main power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
+**Public preview 0.10.0-rc.2.** Use Home Assistant OS 18 or newer on a Raspberry Pi 5, Home Assistant Core 2026.10 or newer, and a main power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
 
 ## Install once
 
 1. Open [Add to Home Assistant](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake), confirm the repository, and install **Pi 5 Wake & Sleep** from the app store.
 2. On the app's Info page, turn **Protection mode off**, enable **Start on boot**, and select **Start**. If it was already running with Protection mode on, use **Stop → turn Protection mode off → Start**.
 3. Select **Open Web UI**. This opens **Setup & maintenance**. Select **Connect dashboard** and confirm.
-4. Restart **Home Assistant** from **Settings → System** if requested. This connection step needs a Home Assistant restart, not a Pi reboot.
-5. Open **Settings → Devices & services** and add the discovered **Pi Wake & Sleep** integration. An existing Assist companion is reused.
-6. Open **Pi Wake & Sleep** in the sidebar. Continue Pi setup and activate the features you want on its cards.
+4. If requested, open **Settings → ⋮ → Restart Home Assistant**, select the normal restart, and wait for it to return.
+5. Select **Finish in Devices & services** on the setup page, or open **Settings → Devices & services**. Under **Discovered**, select **Add** for **Pi Wake & Sleep**, then **Submit** and **Finish**. An existing companion is reused.
+6. Wait for **Your dashboard is connected**, then select **Open Pi Wake & Sleep**, or use its sidebar entry. Continue Pi setup and activate the features you want on its cards.
 
 No terminal, YAML, personal API token, extra card download, or AI account is needed. The dashboard works with AI access off. If the repository link cannot open your Home Assistant, use the app store's **⋮ → Repositories** to add `https://github.com/codefendant/pi5-rtc-wake`, then **⋮ → Check for updates**.
 

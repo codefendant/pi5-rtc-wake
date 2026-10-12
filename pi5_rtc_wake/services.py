@@ -148,7 +148,7 @@ class Supervisor:
     def ensure_dashboard(self, entry_id, *, add_wake_devices=False):
         """Register our cards and create an editable dashboard without replacing one."""
         from dashboard import PATH, RESOURCE, starter_config, add_wake_devices_card
-        resource_url = RESOURCE + "?v=0.10.0-rc.1"
+        resource_url = RESOURCE + "?v=0.10.0-rc.2"
         try:
             with CoreRegistry(self.token) as core:
                 rows = core.command("lovelace/resources/list")
