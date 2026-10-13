@@ -21,6 +21,10 @@ module.exports = async function compactDashboard({browser, start}) {
     assert.equal(await summary.getByRole('button',{name:'Keep awake',exact:true}).isEnabled(),true);
     assert((await summary.boundingBox()).height < 240,'Ready summary should fit in one compact desktop row');
     const before=(await (await page.request.get(ready.url+'api/status')).json());
+    await summary.evaluate(el=>el.style.maxWidth='330px');
+    assert.equal(await summary.evaluate(el=>el.shadowRoot.querySelector('ha-card').scrollWidth<=el.getBoundingClientRect().width+1),true,'Summary should also fit a narrow desktop section');
+    await page.screenshot({path:'ui-artifacts/compact-narrow-desktop.png',fullPage:true});
+    await summary.evaluate(el=>el.style.maxWidth='');
     await page.screenshot({path:'ui-artifacts/compact-dashboard-desktop.png',fullPage:true});
 
     await summary.getByRole('button',{name:'Settings',exact:true}).click();
