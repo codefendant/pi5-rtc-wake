@@ -1,3 +1,10 @@
+## 0.10.0-rc.4
+
+- Explain companion restart requirements through a Home Assistant notification immediately after installation/update; persist pending status across app restarts and clear after matching dashboard readiness.
+- Add a native Settings → Repairs reminder for later updates once the new companion has loaded. The first install uses a notification because the companion is not running yet.
+- Show phone choices as visible single-selection rows and highlight the chosen phone; rename discovery refresh and keep selected phones/readings when refreshing, including unavailable saved phones.
+- Keep the existing power policy, ten-minute wake test, Calendar dates, phone delivery consent, valid wake evidence, and personal cards. No new physical wake test is required just for this update.
+
 # 0.10.0-rc.3
 
 - First-time Pi setup now explains the first sleep and wake cycle before the test button and again in its confirmation. Home Assistant and automations are unavailable for roughly ten minutes, plus startup time.

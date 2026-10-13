@@ -290,6 +290,27 @@ class InstallerTests(unittest.TestCase):
         with self.assertRaises(UserError): self.installer.install()
         self.assertEqual(target.read_text(), "# User customization\n")
 
+    def test_restart_requirement_is_retained_until_confirmed_loaded(self):
+        self.assertFalse(self.installer.restart_required())
+        self.installer.install()
+        self.assertTrue(self.installer.restart_required())
+        self.assertFalse(self.installer.install())
+        replacement = Installer(self.temp.name, self.root)
+        self.assertTrue(replacement.restart_required())
+        replacement.confirm_loaded()
+        self.assertFalse(self.installer.restart_required())
+        self.assertFalse(replacement.install())
+        self.assertFalse(replacement.restart_required())
+
+    def test_legacy_installation_receipt_is_kept_on_update(self):
+        self.installer.install()
+        record = json.loads(self.installer.receipt.read_text())
+        record.pop("restart_required")
+        self.installer.receipt.write_text(json.dumps(record))
+        self.assertFalse(self.installer.restart_required())
+        self.assertFalse(self.installer.install())
+        self.assertEqual(json.loads(self.installer.receipt.read_text())["files"], record["files"])
+
     def test_unknown_files_and_symlink_paths_block_install(self):
         target = self.root / "custom_components"
         outside = Path(self.temp.name) / "outside"

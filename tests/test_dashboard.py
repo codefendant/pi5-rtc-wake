@@ -65,6 +65,67 @@ class DashboardTests(unittest.TestCase, Fixture):
         self.assertTrue(status["ready"])
         self.assertIsNone(status["setup_error"])
 
+    def test_restart_notification_survives_app_restart_and_clears_on_matching_readiness(self):
+        before = deepcopy(self.app.store.data)
+        self.app.dashboard.connect({"confirmed": True})
+        self.assertEqual(self.supervisor.companion_notices, [True])
+        self.assertTrue(self.app.assistant.installer.restart_required())
+        self.app = self.new_app()
+        self.assertTrue(self.app.snapshot()["dashboard"]["restart_needed"])
+        self.app.dashboard.sync_restart_notice()
+        self.assertEqual(self.supervisor.companion_notices, [True, True])
+        self.app.dashboard.status()
+        self.assertTrue(self.app.assistant.installer.restart_required())
+        with self.assertRaises(UserError):
+            self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": "old"})
+        self.assertTrue(self.app.assistant.installer.restart_required())
+        self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
+        self.assertEqual(self.supervisor.companion_notices, [True, True, False])
+        self.assertFalse(self.app.assistant.installer.restart_required())
+        for key in ("assist", "schedule", "recovery", "messages", "test"):
+            self.assertEqual(self.app.store.data[key], before[key])
+        self.assertEqual(self.supervisor.reboots, 0)
+        self.assertEqual(self.supervisor.shutdowns, 0)
+
+    def test_notification_failure_is_informational_and_retries_with_a_bound(self):
+        with patch.object(self.supervisor, "companion_restart_notice", side_effect=UserError("Core is starting", "Wait")) as notice:
+            self.app.dashboard.connect({"confirmed": True})
+            self.assertFalse(self.app.snapshot()["dashboard"]["restart_notice_ok"])
+            self.assertTrue(self.app.store.data["dashboard"]["connected"])
+            self.app.dashboard.sync_restart_notice()
+            self.advance(59)
+            self.app.dashboard.sync_restart_notice()
+            self.assertEqual(notice.call_count, 1)
+            self.advance(1)
+            self.app.dashboard.sync_restart_notice()
+            self.assertEqual(notice.call_count, 2)
+        self.advance(60)
+        self.app.dashboard.sync_restart_notice()
+        self.assertTrue(self.app.snapshot()["dashboard"]["restart_notice_ok"])
+        self.assertEqual(self.supervisor.reboots, 0)
+        self.assertEqual(self.supervisor.shutdowns, 0)
+
+    def test_failed_dashboard_creation_does_not_clear_restart_notification(self):
+        self.app.dashboard.connect({"confirmed": True})
+        with patch.object(self.supervisor, "ensure_dashboard", side_effect=UserError("Not ready", "Try again")):
+            with self.assertRaises(UserError):
+                self.app.dashboard.ready({"entry_id": "entry-a", "companion_version": self.app.dashboard.companion_version})
+        self.assertEqual(self.supervisor.companion_notices, [True])
+        self.assertTrue(self.app.assistant.installer.restart_required())
+
+    def test_homeassistant_restart_notice_uses_only_its_own_notification(self):
+        supervisor = Supervisor()
+        with patch.object(supervisor, "request") as request:
+            supervisor.companion_restart_notice(True)
+            path, payload = request.call_args.args
+            self.assertEqual(path, "/core/api/services/persistent_notification/create")
+            self.assertEqual(payload["notification_id"], "pi5_rtc_wake_homeassistant_restart_required")
+            self.assertIn("restart Home Assistant", payload["title"])
+            self.assertIn("[Settings](/config)", payload["message"])
+            supervisor.companion_restart_notice(False)
+            request.assert_called_with("/core/api/services/persistent_notification/dismiss", {
+                "notification_id": payload["notification_id"]})
+
     def test_old_loaded_companion_cannot_add_cards_before_update(self):
         for payload in ({"entry_id": "entry-a"}, {"entry_id": "entry-a", "companion_version": "0.10.0-rc.1"}):
             with patch.object(self.supervisor, "ensure_dashboard") as ensure:

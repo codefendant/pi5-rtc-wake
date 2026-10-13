@@ -1,5 +1,15 @@
 # Update Pi 5 Wake & Sleep
 
+## 0.10.0-rc.4 restart reminders and phone choices
+
+1. Update the **same installed app** to **0.10.0-rc.4**, then **Stop → Start**.
+2. Open **Web UI → Maintenance and connection repair → Update / reconnect dashboard** and confirm.
+3. Restart **Home Assistant** when requested, then refresh the browser.
+
+Companion installation/update now creates a Home Assistant notification explaining the restart. Once this new companion has loaded, later updates can also show a Settings → Repairs reminder. The first installation uses a notification because the new integration has not loaded yet. Restarting the app preserves the pending reminder; a matching, successfully registered dashboard clears it. This step restarts Home Assistant rather than the entire Pi.
+
+Messages now shows phone choices as visible, selectable rows. Choose one phone, choose your readings, preview, save, and confirm a test send. **Refresh phones and readings** preserves your draft. Your saved phone and readings, scheduling, UPS settings, valid wake test, and personal cards are kept. No new wake test is required just to update. Do not uninstall the app.
+
 ## 0.10.0-rc.3 first sleep & wake guidance
 
 1. Update the **same installed app** to **0.10.0-rc.3**, then **Stop → Start**.

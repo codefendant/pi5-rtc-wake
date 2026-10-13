@@ -74,7 +74,7 @@ def validate_record(value):
 
 def states_by_id(rows):
     if not isinstance(rows, list) or len(rows) > 50000:
-        raise UserError("Home Assistant's readings could not be listed.", "Wait for Home Assistant to finish starting, then select Find phones and readings.")
+        raise UserError("Home Assistant's readings could not be listed.", "Wait for Home Assistant to finish starting, then select Refresh phones and readings.")
     return {row["entity_id"]: row for row in rows if isinstance(row, dict)
             and isinstance(row.get("entity_id"), str) and ENTITY.fullmatch(row["entity_id"])
             and isinstance(row.get("attributes"), dict) and isinstance(row.get("state"), str)}
@@ -243,7 +243,7 @@ class PhoneMessages:
         states = states_by_id(self.app.supervisor.message_states())
         metadata = self.app.supervisor.message_metadata()
         if not isinstance(metadata, dict) or len(metadata) > 50000:
-            raise UserError("Home Assistant's entity settings could not be read.", "Try Find phones and readings again after Home Assistant has started.")
+            raise UserError("Home Assistant's entity settings could not be read.", "Try Refresh phones and readings again after Home Assistant has started.")
         services = self.app.supervisor.message_services()
         temperature_unit = self.app.supervisor.message_temperature_unit() if any(entity.startswith("climate.") for entity in states) else ""
         with self.app.lock:
@@ -263,7 +263,7 @@ class PhoneMessages:
                 raise UserError("A phone message action is in progress.", "Wait for it to finish, then save.")
             old = deepcopy(self.app.store.data)
             if settings["enabled"] and (not self.discovered or settings["recipient"] not in {row["id"] for row in self.options["recipients"]}):
-                raise UserError("Choose a phone that Home Assistant can notify.", "Find phones and readings, select your phone, and save again.")
+                raise UserError("Choose a phone that Home Assistant can notify.", "Refresh phones and readings, select your phone, and save again.")
             # Saving/enabling is not a Pi boot and must not send a surprise push.
             self.app.store.data["messages"] = settings
             try:
@@ -338,7 +338,7 @@ class PhoneMessages:
     def _error(self, error):
         with self.app.lock:
             self.result = {"message": error.message if isinstance(error, UserError) else "Phone messages could not be prepared.",
-                           "action": error.action if isinstance(error, UserError) else "Try Find phones and readings again. Pi shutdown protection continues normally.", "error": True}
+                           "action": error.action if isinstance(error, UserError) else "Try Refresh phones and readings again. Pi shutdown protection continues normally.", "error": True}
 
     def process_task(self):
         try:

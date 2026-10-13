@@ -21,6 +21,7 @@ from homeassistant.config_entries import SOURCE_HASSIO, ConfigEntryState
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.helpers import llm
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.service_info.hassio import HassioServiceInfo
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -110,6 +111,42 @@ async def check():
                 assert status["test_status"] == "passed" and not status["enabled"]
                 assert status["dashboard"]["active"], "Authenticated companion contact must be visible to setup UI"
                 assert "csrf" not in status and owner._secret() not in json.dumps(status)
+                notice_calls = []
+                notifier = Supervisor()
+                with patch.object(notifier, "request", side_effect=lambda path, payload: notice_calls.append((path, payload))):
+                    notifier.companion_restart_notice(True)
+                    notifier.companion_restart_notice(False)
+                create_path, create_payload = notice_calls[0]
+                assert create_path.endswith("/persistent_notification/create")
+                await command("call_service", domain="persistent_notification", service="create", service_data=create_payload)
+                notifications = await command("persistent_notification/get")
+                assert any(row["notification_id"] == create_payload["notification_id"] and "restart Home Assistant" in row["title"] for row in notifications), notifications
+                dismiss_path, dismiss_payload = notice_calls[1]
+                assert dismiss_path.endswith("/persistent_notification/dismiss")
+                await command("call_service", domain="persistent_notification", service="dismiss", service_data=dismiss_payload)
+                assert not any(row["notification_id"] == create_payload["notification_id"] for row in await command("persistent_notification/get"))
+                # A running companion raises a native Settings repair for a
+                # later app/companion update; a fresh install uses the app's
+                # persistent notification until this integration can load.
+                restart_id = "homeassistant_restart_required_" + entry.entry_id
+                expected_version = fixture.app.dashboard.companion_version
+                fixture.app.dashboard.companion_version = "next-test-version"
+                fixture.app.dashboard.restart_needed = True
+                fixture.app.dashboard.ready_entry_id = None
+                entry.runtime_data.dashboard_attempt = -float("inf")
+                await entry.runtime_data.async_refresh()
+                registry = ir.async_get(hass)
+                issue = registry.async_get_issue("pi5_rtc_wake", restart_id)
+                assert issue is not None and issue.severity == ir.IssueSeverity.WARNING
+                assert issue.translation_key == "homeassistant_restart_required"
+                listed_issues = await command("repairs/list_issues")
+                assert any(row["domain"] == "pi5_rtc_wake" and row["issue_id"] == restart_id for row in listed_issues["issues"]), listed_issues
+                fixture.app.dashboard.companion_version = expected_version
+                entry.runtime_data.dashboard_attempt = -float("inf")
+                await entry.runtime_data.async_refresh()
+                assert registry.async_get_issue("pi5_rtc_wake", restart_id) is None
+                assert not fixture.app.assistant.installer.restart_required()
+                assert fixture.supervisor.reboots == 0 and fixture.supervisor.shutdowns == 0
                 original_schedule = dict(status["schedule"])
                 await command("pi5_rtc_wake/action", entry_id=entry.entry_id, action="keep-awake", payload={"active": True, "confirmed": True})
                 paused = await command("pi5_rtc_wake/status", entry_id=entry.entry_id)
@@ -249,7 +286,7 @@ async def check():
                 assert not denied["success"] and denied["error"]["code"] == "unauthorized", denied
                 await socket.close()
                 assert fixture.supervisor.reboots == 0
-            print("Real Core passed: fresh dashboard creation and cached-companion readiness recheck with personal cards retained, dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, native Wake on LAN flow/registry/button with UDP patched, Ping last-reported template, additive layout upgrade, and non-admin power/device-option/wake denial.")
+            print("Real Core passed: companion restart notification create/dismiss and native Settings repair create/clear, fresh dashboard creation and cached-companion readiness recheck with personal cards retained, dashboard without AI, 9 native entities, authenticated Keep awake/resume with settings retention, resource registration, editable storage layout, personal-card retention, native Local Calendar REST setup, native Wake on LAN flow/registry/button with UDP patched, Ping last-reported template, additive layout upgrade, and non-admin power/device-option/wake denial.")
     finally:
         await hass.async_stop(force=True)
         server.shutdown()

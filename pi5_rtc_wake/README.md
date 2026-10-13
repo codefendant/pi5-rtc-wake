@@ -14,6 +14,8 @@ The picture is an example. Change the actual switch in your Home Assistant Contr
 
 ## Finish connecting your dashboard
 
+When the companion is installed or updated, a Home Assistant notification says **Pi Wake & Sleep: restart Home Assistant to finish setup**. Open **Settings → ⋮ → Restart Home Assistant**. After this companion has loaded once, later updates can also show a reminder in **Settings → Repairs**. The first installation uses a notification because the new integration cannot create a repair until Home Assistant loads it. The reminder survives an app restart and clears after the matching companion successfully connects the dashboard.
+
 After selecting **Connect dashboard**, restart **Home Assistant** only if requested. When it returns, select **Finish in Devices & services**, or open **Settings → Devices & services**.
 
 Under **Discovered**, look for the **Pi Wake & Sleep** card shown below. Select **Add**, then **Submit → Finish**.

@@ -34,6 +34,7 @@ class FakeSupervisor:
         self.calendar_list = []
         self.events = {}
         self.notices = []
+        self.companion_notices = []
         self.power_rows = {"rows": []}
         self.power_notices = []
         self.recovery_notices = []
@@ -86,6 +87,7 @@ class FakeSupervisor:
             raise UserError("The calendar could not be read.", "Select an available calendar.")
         return deepcopy(self.events[entity_id])
     def reboot_notice(self, required): self.notices.append(required)
+    def companion_restart_notice(self, required): self.companion_notices.append(required)
     def power_sources(self): return deepcopy(self.power_rows)
     def nut_sensors(self): return deepcopy(self.sensor_registry)
     def shutdown_controller(self): return deepcopy(self.shutdown_owner)
