@@ -24,4 +24,10 @@ Return to the setup page and select **Check again** if needed. When it says **Yo
 
 The picture is an example; click **Add** on the actual discovery card in Home Assistant. If Pi Wake & Sleep is already configured, wait for its connection check instead of adding it again.
 
+## Your first sleep & wake cycle
+
+The ten-minute test shuts down the Pi and Home Assistant after a 30-second countdown. **Home Assistant and its automations will be unavailable for roughly ten minutes, plus startup time.** Keep main power connected: the RTC is set to wake the Pi about ten minutes after the test starts.
+
+When Home Assistant returns, open Pi Wake & Sleep and confirm **Yes, it returned by itself** if it woke automatically. Then continue setup on the Calendar and other dashboard cards. If it has not returned after 15 minutes, press the Pi power button and choose **No / I’m not sure**. Scheduling and UPS recovery turn off for the test; review them afterward.
+
 For the complete setup, open the **Documentation** tab above or the [installation guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/INSTALL.md).

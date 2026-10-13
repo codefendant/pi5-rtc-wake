@@ -1,5 +1,13 @@
 # Update Pi 5 Wake & Sleep
 
+## 0.10.0-rc.3 first sleep & wake guidance
+
+1. Update the **same installed app** to **0.10.0-rc.3**, then **Stop → Start**.
+2. Open **Web UI → Maintenance and connection repair → Update / reconnect dashboard** and confirm.
+3. Restart **Home Assistant** when requested, then refresh the browser.
+
+Pi setup now explains the first sleep and wake cycle before the ten-minute test, repeats the downtime in the confirmation, and describes how to confirm the automatic return and continue onboarding. The actual alarm, countdown, cancellation, power guards, and wake qualification are unchanged. Saved settings, valid wake evidence, Calendar dates, and personal cards are kept. **No new wake test is required just for this update.** Do not uninstall an existing app.
+
 ## 0.10.0-rc.2 dashboard connection repair
 
 1. Update the **same installed app** to **0.10.0-rc.2**, then **Stop → Start**.

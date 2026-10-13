@@ -1,3 +1,9 @@
+# 0.10.0-rc.3
+
+- First-time Pi setup now explains the first sleep and wake cycle before the test button and again in its confirmation. Home Assistant and automations are unavailable for roughly ten minutes, plus startup time.
+- Shows the armed wake time during the test countdown and explains how to confirm the automatic return and continue onboarding. Keeps the 15-minute manual-return guidance and the existing scheduling/UPS test notice.
+- Retains the ten-minute alarm, 30-second countdown, power guards, saved settings, and existing wake qualification. No new wake test is needed for an ordinary update.
+
 # 0.10.0-rc.2
 
 - Prevent the fresh-install dashboard link from opening before the integration creates its dashboard. Highlight the required restart and Devices & services confirmation.

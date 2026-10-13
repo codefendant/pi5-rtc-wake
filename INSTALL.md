@@ -1,6 +1,6 @@
 # Install Pi 5 Wake & Sleep
 
-**Public preview 0.10.0-rc.2.** Use Home Assistant OS 18 or newer on a Raspberry Pi 5, Home Assistant Core 2026.10 or newer, and a main power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens. **No ZIP download is needed.**
+**Public preview 0.10.0-rc.3.** Use Home Assistant OS 18 or newer on a Raspberry Pi 5, Home Assistant Core 2026.10 or newer, and a main power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens. **No ZIP download is needed.**
 
 ## Install once
 
@@ -39,6 +39,10 @@ Return to the setup page and select **Check again** if needed. Once **Your dashb
 The app's separate sidebar shortcut is optional. Once the dashboard works, you can turn off **Show in sidebar** on the app's Info page. **Setup & maintenance** remains available through **Open Web UI** and the dashboard's setup area. Keep Protection mode off during normal use: it grants access to wake settings and the RTC; a firmware update does not grant those permissions.
 
 ## Confirm this Pi can wake
+
+**Your first sleep & wake cycle:** this test shuts down the Pi and Home Assistant after a 30-second countdown. Home Assistant and its automations will be unavailable for roughly ten minutes, plus startup time. The RTC is set to wake the Pi about ten minutes after the test starts; keep main power connected.
+
+After Home Assistant returns, open Pi Wake & Sleep, select **Yes, it returned by itself** if it woke automatically, then continue onboarding on the Calendar and other cards. If it has not returned after 15 minutes, press the Pi power button and select **No / I’m not sure**. Scheduling and UPS recovery turn off for the test; review them afterward.
 
 1. The dashboard's setup card checks **Permissions → Pi checks → Wake test**. Follow the next action beside a failed check. Home Assistant handles firmware version updates.
 2. Select **Prepare this Pi** only if requested, then the red **Reboot Pi** button if requested. Keep power connected and wait for Home Assistant to return.
