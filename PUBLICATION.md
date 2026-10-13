@@ -4,6 +4,12 @@ The public repository is **codefendant/pi5-rtc-wake**. **0.10.0 Public Preview**
 
 [VALIDATION.md](VALIDATION.md) records exact source commits, image digests, automated checks, and separately identified hardware reports. Earlier publication records are retained there.
 
+## Verified 0.10.0 publication
+
+[Public preview v0.10.0](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.10.0) was published at **2026-10-13T15:44:55Z** after [run 38424015106](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38424015106) passed every gate. Tag `93a76b8d8ff49a0dce0eb14753e2c2268d9c03a7` has the identical verified candidate tree `985f0481609e9aabcc78e0ab0b6b438627bbf74b`. The pushed and anonymously pulled image digest is `sha256:f0c64ad22f4feaea812d0b3b9d8c9ef3d429da7b2e4a391db4ac37b472f3800e`; architecture/version/import checks passed. The earlier rc.6 tag is unchanged.
+
+The [introduction page](https://pi-wake-sleep.humblejam3.chatgpt.site/) is deployed and public. Public bug/suggestion forms and a [ready-to-post announcement](ANNOUNCEMENT.md) are available. No community post or person-directed invitation is sent by this release process.
+
 ## Publish a preview
 
 1. Prepare all four app/companion version fields, public documentation, release notes, and changelog. Keep the existing repository and app slug `pi5_rtc_wake` so ordinary updates retain settings.
