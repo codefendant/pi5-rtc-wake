@@ -1,3 +1,19 @@
+# Validation — 0.10.0-rc.4 restart reminders and visible phone choices
+
+The maintainer reported that initial dashboard installation needs a clearer Home Assistant restart reminder and that the phone dropdown obscures discovery results. Companion installation/update now creates an immediate Home Assistant notification, preserves pending restart information across app restarts, and clears it after matching dashboard readiness. After the new companion has loaded, later updates can also create a native Settings → Repairs reminder. The first installation uses a notification because the new integration has not loaded yet. Reminder retries run separately from the RTC/UPS worker.
+
+Messages now shows phone choices as visible single-selection rows with a highlighted selected phone. Refresh phones and readings preserves phone/reading drafts. A missing selected phone remains selected and labeled; discovery does not replace it or send a message.
+
+Both [candidate run 38352131158](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38352131158) and [publishing run 38353086077](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38353086077) passed every required gate: 411 simulated backend tests, JavaScript/DOM and RTC ABI checks, native Chromium desktop/mobile, actual Home Assistant Core 2026.10.1, and arm64 build. All four app/companion version fields agree. Desktop/mobile phone-list captures were inspected. New tests cover restart persistence and qualified clearance, notification failures and bounded retries, legacy receipts, visible/single phone selection, draft retention, and missing-phone handling. Actual Core creates/dismisses the generated notification and creates, lists, and clears the native restart repair after a simulated companion version mismatch; these actions leave the earlier simulated power-operation counts unchanged.
+
+- [Published preview v0.10.0-rc.4](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.10.0-rc.4) is non-draft and marked pre-release, published at **05:50:30 UTC on 13 October 2026**. Its tag points to `9b58741e7ce4d0852b0e4cee8636b871aac3ee3a`, tree `962a167c2ac676d2b5a6f5c12be4907a00ee21c2`, identical to the verified candidate tree at `bee35be61c977de9f07286b3fb4ca12481aba64e`.
+- Public image: `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.10.0-rc.4`; pushed and anonymously pulled digest `sha256:1bc2ba6ba14073ba38c1e2bb2fd26de0fff56ae3ff8d3a3c864c8a963ad764af`. Arm64, the production version, and production imports passed before the release was created.
+- The existing v0.10.0-rc.3 tag remains at `3d595ddb83e230daf8d86abc1b15510232709ca0`.
+
+Power policy, 30/600-second test timing, wake evidence, schema 11, Calendar dates, saved phone/readings, Assist/UPS choices, and personal cards are retained. Only notification/repair and phone-selection behavior, the owned companion installation receipt, guidance, and release metadata change. Automated hardware/phone services and the browser's Home Assistant chrome are simulated. These checks do not establish a new physical wake, phone delivery, or novice installation result on the maintainer's actual HAOS server.
+
+## Earlier release evidence
+
 # Validation — 0.10.0-rc.3 first sleep & wake guidance
 
 The maintainer is repeating fresh installation on their test Pi and requested a clear explanation of the first sleep and wake cycle. The setup card now makes the expected Home Assistant outage visible before the test button, repeats the 30-second countdown and roughly ten minutes plus startup time in confirmation, shows the armed wake time during countdown, and explains automatic-return confirmation and continuing onboarding. The earlier pre-test prompt is hidden during countdown and return confirmation.
