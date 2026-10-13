@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pi dashboard · simulated browser preview</title>
 <style>
-:root{--primary-color:#008cff;--primary-text-color:#172033;--secondary-text-color:#657386;--divider-color:#dce3eb;--ha-card-background:#fff;--secondary-background-color:#f3f6fa;--ha-card-border-radius:12px;color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#172033;font:15px/1.5 system-ui,sans-serif}aside{position:fixed;inset:0 auto 0 0;width:240px;background:#f7f9fc;border-right:1px solid #dce3eb;padding:24px 12px}aside strong{font-size:20px;display:block;margin-bottom:34px;padding:0 10px}aside div{padding:15px 20px;margin-bottom:8px;border-radius:10px}aside .selected{background:#dfedff;color:#008cff;font-weight:600}main{margin-left:240px;padding:24px 26px 40px;max-width:1800px}header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px}h1{font-size:32px;margin:0;letter-spacing:-.6px}header p{margin:0;color:#657386}button{font:inherit;border:1px solid #c5ddff;background:white;color:#008cff;border-radius:8px;padding:10px 16px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}.grid>*{min-width:0}.span-3{grid-column:1/-1}.span-2{grid-column:span 2}.preview-label{font-size:12px;color:#657386;margin-top:18px}#editor{margin-top:18px;border:1px solid #dce3eb;padding:20px;border-radius:12px;background:white}[hidden]{display:none!important}@media(max-width:850px){aside{display:none}main{margin-left:0;padding:16px}.grid{grid-template-columns:1fr}.span-2,.span-3{grid-column:auto}h1{font-size:25px}header{align-items:flex-start}header>button{white-space:nowrap;font-size:12px}}
+:root{--primary-color:#008cff;--primary-text-color:#172033;--secondary-text-color:#657386;--divider-color:#dce3eb;--ha-card-background:#fff;--secondary-background-color:#f3f6fa;--ha-card-border-radius:12px;color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#172033;font:15px/1.5 system-ui,sans-serif}aside{position:fixed;inset:0 auto 0 0;width:240px;background:#f7f9fc;border-right:1px solid #dce3eb;padding:24px 12px}aside strong{font-size:20px;display:block;margin-bottom:34px;padding:0 10px}aside div{padding:15px 20px;margin-bottom:8px;border-radius:10px}aside .selected{background:#dfedff;color:#008cff;font-weight:600}main{margin-left:240px;padding:24px 26px 40px;max-width:1800px}header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px}h1{font-size:32px;margin:0;letter-spacing:-.6px}header p{margin:0;color:#657386}button{font:inherit;border:1px solid #c5ddff;background:white;color:#008cff;border-radius:8px;padding:10px 16px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}.grid>*{min-width:0}.section{display:grid;grid-template-columns:repeat(var(--section-columns,12),minmax(0,1fr));gap:8px;align-items:start}.section>*{min-width:0}.span-3{grid-column:1/-1}.span-2{grid-column:span 2}.preview-label{font-size:12px;color:#657386;margin-top:18px}#editor{margin-top:18px;border:1px solid #dce3eb;padding:20px;border-radius:12px;background:white}[hidden]{display:none!important}@media(max-width:850px){aside{display:none}main{margin-left:0;padding:16px}.grid{grid-template-columns:1fr}.span-2,.span-3{grid-column:auto}.section{--section-columns:12!important}h1{font-size:25px}header{align-items:flex-start}header>button{white-space:nowrap;font-size:12px}}
 </style></head><body><aside><strong>⌂ Home Assistant</strong><div>Overview</div><div>Calendar</div><div>Energy</div><div class="selected">⏻ Pi Wake &amp; Sleep</div><div>Settings</div></aside><main><header><div><h1>Pi Wake &amp; Sleep</h1><p>Your Pi, on your schedule.</p></div><button id="edit">Edit dashboard</button></header><div id="cards" class="grid"></div><section id="editor" hidden><h2>Visual Pi card editor</h2><div id="editor-content"></div><button id="close-editor">Done</button></section><p class="preview-label">SIMULATED BROWSER PREVIEW · No real Pi, UPS, phone, or power operation. Native editing is supplied by Home Assistant in production.</p></main>
 <script type="module">
 import '/native-cards.js';
@@ -10,7 +10,30 @@ customElements.define('ha-icon',Icon);
 const hass={connection:{},user:{is_admin:true},locale:{language:'en-US'},panels:{app:{}},async callWS(message){const response=await fetch('/demo/ha-ws',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(message)});const data=await response.json();if(!response.ok)throw new Error(data.message);return data;}};
 window.previewHass=hass;
 const legacy=new URLSearchParams(location.search).get('layout')==='legacy';
-for(const kind of legacy?['setup','status','shutdown','wake','calendar','ups','controls','devices','messages','assist','activity']:['summary','calendar','ups','devices','messages','assist','activity']){const card=document.createElement('pi-wake-'+kind+'-card');card.dataset.kind=kind;card.className=['summary','setup','activity'].includes(kind)?'span-3':(kind==='calendar'||legacy&&kind==='devices')?'span-2':'';card.setConfig({type:'custom:pi-wake-'+kind+'-card',entry_id:'demo-entry'});card.hass=hass;document.querySelector('#cards').append(card);}
+function makeCard(config,parent){
+  const kind=config.type.match(/^custom:pi-wake-(.+)-card$/)[1];
+  const card=document.createElement(config.type.slice(7));card.dataset.kind=kind;
+  card.setConfig(config);card.hass=hass;parent.append(card);return card;
+}
+if(legacy){
+  for(const kind of ['setup','status','shutdown','wake','calendar','ups','controls','devices','messages','assist','activity']){
+    const card=makeCard({type:'custom:pi-wake-'+kind+'-card',entry_id:'demo-entry'},document.querySelector('#cards'));
+    card.className=['setup','activity'].includes(kind)?'span-3':['calendar','devices'].includes(kind)?'span-2':'';
+  }
+}else{
+  // Model both native grid levels from the generated configuration. A wide
+  // section has span * 12 columns; a 12-column card does not fill that section.
+  const config=await (await fetch('/demo/dashboard-config')).json();
+  for(const sectionConfig of config.views[0].sections){
+    const span=sectionConfig.column_span||1,section=document.createElement('div');
+    section.className='section span-'+span;section.dataset.span=span;
+    section.style.setProperty('--section-columns',span*12);document.querySelector('#cards').append(section);
+    for(const config of sectionConfig.cards){
+      const card=makeCard(config,section),columns=config.grid_options?.columns??card.getGridOptions().columns;
+      card.style.gridColumn=columns==='full'?'1 / -1':'span '+columns;
+    }
+  }
+}
 document.querySelector('#edit').onclick=()=>{const card=document.querySelector('[data-kind="summary"]')||document.querySelector('[data-kind="status"]');const editor=card.constructor.getConfigElement();editor.setConfig(card.config);editor.hass=hass;editor.addEventListener('config-changed',event=>card.setConfig(event.detail.config));document.querySelector('#editor-content').replaceChildren(editor);document.querySelector('#editor').hidden=false;};
 document.querySelector('#close-editor').onclick=()=>document.querySelector('#editor').hidden=true;
 </script></body></html>

@@ -20,6 +20,8 @@ The optional app sidebar entry is named **Pi setup & maintenance**. Turn off **S
 
 On update, only the five untouched earlier starter header sections are combined. Customized headers, personal cards, feature cards, and other views stay as saved. Add **Pi status** through Edit dashboard → Add card to use the new summary in a customized layout. Earlier individual status, schedule, setup, and control cards remain available.
 
+Generated cards fill the full width of their section, including sections that span two or three columns. The spacing repair updates only unchanged earlier starter sections; customized sizes, titles, mixed sections, personal cards, and later explicit resizes are kept. You can also change a card's width through Edit dashboard → card editor → Layout → Full width card. [Home Assistant card sizing](https://www.home-assistant.io/dashboards/cards/).
+
 ## Guided Pi setup
 
 The Pi status summary opens initial setup with **Permissions → Pi checks → Wake test**. It checks Protection mode and links to the app's own Info page. The illustration highlights the switch: **Stop the app → turn Protection mode off → Start the app**. Checks continue automatically while the app is running.

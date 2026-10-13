@@ -1,5 +1,13 @@
 # Update Pi 5 Wake & Sleep
 
+## 0.10.0-rc.6 dashboard spacing fix
+
+1. Update the same app to **0.10.0-rc.6**, then **Stop → Start**.
+2. Open **Web UI → Maintenance and connection repair → Update / reconnect dashboard** and confirm.
+3. Restart Home Assistant when requested, then refresh the dashboard.
+
+The Pi summary, Calendar, Wake other devices, and activity cards fill their unchanged wide sections instead of leaving an empty column. Existing card positions, personal cards, custom sizes/titles, and settings are preserved. Later explicit resizing remains respected. No new wake test is required; do not uninstall or Restore default Pi cards for this fix.
+
 ## 0.10.0-rc.5 compact dashboard
 
 1. Update the same installed app to **0.10.0-rc.5**, then **Stop → Start**.

@@ -72,6 +72,8 @@ def main():
                     self._send(200, (ROOT / "tools/native_preview.html").read_bytes(), "text/html; charset=utf-8")
                 elif self.path == "/native-cards.js":
                     self._send(200, (ROOT / "pi5_rtc_wake/companion/pi5_rtc_wake/frontend/pi-cards.js").read_bytes(), "text/javascript; charset=utf-8")
+                elif self.path == "/demo/dashboard-config":
+                    self._send(200, supervisor.dashboard_config)
                 elif self.path == "/":
                     content = (server.WEB / "index.html").read_text().replace("Preview release · Test wake and UPS recovery on your own hardware.", "LOCAL DEMO · Simulated Pi, UPS, and phone. No real message or power operation.")
                     self._send(200, content.encode(), "text/html; charset=utf-8")

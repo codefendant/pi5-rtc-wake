@@ -2,7 +2,7 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.10.0-rc.5 · Compact dashboard preview · MIT license**
+**0.10.0-rc.6 · Dashboard spacing fix preview · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 

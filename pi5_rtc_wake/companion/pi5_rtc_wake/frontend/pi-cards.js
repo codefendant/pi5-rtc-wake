@@ -69,7 +69,7 @@
     bind() { if (!this._hass || !this.config || this.unsubscribe) return; this.feed = feedFor(this._hass, this.config.entry_id || ""); this.unsubscribe = this.feed.add((state, error) => { const wasReady = this.ready; this.state = state; this.error = error; if (wasReady && !this.ready) this.setupDismissed = false; if (this.waitingForMessages && !this.busy && !state?.messages?.busy) { this.waitingForMessages = false; if (state?.messages?.options_revision) this.loadMessageOptions(); else this.message = [state?.messages?.result?.message, state?.messages?.result?.action].filter(Boolean).join(" ") || "Phone discovery did not finish. Select Choose phone to try again."; } if (this.livePanel && !this.confirming) this.render(); else if (!this.confirming) { this.disableForm(this.blocked); if (this.panel === "messages" && !this.busy) this.updateMessagePreview(); } }); }
     get livePanel() { return !this.panel || this.panel === "setup" || this.panel === "settings"; }
     getCardSize() { return this.kind === "setup" && !this.setupExpanded ? 1 : this.kind === "activity" ? 1 : 4; }
-    getGridOptions() { return {columns: 12, rows: "auto", min_columns: this.kind === "summary" ? 12 : 6, min_rows: ["summary", "setup", "activity"].includes(this.kind) ? 1 : 3}; }
+    getGridOptions() { return {columns: this.kind === "summary" ? "full" : 12, rows: "auto", min_columns: this.kind === "summary" ? 12 : 6, min_rows: ["summary", "setup", "activity"].includes(this.kind) ? 1 : 3}; }
     get ready() { return Boolean(this.state?.checks?.ok && this.state?.test_status === "passed"); }
     get setupExpanded() { return this.panel === "setup" || !this.panel && !this.ready && !this.setupDismissed; }
     time(epoch, compact = false) { if (!epoch) return "—"; return new Intl.DateTimeFormat(this._hass?.locale?.language || undefined, {timeZone: this.state.schedule.timezone, hour: "numeric", minute: "2-digit", ...(compact ? {} : {month: "short", day: "numeric", timeZoneName: "short"})}).format(new Date(epoch * 1000)); }
@@ -478,7 +478,7 @@
   for (const [kind, name] of Object.entries(names)) {
     const tag = "pi-wake-" + kind + "-card";
     if (customElements.get(tag)) continue;
-    class Card extends PiCard { static kind = kind; static getConfigElement() { return document.createElement("pi-wake-card-editor"); } static getStubConfig() { return {entry_id: ""}; } }
+    class Card extends PiCard { static kind = kind; static getConfigElement() { return document.createElement("pi-wake-card-editor"); } static getStubConfig() { return {entry_id: "", pi_layout_version: 2}; } }
     customElements.define(tag, Card);
     window.customCards.push({type: tag, name: "Pi Wake & Sleep · " + name, description: "Native Pi card. Move it, resize it, and add other Home Assistant cards alongside it.", preview: true});
   }

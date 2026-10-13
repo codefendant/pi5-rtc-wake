@@ -16,16 +16,17 @@ DEFAULT_CALENDAR = "Pi Sleep"
 LOG = logging.getLogger("pi5_rtc_wake")
 KINDS = ("summary", "setup", "status", "shutdown", "wake", "calendar", "ups", "controls", "devices", "messages", "assist", "activity")
 DEFAULT_KINDS = ("summary", "calendar", "ups", "devices", "messages", "assist", "activity")
+CARD_LAYOUT_VERSION = 2
 
 
 def starter_config(entry_id=""):
-    """A real storage dashboard; subsequent updates never replace its config."""
+    """Starter cards fill their section; later upgrades keep customized cards."""
     sections = []
     for kind in DEFAULT_KINDS:
         span = 3 if kind in ("summary", "activity") else 2 if kind == "calendar" else 1
         sections.append({"type": "grid", "column_span": span, "cards": [
-            {"type": f"custom:pi-wake-{kind}-card", "entry_id": entry_id,
-             "grid_options": {"columns": 12, "rows": "auto"}}]})
+            {"type": f"custom:pi-wake-{kind}-card", "entry_id": entry_id, "pi_layout_version": CARD_LAYOUT_VERSION,
+             "grid_options": {"columns": "full", "rows": "auto"}}]})
     return {"views": [{"title": "Pi Wake & Sleep", "path": "overview", "type": "sections",
                        "max_columns": 3, "dense_section_placement": True, "sections": sections}]}
 
@@ -63,6 +64,28 @@ def compact_dashboard_config(config, entry_id):
         summary = starter_config(entry_id)["views"][0]["sections"][0]
         view["sections"] = [summary if index == first else section for index, section in enumerate(sections)
                             if index == first or index not in indices]
+    return result
+
+
+def fill_starter_section_cards(config, entry_id):
+    """Repair the published wide sections without resizing customized cards."""
+    result = deepcopy(config)
+    if not isinstance(result, dict) or not isinstance(result.get("views"), list):
+        return result
+    spans = {"summary": 3, "setup": 3, "calendar": 2, "devices": 2, "activity": 3}
+    for view in result["views"]:
+        if not isinstance(view, dict) or view.get("type") != "sections" or not isinstance(view.get("sections"), list):
+            continue
+        for section in view["sections"]:
+            for kind, span in spans.items():
+                old = {"type": "grid", "column_span": span, "cards": [{
+                    "type": f"custom:pi-wake-{kind}-card", "entry_id": entry_id,
+                    "grid_options": {"columns": 12, "rows": "auto"}}]}
+                if section == old:
+                    section["cards"][0]["grid_options"]["columns"] = "full"
+                    # Keep later explicit 12-column choices after this repair.
+                    section["cards"][0]["pi_layout_version"] = CARD_LAYOUT_VERSION
+                    break
     return result
 
 
