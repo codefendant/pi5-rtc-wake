@@ -1,3 +1,17 @@
+# Validation — 0.10.0-rc.6 full section width
+
+The maintainer's native Home Assistant screenshots exposed a gap that the earlier flat browser preview missed: wide sections reserved two or three dashboard columns while their Pi cards used only twelve inner columns. Generated cards now use the native Full width card option. Only unchanged earlier wide starter sections are repaired, and a durable card-layout marker preserves later explicit resizing. Personal cards, custom sizes/titles, positions, view metadata, settings, and Calendar dates are kept.
+
+[Candidate run 38365538122](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38365538122) and [publishing run 38366397568](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38366397568) passed every required gate: **418 simulated backend tests**, DOM and JavaScript checks, RTC ABI, real Chromium desktop/mobile/narrow/dark checks, actual Home Assistant Core 2026.10.1, and arm64 build. The browser harness now renders both grid levels from generated dashboard configuration and measures each wide card against its section. Desktop and mobile captures were inspected. Native Core verifies the old layout upgrade, full-width configuration round-trip, personal-card retention, and matching resource versions. Backend cases preserve mixed sections, other Pi cards, custom widths/rows/titles, and explicit resizing after the repair.
+
+- [Published preview v0.10.0-rc.6](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.10.0-rc.6) is non-draft and marked pre-release, published at **08:05:51 UTC on 13 October 2026**. Its tag points to `ac2474f874919b6b101cb0c261b5f6ec0fd48539`, tree `19e16bf7e34dc115a8e47016c852bbf2cfb1d8d9`, identical to the verified candidate tree at `a05cd7d9cf8c966dca1d41c50e82a286f9a47bba`.
+- Public image: `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.10.0-rc.6`; pushed and anonymously pulled digest `sha256:46d8d5fe991d67f925f76f187475a5d476346df87c21f2d454cae0f3b8d3183d`. Arm64, the production version, and production imports passed before the release was created.
+- The existing v0.10.0-rc.5 tag remains at `7b7c74ae7b8dc3d1b7afeaa47c437131a7c722ca`.
+
+The thirty-second countdown, ten-minute test, Keep awake, RTC/UPS policy, schema 11, Calendar dates, settings, and valid wake evidence are retained. The browser's Home Assistant chrome/grid is simulated; the real Core APIs are checked separately. These checks do not establish a new physical wake or a live frontend result on the maintainer's HAOS server. Standard full-width sizing is documented in [Home Assistant card resizing](https://www.home-assistant.io/dashboards/cards/).
+
+## Earlier release evidence
+
 # Validation — 0.10.0-rc.5 compact dashboard
 
 The maintainer confirmed the previous phone-list update is visible and requested less space for successful setup and occasional controls. Pi status now reuses the introduction page's Raspberry Pi artwork and Awake indicator. A compact summary combines uptime, the next active Calendar shutdown/wake, Keep awake / Resume, and Settings. Review setup, maintenance, and the red confirmed reboot are in Settings. Initial setup and problems remain guided; optional-card introductions and feedback spacing are shorter. Saving phone settings returns to the summary.
