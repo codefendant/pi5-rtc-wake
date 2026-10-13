@@ -12,6 +12,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import COMPANION_VERSION, DOMAIN, PORT, PROTOCOL
+from .repairs import async_sync_restart_issue
 
 
 def validate_connection(config, slug):
@@ -90,6 +91,8 @@ class Coordinator(DataUpdateCoordinator):
                     value["dashboard"].update(ready=True, restart_needed=False, setup_error=None)
                 except HomeAssistantError as error:
                     value["dashboard"]["connection"] = str(error)
+            async_sync_restart_issue(self.hass, self.config_entry.entry_id,
+                                     value.get("dashboard", {}).get("restart_needed") is True)
             return value
         except HomeAssistantError as error:
             raise UpdateFailed(str(error)) from error

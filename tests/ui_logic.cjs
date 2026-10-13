@@ -64,6 +64,10 @@ async function main() {
   assert.deepEqual(JSON.parse(post.options.body),{confirmed:true});
   assert.equal(post.options.headers['X-Pi5-CSRF'],ui.fixture.csrf);
   assert.equal(ui.node('restart-link').hidden,false);
+  assert.match(ui.node('connection-message').textContent,/Restart Home Assistant to finish Pi Wake & Sleep setup/);
+  ui.fixture.dashboard.restart_notice_ok=false; ui.render();
+  assert.match(ui.node('connection-message').textContent,/notification could not be created/);
+  ui.fixture.dashboard.restart_notice_ok=true; ui.render();
   assert.equal(ui.node('connect-dashboard').hidden,true);
   assert.equal(ui.node('connection-steps').hidden,false); // Installation is not a live connection.
   assert.equal(ui.node('open-dashboard').hidden,true); // A new install must not link to a nonexistent dashboard.

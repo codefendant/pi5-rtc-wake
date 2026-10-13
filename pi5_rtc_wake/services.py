@@ -369,6 +369,15 @@ class Supervisor:
                 "message": "Reboot the Pi to finish wake preparation or a pending firmware update. Open **Pi Wake & Sleep** and select **Reboot Pi**, or use **Settings → System** to reboot the system. Leave the power supply connected. This reminder clears after the Pi reboots and the checks succeed."})
         return self.request("/core/api/services/persistent_notification/dismiss", {"notification_id": identity})
 
+    def companion_restart_notice(self, required):
+        identity = "pi5_rtc_wake_homeassistant_restart_required"
+        if required:
+            return self.request("/core/api/services/persistent_notification/create", {
+                "notification_id": identity,
+                "title": "Pi Wake & Sleep: restart Home Assistant to finish setup",
+                "message": "The dashboard companion was installed or updated. Open [Settings](/config), select the menu (⋮), then **Restart Home Assistant**. Only Home Assistant needs to restart for this step. After it returns, finish **Pi Wake & Sleep** in **Devices & services** if requested and refresh your browser. This reminder clears when the updated companion connects and the dashboard is ready."})
+        return self.request("/core/api/services/persistent_notification/dismiss", {"notification_id": identity})
+
     def shutdown(self):
         return self.request("/host/shutdown", {"force": False})
 

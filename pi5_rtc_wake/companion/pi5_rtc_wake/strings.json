@@ -7,11 +7,19 @@
         "description": "Add native tools to your existing AI conversation agent. Start with status questions. To request changes or cancel a countdown, enable change requests in Pi Wake & Sleep → Assist. Calendar dates, wake tests, and reboots require approval in the app. Select Assist under Control Home Assistant in your conversation agent's settings."
       }
     },
-    "error": {"cannot_connect": "The app could not be reached. Start Pi Wake & Sleep, enable Assist, and try again."},
+    "error": {
+      "cannot_connect": "The app could not be reached. Start Pi Wake & Sleep, enable Assist, and try again."
+    },
     "abort": {
       "already_configured": "Pi Wake & Sleep is already connected.",
       "invalid_discovery": "Reconnect Assist from the Pi Wake & Sleep app. This discovered connection could not be verified.",
       "use_discovery": "Open Pi Wake & Sleep → Assist and select Connect Assist. Restart Home Assistant if requested, then add the discovered integration here. No address or API token is needed."
+    }
+  },
+  "issues": {
+    "homeassistant_restart_required": {
+      "title": "Restart Home Assistant to finish Pi Wake & Sleep setup",
+      "description": "The Pi Wake & Sleep dashboard companion was installed or updated. Open [Settings](/config), select the menu (⋮), then **Restart Home Assistant**. Only Home Assistant needs to restart for this step.\n\nAfter it returns, finish Pi Wake & Sleep in **Devices & services** if requested and refresh your browser. This reminder clears when the updated companion connects and the dashboard is ready."
     }
   }
 }

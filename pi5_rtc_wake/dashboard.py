@@ -3,6 +3,7 @@
 from copy import deepcopy
 import json
 import logging
+import math
 from pathlib import Path
 import re
 import threading
@@ -88,7 +89,12 @@ class Dashboard:
         self.app = app
         self.operation_lock = threading.Lock()
         self.connection = "Connect the dashboard to begin."
-        self.restart_needed = False
+        self.restart_needed = bool(self.app.store.data["dashboard"]["connected"] and self.app.assistant.installer.restart_required())
+        self.restart_notice_lock = threading.Lock()
+        self.restart_notice_state = None
+        self.restart_notice_requirement = None
+        self.last_restart_notice_attempt = -math.inf
+        self.restart_notice_ok = True
         self.last_contact = None
         self.ready_entry_id = None
         self.setup_error = None
@@ -116,6 +122,7 @@ class Dashboard:
                 "ready": self.ready_entry_id is not None and not self.restart_needed,
                 "setup_error": deepcopy(self.setup_error),
                 "connection": self.connection, "restart_needed": self.restart_needed,
+                "restart_notice_ok": self.restart_notice_ok,
                 "path": "/" + PATH, "activity": deepcopy(self.history)}
 
     def connect(self, payload):
@@ -133,6 +140,8 @@ class Dashboard:
                 if self.app.store.read_only or self.app.job or self.app.pending or self.app.shutdown_requested_at is not None or self.app.store.data["outage"]:
                     raise UserError("Wait before connecting the dashboard.", "Finish any Pi operation and wait for stable power.")
             changed = self.app.assistant.installer.install()
+            self.restart_needed = self.restart_needed or changed or self.app.assistant.installer.restart_required()
+            self.sync_restart_notice()
             token = self.app.assistant._secret()
             with self.app.lock:
                 old = deepcopy(self.app.store.data["dashboard"])
@@ -175,13 +184,40 @@ class Dashboard:
             raise
         self.app.wake_devices.layout_done(entry_id)
         self.connection = "Connected to Home Assistant. " + result.get("message", "")
+        try:
+            self.app.assistant.installer.confirm_loaded()
+        except (OSError, ValueError, TypeError):
+            LOG.warning("The companion restart record could not be cleared; the live dashboard connection is retained.")
         self.restart_needed = False
+        self.app.assistant.restart_needed = False
         self.ready_entry_id = entry_id
         self.setup_error = None
+        self.sync_restart_notice()
         if result.get("created"):
             self.record("Pi dashboard created. You can add your own cards through Edit dashboard.")
             LOG.info("Pi Wake & Sleep dashboard created; open it from the Home Assistant sidebar.")
         return result
+
+    def sync_restart_notice(self):
+        """Informational Core notice; retry separately from the RTC/UPS worker."""
+        if not self.restart_notice_lock.acquire(blocking=False):
+            return
+        try:
+            required = self.restart_needed
+            if (self.restart_notice_state == required or not required and self.restart_notice_requirement is None
+                    or self.restart_notice_requirement == required and self.app.monotonic() - self.last_restart_notice_attempt < 60):
+                return
+            self.restart_notice_requirement = required
+            self.last_restart_notice_attempt = self.app.monotonic()
+            try:
+                self.app.supervisor.companion_restart_notice(required)
+                self.restart_notice_state = required
+                self.restart_notice_ok = True
+            except (UserError, OSError):
+                self.restart_notice_ok = False
+                LOG.warning("The Home Assistant restart notification could not be updated; the setup reminder remains in the app.")
+        finally:
+            self.restart_notice_lock.release()
 
     def status(self):
         # This endpoint is reached through the authenticated HA companion. A

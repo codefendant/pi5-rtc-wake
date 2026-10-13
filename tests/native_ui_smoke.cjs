@@ -251,17 +251,41 @@ async function main() {
     await page.locator('[data-kind="status"]').getByRole('heading',{name:'My HA Pi'}).waitFor();
     await page.getByRole('button',{name:'Done',exact:true}).click();
     await page.getByRole('button',{name:'Choose phone',exact:true}).click();
-    await page.getByLabel(/^Send to phone/).waitFor(); // Discovery opens the form without a second click.
-    await page.getByLabel(/^Send to phone/).selectOption('entity:notify.demo_phone');
+    const phoneCard=page.locator('[data-kind="messages"]');
+    const phoneChoice=()=>phoneCard.locator('input[name="recipient"][value="entity:notify.demo_phone"]');
+    await phoneChoice().waitFor(); // Discovery opens a visible list without a second click.
+    assert.equal(await phoneCard.locator('select[name="recipient"]').count(),0);
+    assert.equal(await phoneCard.getByRole('radio').count(),3);
+    await phoneCard.locator('input[name="recipient"][value="service:mobile_app_demo_phone"]').check();
+    await phoneChoice().check();
+    assert.equal(await phoneCard.locator('input[name="recipient"]:checked').count(),1);
     await page.getByLabel('Show readings').selectOption('all');
     await page.getByLabel('Find a reading').fill('UPS');
     await page.getByRole('checkbox',{name:/UPS battery/i}).check();
-    await page.getByRole('button',{name:'Find phones and readings',exact:true}).click();
+    await page.getByRole('button',{name:'Refresh phones and readings',exact:true}).click();
     await page.getByText('Phones and readings refreshed. Unsaved choices are kept.',{exact:true}).waitFor();
-    assert.equal(await page.getByLabel(/^Send to phone/).inputValue(),'entity:notify.demo_phone');
+    assert.equal(await phoneChoice().isChecked(),true);
     assert.equal(await page.getByLabel('Find a reading').inputValue(),'UPS');
     assert.equal(await page.getByLabel('Show readings').inputValue(),'all');
     assert.equal(await page.getByRole('checkbox',{name:/UPS battery/i}).isChecked(),true);
+    await phoneCard.screenshot({path:'ui-artifacts/phone-selection-desktop.png'});
+    await page.setViewportSize({width:390,height:844});
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
+    await phoneCard.screenshot({path:'ui-artifacts/phone-selection-mobile.png'});
+    const missingPhone=async route=>{
+      if(route.request().postDataJSON()?.type!=='pi5_rtc_wake/message_options')return route.fallback();
+      const response=await route.fetch(), choices=await response.json();
+      await route.fulfill({response,json:{...choices,recipients:[]}});
+    };
+    await page.route('**/demo/ha-ws',missingPhone);
+    await page.getByRole('button',{name:'Refresh phones and readings',exact:true}).click();
+    await phoneCard.getByText('Selected phone (currently unavailable)',{exact:true}).waitFor();
+    assert.equal(await phoneChoice().isChecked(),true,'A missing saved/draft phone must not be replaced');
+    await phoneCard.getByText(/No connected phone was found/).waitFor();
+    await page.unroute('**/demo/ha-ws',missingPhone);
+    await page.getByRole('button',{name:'Refresh phones and readings',exact:true}).click();
+    await phoneCard.getByText('Phones and readings refreshed. Unsaved choices are kept.',{exact:true}).waitFor();
+    assert.equal(await phoneChoice().isChecked(),true);
     await page.getByRole('button',{name:'Preview message',exact:true}).click();
     await page.getByText('Preview ready. Nothing was sent to your phone.',{exact:true}).waitFor();
     assert.match(await page.locator('.draft-preview pre').innerText(),/Uptime:/);
@@ -274,6 +298,7 @@ async function main() {
     await page.getByRole('button',{name:'Send status now',exact:true}).waitFor();
     const saved = (await (await page.request.get(ready.url+'api/status')).json()).messages.settings;
     assert.equal(saved.enabled,false);
+    assert.equal(saved.recipient,'entity:notify.demo_phone');
     assert.equal(saved.fields.length,1);
     const messages=page.locator('[data-kind="messages"]');
     await messages.getByRole('button',{name:'Preview',exact:true}).click();

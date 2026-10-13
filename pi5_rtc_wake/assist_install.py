@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import secrets
+import threading
 
 from state import UserError, atomic_json
 
@@ -12,7 +13,7 @@ DOMAIN = "pi5_rtc_wake"
 BUNDLE = Path(__file__).with_name("companion") / DOMAIN
 FILES = ("__init__.py", "api.py", "config_flow.py", "const.py", "llm.py",
          "manifest.json", "strings.json", "translations/en.json", "dashboard.py", "entity.py",
-         "sensor.py", "binary_sensor.py", "frontend/pi-cards.js")
+         "sensor.py", "binary_sensor.py", "repairs.py", "frontend/pi-cards.js")
 
 
 def digest(value):
@@ -32,6 +33,29 @@ class Installer:
         self.root, self.bundle = Path(root), Path(bundle)
         self.destination = self.root / "custom_components" / DOMAIN
         self.receipt = Path(data) / "assist_install.json"
+        self.lock = threading.RLock()
+
+    def restart_required(self):
+        with self.lock:
+            try:
+                record = json.loads(self.receipt.read_text())
+                return record.get("restart_required", False) is True
+            except FileNotFoundError:
+                return False
+            except (OSError, ValueError, AttributeError):
+                return True  # An unreadable record is not evidence of a completed restart.
+
+    def confirm_loaded(self):
+        """Clear only after the matching loaded companion registers its dashboard."""
+        with self.lock:
+            try:
+                record = json.loads(self.receipt.read_text())
+            except FileNotFoundError:
+                return
+            if not isinstance(record, dict) or not isinstance(record.get("files"), dict):
+                raise ValueError("Invalid companion installation record")
+            if record.get("restart_required"):
+                atomic_json(self.receipt, {**record, "restart_required": False})
 
     def installed(self):
         try:
@@ -44,6 +68,10 @@ class Installer:
             return False
 
     def install(self):
+        with self.lock:
+            return self._install()
+
+    def _install(self):
         regular_path(self.destination)
         if not self.root.is_dir():
             raise UserError("Home Assistant's configuration folder is not available.",
@@ -53,9 +81,10 @@ class Installer:
         try:
             receipt = json.loads(self.receipt.read_text())
             previous = receipt["files"]
-            if not isinstance(previous, dict):
+            if not isinstance(previous, dict) or type(receipt.get("restart_required", False)) is not bool:
                 raise ValueError()
         except FileNotFoundError:
+            receipt = {}
             previous = {}
         except (OSError, ValueError, TypeError, KeyError):
             raise UserError("The companion's installation record could not be read.",
@@ -81,7 +110,7 @@ class Installer:
                     continue
                 self._write(self.destination / name, value)
                 changed = True
-            atomic_json(self.receipt, {"files": hashes})
+            atomic_json(self.receipt, {"files": hashes, "restart_required": changed or receipt.get("restart_required", False)})
         except OSError:
             restored = True
             for name, value in old.items():

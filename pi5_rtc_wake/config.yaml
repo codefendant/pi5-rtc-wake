@@ -1,5 +1,5 @@
 name: Pi 5 Wake & Sleep
-version: "0.10.0-rc.3"
+version: "0.10.0-rc.4"
 slug: pi5_rtc_wake
 description: "Schedule Pi 5 sleep/wake with Home Assistant Calendar. BEFORE STARTING: turn Protection mode OFF on this Info tab."
 arch:

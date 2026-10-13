@@ -1,6 +1,6 @@
 # Install Pi 5 Wake & Sleep
 
-**Public preview 0.10.0-rc.3.** Use Home Assistant OS 18 or newer on a Raspberry Pi 5, Home Assistant Core 2026.10 or newer, and a main power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens. **No ZIP download is needed.**
+**Public preview 0.10.0-rc.4.** Use Home Assistant OS 18 or newer on a Raspberry Pi 5, Home Assistant Core 2026.10 or newer, and a main power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens. **No ZIP download is needed.**
 
 ## Install once
 
@@ -22,6 +22,8 @@ No terminal, YAML, personal API token, extra card download, or AI account is nee
 Enable **Start on boot**, then select **Start**. If the app is already running, use **Stop → turn Protection mode off → Start**. The graphic is an example; use the actual controls in Home Assistant.
 
 ### Finish connecting your dashboard
+
+When the companion is installed or updated, a Home Assistant notification says **Pi Wake & Sleep: restart Home Assistant to finish setup**. Open **Settings → ⋮ → Restart Home Assistant**. After this companion has loaded once, later updates can also show a reminder in **Settings → Repairs**. The first installation uses a notification because the new integration cannot create a repair until Home Assistant loads it. The reminder survives an app restart and clears after the matching companion successfully connects the dashboard.
 
 After **Connect dashboard** and any requested Home Assistant restart, select **Finish in Devices & services**, or open **Settings → Devices & services**. Under **Discovered**, find **Pi Wake & Sleep** and select **Add**, then **Submit → Finish**.
 
@@ -65,7 +67,7 @@ Periods must last ten minutes to seven days and must not overlap or touch. All d
 
 - **UPS power:** With a working NUT server and Home Assistant NUT integration, select **Find my UPS**, then **Choose UPS**, and save the source supplying this Pi. Enable wanted NUT readings on this card. **Set up protection** opens runtime, ownership, reserve, and retry settings on the dashboard. Automatic protection starts off; review [UPS_RECOVERY.md](UPS_RECOVERY.md) before enabling it.
 - **Wake other devices:** Choose existing Home Assistant Wake on LAN buttons, optionally associate Ping sensors, save, and test **Wake selected**. Automatic waking after a scheduled Calendar wake or every Pi boot is separately enabled. See [WAKE_DEVICES.md](WAKE_DEVICES.md).
-- **Messages:** Connect the Home Assistant Companion app on your phone and allow notifications. Select **Choose phone**; discovery opens the settings automatically. Select a phone and up to twelve readings, preview the draft, save, and confirm **Send status now** to check delivery. Automatic messages after Pi boot are separately enabled. See [PHONE_MESSAGES.md](PHONE_MESSAGES.md).
+- **Messages:** Connect the Home Assistant Companion app on your phone and allow notifications. Select **Choose phone**; discovery opens the settings automatically. Choose one phone from the visible list and up to twelve readings, preview the draft, save, and confirm **Send status now** to check delivery. Automatic messages after Pi boot are separately enabled. See [PHONE_MESSAGES.md](PHONE_MESSAGES.md).
 - **Assist:** Select **Connect Assist** on its card to enable status access. In your existing AI integration, such as local Ollama, choose **Assist** under **Control Home Assistant**. Change requests are separately enabled and require approval on the dashboard. See [ASSIST.md](ASSIST.md).
 
 Use **Edit dashboard → Add card** to add your own pictures, graphs, and other Home Assistant cards. Settings, valid wake evidence, and personal cards are kept through ordinary updates. [DASHBOARD.md](DASHBOARD.md) explains every card.

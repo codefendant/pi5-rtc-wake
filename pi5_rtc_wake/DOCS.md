@@ -10,6 +10,8 @@ Enable **Start on boot**, then select **Start**. If the app is already running w
 
 ## Connect your dashboard
 
+When the companion is installed or updated, a Home Assistant notification says **Pi Wake & Sleep: restart Home Assistant to finish setup**. Open **Settings → ⋮ → Restart Home Assistant**. After this companion has loaded once, later updates can also show a reminder in **Settings → Repairs**. The first installation uses a notification because the new integration cannot create a repair until Home Assistant loads it. The reminder survives an app restart and clears after the matching companion successfully connects the dashboard.
+
 The editable **Pi Wake & Sleep** dashboard is the main interface. This app's **Open Web UI** opens **Setup & maintenance** for installation, companion updates/reconnection, and diagnostics.
 
 1. On this app's Info page turn **Protection mode off**, enable **Start on boot**, and start the app. If it is already running, select Stop before changing Protection mode and Start afterward.
@@ -58,7 +60,7 @@ On the optional Wake other devices card choose your existing Home Assistant Wake
 
 ## Messages and Assist
 
-On Messages select Choose phone; discovery opens the settings automatically. Connect the Home Assistant Companion app on the phone first and allow notifications. Select up to twelve readings using suggestions, all readings, categories, or search. Preview a draft without sending, save, and confirm Send status now to check delivery. Optional boot messages include uptime and the next shutdown/wake times. Discovery refresh preserves your draft; a saved missing phone is never silently replaced. [Phone messages](https://github.com/codefendant/pi5-rtc-wake/blob/main/PHONE_MESSAGES.md).
+On Messages select Choose phone; discovery opens the settings automatically with a visible phone list. Choose one phone from that list. Refresh phones and readings updates the list while keeping your draft. Connect the Home Assistant Companion app on the phone first and allow notifications. Select up to twelve readings using suggestions, all readings, categories, or search. Preview a draft without sending, save, and confirm Send status now to check delivery. Optional boot messages include uptime and the next shutdown/wake times. Discovery refresh preserves your draft; a saved missing phone is never silently replaced. [Phone messages](https://github.com/codefendant/pi5-rtc-wake/blob/main/PHONE_MESSAGES.md).
 
 On Assist select Connect Assist to enable status access, then choose Assist under Control Home Assistant in your existing AI integration, such as local Ollama. Change requests are separately enabled and require approval on the dashboard. Approved dates stay in Home Assistant Calendar. [Assist setup](https://github.com/codefendant/pi5-rtc-wake/blob/main/ASSIST.md).
 

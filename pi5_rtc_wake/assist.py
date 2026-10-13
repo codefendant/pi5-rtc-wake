@@ -93,6 +93,9 @@ class Assistant:
                 if self.app.store.read_only or self.app.job or self.app.pending or self.app.shutdown_requested_at is not None or self.app.store.data["outage"]:
                     raise UserError("Wait before connecting Assist.", "Keep the Pi on, finish any operation, and wait for stable power before installing the companion.")
             changed = self.installer.install()
+            if self.app.store.data["dashboard"]["connected"]:
+                self.app.dashboard.restart_needed = self.app.dashboard.restart_needed or changed
+                self.app.dashboard.sync_restart_notice()
             self._secret()
             with self.app.lock:
                 old = deepcopy(self.app.store.data["assist"])
@@ -122,6 +125,7 @@ class Assistant:
     def run(self):
         """Discovery retries never occupy the RTC/UPS control worker."""
         while not self.app.stop_event.is_set():
+            self.app.dashboard.sync_restart_notice()
             if (self.app.store.data["assist"]["enabled"] or self.app.store.data["dashboard"]["connected"]) and self.app.monotonic() - self.last_discovery >= 120:
                 if self.operation_lock.acquire(blocking=False):
                     try:
