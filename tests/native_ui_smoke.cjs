@@ -17,7 +17,7 @@ async function start(args = []) {
 async function main() {
   const browser = await chromium.launch({headless:true,args:['--no-sandbox']});
   await mkdir('ui-artifacts', {recursive:true});
-  const first = await start(['--protected']), ready = await start(['--ready']);
+  const first = await start(['--protected']), fresh = await start(), ready = await start(['--ready']);
   try {
     const page = await browser.newPage({viewport:{width:1536,height:1050},locale:'en-US'}), errors = [], posts=[];
     // Simulated native-calendar bridge. Actual Core/calendar APIs are checked
@@ -79,12 +79,64 @@ async function main() {
     await page.getByRole('button',{name:'Save UPS protection',exact:true}).click();
     assert.equal((await (await page.request.get(first.url+'api/status')).json()).recovery.settings.enabled,false);
 
+    // The first-cycle explanation must be visible before a power request. A
+    // cancelled confirmation must leave the test unstarted and alarm unarmed.
+    const onboarding = await browser.newPage({viewport:{width:1536,height:1050},locale:'en-US'}), testPosts=[];
+    onboarding.on('pageerror',error=>errors.push(error.message));
+    onboarding.on('request',request=>{if(request.url().endsWith('/demo/ha-ws')&&request.method()==='POST')testPosts.push(request.postDataJSON());});
+    await onboarding.goto(fresh.url+'native');
+    const firstSleep=onboarding.locator('[data-kind="setup"]');
+    await firstSleep.getByRole('heading',{name:'Your first sleep & wake cycle',exact:true}).waitFor();
+    await firstSleep.getByText('Home Assistant will shut down and be unavailable for roughly ten minutes, plus startup time.',{exact:true}).waitFor();
+    await onboarding.screenshot({path:'ui-artifacts/first-sleep-desktop.png',fullPage:true});
+    await onboarding.setViewportSize({width:390,height:844});
+    assert.equal(await onboarding.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
+    await onboarding.screenshot({path:'ui-artifacts/first-sleep-mobile.png',fullPage:true});
+    await firstSleep.getByRole('button',{name:'Start ten-minute sleep & wake test',exact:true}).click();
+    const testDialog=firstSleep.getByRole('dialog');
+    await testDialog.getByRole('heading',{name:'Start your first sleep & wake cycle?',exact:true}).waitFor();
+    assert.match(await testDialog.innerText(),/30-second countdown/);
+    assert.match(await testDialog.innerText(),/automations will be unavailable/);
+    assert.match(await testDialog.innerText(),/Leave main power connected/);
+    assert.match(await testDialog.innerText(),/confirm whether it returned by itself, and continue setup/);
+    assert.match(await testDialog.innerText(),/Scheduling and UPS recovery turn off/);
+    await onboarding.screenshot({path:'ui-artifacts/first-sleep-confirm-mobile.png',fullPage:true});
+    const cancelBounds=await testDialog.getByRole('button',{name:'Go back',exact:true}).boundingBox();
+    assert.ok(cancelBounds.y>=0&&cancelBounds.y+cancelBounds.height<=844,'The phone confirmation must keep its cancel button in view');
+    await testDialog.getByRole('button',{name:'Go back',exact:true}).click();
+    assert.equal(testPosts.some(post=>post.action==='test'),false);
+    const cancelled=(await (await onboarding.request.get(fresh.url+'api/status')).json());
+    assert.equal(cancelled.test_status,'not_started');
+    assert.equal(cancelled.pending,null);
+
+    // Replay countdown/return status only; this never starts a power operation.
+    let onboardingStatus={pending:{kind:'test',emergency:false,remaining_seconds:30,wake_epoch:cancelled.current_epoch+600}};
+    await onboarding.route('**/demo/ha-ws',async route=>{
+      if(route.request().postDataJSON()?.type!=='pi5_rtc_wake/status')return route.fallback();
+      const response=await route.fetch(), state=await response.json();
+      await route.fulfill({response,json:{...state,...onboardingStatus}});
+    });
+    await firstSleep.getByRole('heading',{name:'Sleep & wake test starting',exact:true}).waitFor();
+    assert.match(await firstSleep.locator('.sleep-test-guide').innerText(),/The wake alarm is set for/);
+    onboardingStatus={pending:null,test_status:'awaiting_confirmation'};
+    await firstSleep.getByRole('heading',{name:'Did Home Assistant return by itself?',exact:true}).waitFor();
+    await firstSleep.getByText('Welcome back.',{exact:true}).waitFor();
+    await firstSleep.getByRole('button',{name:'Yes, it returned by itself',exact:true}).waitFor();
+    await firstSleep.getByRole('button',{name:"No / I'm not sure",exact:true}).waitFor();
+    assert.equal(await firstSleep.getByRole('button',{name:'Start ten-minute sleep & wake test',exact:true}).count(),0);
+    assert.match(await firstSleep.locator('.notice').first().innerText(),/continue setup on the Calendar and other dashboard cards/);
+    await onboarding.screenshot({path:'ui-artifacts/first-sleep-return-mobile.png',fullPage:true});
+    await onboarding.close();
+
     await page.goto(ready.url+'native');
     await page.getByText('Pi ready · Wake test passed',{exact:true}).waitFor();
     await page.screenshot({path:'ui-artifacts/dashboard-desktop.png',fullPage:true});
     assert.equal(await page.locator('[data-kind="setup"]').getByRole('button',{name:'Review setup'}).isVisible(),true);
     await page.getByRole('button',{name:'Review setup',exact:true}).click();
     await page.getByRole('heading',{name:'Pi setup complete',exact:true}).waitFor();
+    await page.getByRole('button',{name:'Run test again',exact:true}).click();
+    await page.getByRole('dialog').getByRole('heading',{name:'Run a ten-minute sleep & wake test?',exact:true}).waitFor();
+    await page.getByRole('dialog').getByRole('button',{name:'Go back',exact:true}).click();
     await page.locator('[data-kind="setup"] summary').click();
     await page.waitForTimeout(5500);
     assert.equal(await page.locator('[data-kind="setup"] details').evaluate(el=>el.open),true);
@@ -318,7 +370,7 @@ async function main() {
     assert.equal(await devices.getByRole('button',{name:'Wake selected',exact:true}).isDisabled(),true);
     assert.equal(await page.getByRole('link',{name:'Advanced settings ↗'}).count(),0);
     assert.deepEqual(errors,[]);
-    console.log('Native cards passed: dashboard-only UPS commissioning/draft retention/enable-disable confirmations, automatic phone setup/refresh, setup exit, persistent global Keep awake/resume and Pi status icon, preserved settings/dates, dropdown persistence, Calendar bridge/focus, runtime updates, emergency/admin controls, editor, phone setup, confirmations, and mobile fit. Hardware, Calendar frontend bridge, and HA chrome are simulated; real Core APIs are checked separately.');
-  } finally {await browser.close();first.child.kill('SIGTERM');ready.child.kill('SIGTERM');}
+    console.log('Native cards passed: first sleep-cycle expectations, cancellation and return guidance, dashboard-only UPS commissioning/draft retention/enable-disable confirmations, automatic phone setup/refresh, setup exit, persistent global Keep awake/resume and Pi status icon, preserved settings/dates, dropdown persistence, Calendar bridge/focus, runtime updates, emergency/admin controls, editor, phone setup, confirmations, and mobile fit. Hardware, Calendar frontend bridge, and HA chrome are simulated; real Core APIs are checked separately.');
+  } finally {await browser.close();first.child.kill('SIGTERM');fresh.child.kill('SIGTERM');ready.child.kill('SIGTERM');}
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

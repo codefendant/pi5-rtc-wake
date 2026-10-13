@@ -30,6 +30,12 @@ No terminal, YAML, personal token, or separate card download is needed. Home Ass
 
 Keep main power connected for RTC wake. The RTC battery retains time and cannot power the Pi. Home Assistant and its automations are unavailable while the Pi is off. Keep Protection mode off during normal use so the app can check wake settings and program alarms. Home Assistant handles firmware version updates; this app checks/prepares the low-power wake settings while preserving boot order.
 
+## Your first sleep & wake cycle
+
+The ten-minute test shuts down the Pi and Home Assistant after a 30-second countdown. **Home Assistant and its automations will be unavailable for roughly ten minutes, plus startup time.** Keep main power connected: the RTC is set to wake the Pi about ten minutes after the test starts.
+
+When Home Assistant returns, open Pi Wake & Sleep and confirm **Yes, it returned by itself** if it woke automatically. Then continue setup on the Calendar and other dashboard cards. If it has not returned after 15 minutes, press the Pi power button and choose **No / I’m not sure**. Scheduling and UPS recovery turn off for the test; review them afterward.
+
 ## Everyday controls
 
 Use Pi status, the next shutdown/wake cards, Calendar, UPS power, Messages, Assist, and Recent activity on the dashboard. Each feature's settings open on its card. User-opened details and unsaved forms survive status refreshes.
