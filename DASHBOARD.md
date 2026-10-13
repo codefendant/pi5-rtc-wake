@@ -18,13 +18,15 @@ The **Pi Wake & Sleep** dashboard holds Pi status, everyday power controls, Cale
 
 The optional app sidebar entry is named **Pi setup & maintenance**. Turn off **Show in sidebar** on its Info page if you want just the dashboard entry. That preference is kept; this update does not alter your sidebar choices. Open Web UI and the dashboard setup area still open maintenance.
 
+On update, only the five untouched earlier starter header sections are combined. Customized headers, personal cards, feature cards, and other views stay as saved. Add **Pi status** through Edit dashboard → Add card to use the new summary in a customized layout. Earlier individual status, schedule, setup, and control cards remain available.
+
 ## Guided Pi setup
 
-The setup card begins with **Permissions → Pi checks → Wake test**. It checks Protection mode and links to the app's own Info page. The illustration highlights the switch: **Stop the app → turn Protection mode off → Start the app**. Checks continue automatically while the app is running.
+The Pi status summary opens initial setup with **Permissions → Pi checks → Wake test**. It checks Protection mode and links to the app's own Info page. The illustration highlights the switch: **Stop the app → turn Protection mode off → Start the app**. Checks continue automatically while the app is running.
 
 Turning Protection mode off grants access; the Pi is marked ready only after the wake settings, clock, and successful wake test have been checked. Prepare wake settings only if requested, reboot the Pi if requested, then run and confirm the ten-minute test. An existing valid wake test is retained when firmware and wake settings have not changed.
 
-Completed setup collapses into **Pi ready · Wake test passed**. **Review setup** opens the details again, and **Setup & maintenance** opens connection repair; **Back to dashboard** closes them. Leaving unfinished setup keeps a **Pi setup needs attention** strip and does not enable power operations. A new readiness problem brings the needed guidance back. Power operations show confirmations and require a Home Assistant administrator; other users can view status.
+Completed setup becomes a small **Ready** badge in the compact Pi status summary. The summary combines Raspberry Pi artwork, **Awake**, uptime, next active shutdown/wake, and **Keep awake / Resume shutdowns**. **Settings → Review setup** opens the checks again; **Settings → Setup & maintenance** opens connection repair; **Back to dashboard** closes them. Leaving unfinished setup keeps a **Pi setup needs attention** strip and does not enable power operations. A new readiness problem brings the needed guidance back. Power operations show confirmations and require a Home Assistant administrator; other users can view status.
 
 ## Calendar
 
@@ -38,7 +40,7 @@ Select a listed off period to open Home Assistant's native Calendar card at that
 
 ## Keep awake
 
-**Keep awake** suspends every shutdown and reboot issued by this app, including future Calendar shutdowns, timed UPS retries, emergency low-battery shutdowns, wake tests, and reviewed AI power operations. It cancels a countdown that has not yet been submitted. This choice survives app restarts and updates until you select **Resume shutdowns**. The power icon in **Pi status** toggles the same choice with confirmation.
+**Keep awake** suspends every shutdown and reboot issued by this app, including future Calendar shutdowns, timed UPS retries, emergency low-battery shutdowns, wake tests, and reviewed AI power operations. It cancels a countdown that has not yet been submitted. This choice survives app restarts and updates until you select **Resume shutdowns**. The Raspberry Pi artwork in **Pi status** toggles the same choice with confirmation. The red confirmed **Reboot Pi** control is in Settings.
 
 Calendar dates, enabled/disabled feature choices, wake-test evidence, and other settings are kept. **Resume shutdowns** restores the saved choices; it does not enable previously disabled features or bypass normal readiness/fresh-reading checks. Low UPS reserve can trigger shutdown as soon as protection resumes. An amber state shows when all app shutdowns, including UPS protection, are suspended. Monitoring, phone messages, and status access continue.
 

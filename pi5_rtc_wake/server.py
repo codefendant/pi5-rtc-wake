@@ -29,7 +29,7 @@ from assist import Assistant, PORT as ASSIST_PORT
 from assist_http import AssistHandler
 from dashboard import Dashboard
 
-VERSION = "0.10.0-rc.4"
+VERSION = "0.10.0-rc.5"
 LOG = logging.getLogger("pi5_rtc_wake")
 COUNTDOWN = 30
 TEST_SECONDS = 600

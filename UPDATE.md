@@ -1,5 +1,15 @@
 # Update Pi 5 Wake & Sleep
 
+## 0.10.0-rc.5 compact dashboard
+
+1. Update the same installed app to **0.10.0-rc.5**, then **Stop → Start**.
+2. Open **Web UI → Maintenance and connection repair → Update / reconnect dashboard** and confirm.
+3. Restart Home Assistant when requested, then refresh the browser (Ctrl+F5 if the previous layout is still loaded).
+
+The compact Pi status summary contains the Raspberry Pi artwork, Awake indicator, uptime, next active shutdown/wake, Keep awake / Resume shutdowns, and Settings. Successful setup becomes a small Ready badge. Review setup, maintenance, and the red confirmed reboot are in Settings. First-run guidance and setup problems stay visible when needed. Messages closes back to its summary after saving; optional introductions are shorter.
+
+The update combines only the five untouched starter header sections. Personal cards and dashboard metadata are kept. Edited or incomplete headers and other Pi cards are left as saved; use Edit dashboard → Add card → **Pi status** for the new summary. Older individual cards remain supported. Saved settings, Calendar dates, schema 11, and valid wake evidence are retained. No new wake test is required just to update.
+
 ## 0.10.0-rc.4 restart reminders and phone choices
 
 1. Update the **same installed app** to **0.10.0-rc.4**, then **Stop → Start**.

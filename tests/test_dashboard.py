@@ -13,7 +13,7 @@ from test_calendar_schedule import Fixture, event
 from test_setup import server, UserError
 from assist_http import AssistHandler
 from assist_install import Installer
-from dashboard import Dashboard, starter_config, restore_cards
+from dashboard import Dashboard, starter_config, restore_cards, compact_dashboard_config
 from services import Supervisor
 from state import StateStore
 
@@ -244,8 +244,57 @@ class DashboardTests(unittest.TestCase, Fixture):
         self.assertIn(other_pi, restored["views"][0]["sections"][4]["cards"][0]["cards"])
         self.assertEqual(restored["views"][0]["background"], "/local/my-photo.jpg")
         self.assertEqual(len([card for section in restored["views"][0]["sections"] for card in section["cards"]
-                              if card.get("type", "").startswith("custom:pi-wake-")]), 11)
-        self.assertEqual(len(config["views"][0]["sections"]), 11)
+                              if card.get("type", "").startswith("custom:pi-wake-")]), 7)
+        self.assertEqual(len(config["views"][0]["sections"]), 7)
+
+    @staticmethod
+    def legacy_layout(entry_id="entry-a"):
+        config = starter_config(entry_id)
+        kinds = ("setup", "status", "shutdown", "wake", "calendar", "ups", "controls", "devices", "messages", "assist", "activity")
+        config["views"][0]["sections"] = [{"type": "grid", "column_span": 3 if kind in ("setup", "activity") else 2 if kind in ("calendar", "devices") else 1,
+            "cards": [{"type": f"custom:pi-wake-{kind}-card", "entry_id": entry_id, "grid_options": {"columns": 12, "rows": "auto"}}]} for kind in kinds]
+        return config
+
+    def test_compact_layout_preserves_dates_settings_and_interleaved_personal_cards(self):
+        config = self.legacy_layout()
+        photo = {"type": "grid", "cards": [{"type": "picture", "image": "/local/family.jpg"}]}
+        config["views"][0]["sections"].insert(2, photo)
+        config["views"][0]["background"] = "/local/rv.jpg"
+        config["views"].append({"path": "other", "cards": [{"type": "history-graph"}]})
+        before = deepcopy(config)
+        settings = deepcopy(self.app.store.data)
+        updated = compact_dashboard_config(config, "entry-a")
+        sections = updated["views"][0]["sections"]
+        self.assertEqual(sections[0]["cards"][0]["type"], "custom:pi-wake-summary-card")
+        self.assertEqual(sections[1], photo)
+        self.assertEqual(sections[2:], [row for row in before["views"][0]["sections"] if row["cards"][0]["type"] in
+            {"custom:pi-wake-" + kind + "-card" for kind in ("calendar", "ups", "devices", "messages", "assist", "activity")}])
+        self.assertEqual(updated["views"][1], before["views"][1])
+        self.assertEqual(updated["views"][0]["background"], "/local/rv.jpg")
+        self.assertEqual(config, before)
+        self.assertEqual(self.app.store.data, settings)
+        self.assertEqual(compact_dashboard_config(updated, "entry-a"), updated)
+
+    def test_compact_layout_respects_custom_headers_and_other_pis(self):
+        for change in ("title", "resize", "personal", "missing", "duplicate", "other-pi", "masonry", "summary"):
+            with self.subTest(change=change):
+                config = self.legacy_layout()
+                view = config["views"][0]
+                if change == "title": view["sections"][1]["cards"][0]["title"] = "My Pi"
+                elif change == "resize": view["sections"][1]["column_span"] = 2
+                elif change == "personal": view["sections"][1]["cards"].append({"type": "weather-forecast"})
+                elif change == "missing": view["sections"].pop(1)
+                elif change == "duplicate": view["sections"].append(deepcopy(view["sections"][1]))
+                elif change == "other-pi": view["sections"][1]["cards"][0]["entry_id"] = "entry-b"
+                elif change == "masonry": view["type"] = "masonry"
+                elif change == "summary": view["sections"].append(starter_config("entry-a")["views"][0]["sections"][0])
+                self.assertEqual(compact_dashboard_config(config, "entry-a"), config)
+
+    def test_default_summary_replaces_duplicate_top_controls(self):
+        cards = [section["cards"][0]["type"] for section in starter_config("entry-a")["views"][0]["sections"]]
+        self.assertEqual(cards[0], "custom:pi-wake-summary-card")
+        self.assertEqual(len(cards), 7)
+        self.assertTrue(all("custom:pi-wake-" + kind + "-card" not in cards for kind in ("setup", "status", "shutdown", "wake", "controls")))
 
     def test_restore_preserves_users_changed_view_type(self):
         config = {"views": [{"title": "My layout", "type": "masonry", "path": "overview", "cards": [{"type": "picture", "image": "/local/rv.jpg"}]}]}
@@ -317,6 +366,28 @@ class CoreDashboardRequests(unittest.TestCase):
         self.assertFalse(self.supervisor.ensure_dashboard("entry-a")["created"])
         self.assertNotIn("lovelace/config/save", [call.args[0] for call in self.core.command.call_args_list])
         self.assertIn("lovelace/resources/update", [call.args[0] for call in self.core.command.call_args_list])
+        version = json.loads(Path("pi5_rtc_wake/companion/pi5_rtc_wake/manifest.json").read_text())["version"]
+        update = next(call for call in self.core.command.call_args_list if call.args[0] == "lovelace/resources/update")
+        self.assertEqual(update.kwargs["url"], "/pi5_rtc_wake/pi-cards.js?v=" + version)
+
+    def test_legacy_header_is_compacted_only_after_readback_with_personal_cards_retained(self):
+        config = DashboardTests.legacy_layout()
+        config["views"][0]["sections"].append({"type": "grid", "cards": [{"type": "picture", "image": "/local/rv.jpg"}]})
+        self.core.command.side_effect = [[], {}, [{"url_path": "pi-wake-sleep"}], config, deepcopy(config), {}]
+        self.assertFalse(self.supervisor.ensure_dashboard("entry-a")["created"])
+        saved = self.core.command.call_args.kwargs["config"]
+        self.assertEqual(saved, compact_dashboard_config(config, "entry-a"))
+        self.assertEqual(saved["views"][0]["sections"][-1], config["views"][0]["sections"][-1])
+        self.assertEqual([call.args[0] for call in self.core.command.call_args_list].count("lovelace/config"), 2)
+
+    def test_concurrent_dashboard_edit_prevents_compact_layout_save(self):
+        config = DashboardTests.legacy_layout()
+        edited = deepcopy(config)
+        edited["views"][0]["sections"][1]["cards"][0]["title"] = "My Pi"
+        self.core.command.side_effect = [[], {}, [{"url_path": "pi-wake-sleep"}], config, edited]
+        with self.assertRaises(UserError):
+            self.supervisor.ensure_dashboard("entry-a")
+        self.assertNotIn("lovelace/config/save", [call.args[0] for call in self.core.command.call_args_list])
 
     def test_interrupted_empty_dashboard_setup_can_be_retried(self):
         from ha_registry import CoreCommandError

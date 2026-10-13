@@ -174,6 +174,22 @@ async def check():
                 config = starter_config(entry.entry_id)
                 saved = await command("lovelace/config", url_path="pi-wake-sleep")
                 assert saved == config, saved
+                assert saved["views"][0]["sections"][0]["cards"][0]["type"] == "custom:pi-wake-summary-card"
+                # Upgrade an actual saved earlier starter layout through the
+                # native storage APIs, retaining a personal card and metadata.
+                from test_dashboard import DashboardTests
+                from dashboard import compact_dashboard_config
+                legacy = DashboardTests.legacy_layout(entry.entry_id)
+                legacy["views"][0]["background"] = "/local/cabin.jpg"
+                legacy["views"][0]["sections"].insert(2, {"type": "grid", "cards": [{"type": "picture", "image": "/local/cabin.jpg"}]})
+                await command("lovelace/config/save", url_path="pi-wake-sleep", config=legacy)
+                with patch("services.CoreRegistry", side_effect=lambda token: CoreRegistry(token, connector=local_core)):
+                    await hass.async_add_executor_job(lambda: supervisor.ensure_dashboard(entry.entry_id))
+                saved = await command("lovelace/config", url_path="pi-wake-sleep")
+                assert saved == compact_dashboard_config(legacy, entry.entry_id), saved
+                resources = await command("lovelace/resources/list")
+                assert all(row["url"].endswith("?v=" + native.COMPANION_VERSION) for row in resources
+                           if row["url"].split("?")[0] == "/pi5_rtc_wake/pi-cards.js"), resources
                 picture = {"type": "picture", "image": "/local/my-rv.jpg"}
                 saved["views"][0]["sections"].append({"type": "grid", "cards": [picture]})
                 restored = restore_cards(saved, entry.entry_id)

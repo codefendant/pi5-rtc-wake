@@ -62,13 +62,13 @@ def main():
             allowed_peers = frozenset({"127.0.0.1"})
 
             def send_header(self, key, value):
-                if key == "Content-Security-Policy" and self.path == "/native":
+                if key == "Content-Security-Policy" and self.path.split("?", 1)[0] == "/native":
                     # Developer-only local harness. The production Ingress policy is unchanged.
                     value = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'"
                 super().send_header(key, value)
 
             def do_GET(self):
-                if self.path == "/native":
+                if self.path.split("?", 1)[0] == "/native":
                     self._send(200, (ROOT / "tools/native_preview.html").read_bytes(), "text/html; charset=utf-8")
                 elif self.path == "/native-cards.js":
                     self._send(200, (ROOT / "pi5_rtc_wake/companion/pi5_rtc_wake/frontend/pi-cards.js").read_bytes(), "text/javascript; charset=utf-8")
