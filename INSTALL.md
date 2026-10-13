@@ -1,6 +1,6 @@
 # Install Pi 5 Wake & Sleep
 
-**Public preview 0.10.0-rc.4.** Use Home Assistant OS 18 or newer on a Raspberry Pi 5, Home Assistant Core 2026.10 or newer, and a main power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens. **No ZIP download is needed.**
+**0.10.0 Public Preview.** Use Home Assistant OS 18 or newer on a Raspberry Pi 5, Home Assistant Core 2026.10 or newer, and a main power supply that stays connected while the Pi is off. Installation and setup use Home Assistant screens.
 
 ## Install once
 
@@ -12,6 +12,8 @@
 6. Wait for **Your dashboard is connected**, then select **Open Pi Wake & Sleep**, or use its sidebar entry. Continue Pi setup and activate the features you want on its cards.
 
 No terminal, YAML, personal API token, extra card download, or AI account is needed. The dashboard works with AI access off.
+
+For later releases, use **Update** on the same installed app and follow [UPDATE.md](UPDATE.md). Uninstalling and reinstalling is a fresh installation and does not preserve the app's saved settings.
 
 ### Before you select Start
 

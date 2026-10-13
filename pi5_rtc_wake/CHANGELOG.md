@@ -1,3 +1,10 @@
+## 0.10.0 — Public Preview
+
+- Formal public preview of the tested 0.10.0-rc.6 build, with the same power, Calendar, UPS, Messages, Assist, and device-waking behavior.
+- Updated public introduction with the approved use-case artwork and a current dashboard example, consistent installation/update guidance, and simple feedback forms.
+- App and companion version 0.10.0; settings, Calendar dates, personal cards, schema 11, and valid wake evidence are retained.
+- The app remains experimental and the GitHub release remains a pre-release. No new wake test is required solely for this update.
+
 ## 0.10.0-rc.6
 
 - Fill the native two- and three-column sections with their generated cards, removing the reserved empty middle column and widening the Pi summary.

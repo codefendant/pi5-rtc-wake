@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Installation and setup
+    url: https://github.com/codefendant/pi5-rtc-wake/blob/main/INSTALL.md
+    about: Follow the Home Assistant screen-by-screen installation guide.
+  - name: Updating your existing app
+    url: https://github.com/codefendant/pi5-rtc-wake/blob/main/UPDATE.md
+    about: Keep settings and personal cards when updating.

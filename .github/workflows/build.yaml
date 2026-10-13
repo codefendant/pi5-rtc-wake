@@ -176,8 +176,10 @@ jobs:
           repo, version, commit = (os.environ[k] for k in ('REPOSITORY', 'VERSION', 'COMMIT_SHA'))
           if not re.fullmatch(r'[A-Za-z0-9-]+/[A-Za-z0-9_.-]+', repo):
               raise SystemExit('Invalid repository.')
-          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+-[A-Za-z0-9.]+', version):
-              raise SystemExit('This job publishes preview versions only.')
+          # A formal preview may use a plain version. This job always publishes
+          # with prerelease=True and verifies that designation below.
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.]+)?', version):
+              raise SystemExit('The preview version must be a valid release version.')
           if not re.fullmatch(r'[0-9a-f]{40}', commit):
               raise SystemExit('Invalid release commit.')
           tag = 'v' + version

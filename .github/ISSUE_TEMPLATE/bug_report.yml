@@ -1,0 +1,57 @@
+name: Report a problem
+description: Something is not working, or a setup step is confusing.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying Pi 5 Wake & Sleep. Describe the problem in your own words.
+        Reports are public: remove tokens, private addresses, and personal readings from attachments.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Tell us what you expected and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What did you select?
+      description: List the screens and buttons you used. Attach a screenshot if it helps.
+    validations:
+      required: true
+  - type: input
+    id: app_version
+    attributes:
+      label: Pi Wake & Sleep version
+      description: Shown on the app's Info page. Leave blank if you cannot find it.
+      placeholder: "Example: 0.10.0"
+  - type: input
+    id: ha_versions
+    attributes:
+      label: Home Assistant Core and OS versions
+      description: Find these in Settings → About, if available.
+  - type: dropdown
+    id: installation
+    attributes:
+      label: When did the problem happen?
+      options:
+        - First installation from the app store
+        - Updating an existing app-store installation
+        - Everyday use
+        - An early local ZIP installation
+        - I am not sure
+    validations:
+      required: true
+  - type: textarea
+    id: support_details
+    attributes:
+      label: Details for support (optional)
+      description: Open the app's Web UI → Maintenance and connection repair → Details for support, and copy the text here.
+      render: json
+  - type: textarea
+    id: hardware
+    attributes:
+      label: Relevant equipment (optional)
+      description: For wake or power problems, tell us about your Pi power supply, boot drive, or UPS model.

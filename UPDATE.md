@@ -1,5 +1,16 @@
 # Update Pi 5 Wake & Sleep
 
+## 0.10.0 Public Preview
+
+1. Update the **same installed app** to **0.10.0**, then **Stop → Start**.
+2. Open **Web UI → Maintenance and connection repair → Update / reconnect dashboard** and confirm.
+3. Restart **Home Assistant** when requested, then refresh the browser and open **Pi Wake & Sleep**.
+4. Check that your selected Calendar, upcoming dates, UPS choices, phone/readings, Assist preferences, Wake other devices choices, and personal dashboard cards are still present.
+
+This formal preview packages the behavior tested in **0.10.0-rc.6**. Schema 11, saved settings, Calendar dates, customized cards, and valid wake-test evidence are retained. **No new wake test is required just for this update.** Keep Protection mode off. Do not uninstall the app, delete the integration, or restore the dashboard to update it.
+
+If the update is not offered, select **App store → ⋮ → Check for updates** and refresh. App and companion updates are separate steps; the reconnect action installs the matching dashboard code. First installation is described in [INSTALL.md](INSTALL.md).
+
 ## 0.10.0-rc.6 dashboard spacing fix
 
 1. Update the same app to **0.10.0-rc.6**, then **Stop → Start**.

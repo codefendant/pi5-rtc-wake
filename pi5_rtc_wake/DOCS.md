@@ -1,5 +1,7 @@
 # Getting started
 
+**0.10.0 Public Preview · Raspberry Pi 5 · Home Assistant OS 18+ · Home Assistant Core 2026.10+**
+
 ## Before you select Start
 
 **On the Info tab, turn Protection mode OFF in the Controls card before starting this app.** This lets Pi Wake & Sleep access the Raspberry Pi's wake alarm. Keep it off while using the app.
@@ -40,7 +42,7 @@ When Home Assistant returns, open Pi Wake & Sleep and confirm **Yes, it returned
 
 ## Everyday controls
 
-Use Pi status, the next shutdown/wake cards, Calendar, UPS power, Messages, Assist, and Recent activity on the dashboard. Each feature's settings open on its card. User-opened details and unsaved forms survive status refreshes.
+Use the compact Pi status card for uptime, next shutdown/wake times, Keep awake, and Settings. Calendar, UPS power, Wake other devices, Messages, Assist, and Recent activity have their own dashboard cards. Each feature's settings open on its card. User-opened details and unsaved forms survive status refreshes.
 
 **Keep awake** suspends every shutdown/reboot issued by this app, including future Calendar dates, timed retries, emergency UPS shutdowns, wake tests, and approved AI power operations. It survives app restarts until **Resume shutdowns**. Saved dates and choices are kept; monitoring and messages continue. The Pi status power icon uses the same confirmed switch. Other controllers retain their own shutdown authority; a submitted OS request cannot be retracted. Reboot Pi has a red background and confirmation.
 
