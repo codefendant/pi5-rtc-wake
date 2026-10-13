@@ -1,3 +1,9 @@
+## 0.10.0-rc.6
+
+- Fill the native two- and three-column sections with their generated cards, removing the reserved empty middle column and widening the Pi summary.
+- Repair only unchanged starter widths; preserve custom sizes, titles, mixed/personal cards, and later explicit resizing through an internal layout marker.
+- Render both grid levels from generated configuration in browser checks, and verify section fill and real Core upgrade/configuration retention. Keep all power and scheduling behavior.
+
 ## 0.10.0-rc.5
 
 - Consolidate everyday Pi status, uptime, schedule times, Keep awake, and Settings into one compact summary with the introduction page's Raspberry Pi artwork and Awake indicator.

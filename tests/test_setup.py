@@ -59,9 +59,9 @@ class FakeSupervisor:
         self.events.setdefault(entity, [])
         return entity
     def ensure_dashboard(self, entry_id, *, add_wake_devices=False):
-        from dashboard import starter_config, add_wake_devices_card, compact_dashboard_config
+        from dashboard import starter_config, add_wake_devices_card, compact_dashboard_config, fill_starter_section_cards
         if hasattr(self, "dashboard_config"):
-            self.dashboard_config = compact_dashboard_config(self.dashboard_config, entry_id)
+            self.dashboard_config = fill_starter_section_cards(compact_dashboard_config(self.dashboard_config, entry_id), entry_id)
             if add_wake_devices:
                 self.dashboard_config = add_wake_devices_card(self.dashboard_config, entry_id)
             return {"created": False, "path": "/pi-wake-sleep"}

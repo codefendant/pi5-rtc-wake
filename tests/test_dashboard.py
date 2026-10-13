@@ -13,7 +13,7 @@ from test_calendar_schedule import Fixture, event
 from test_setup import server, UserError
 from assist_http import AssistHandler
 from assist_install import Installer
-from dashboard import Dashboard, starter_config, restore_cards, compact_dashboard_config
+from dashboard import Dashboard, starter_config, restore_cards, compact_dashboard_config, fill_starter_section_cards
 from services import Supervisor
 from state import StateStore
 
@@ -290,6 +290,42 @@ class DashboardTests(unittest.TestCase, Fixture):
                 elif change == "summary": view["sections"].append(starter_config("entry-a")["views"][0]["sections"][0])
                 self.assertEqual(compact_dashboard_config(config, "entry-a"), config)
 
+    def test_wide_starter_cards_fill_sections_without_moving_personal_cards(self):
+        config = starter_config("entry-a")
+        for section in config["views"][0]["sections"]:
+            section["cards"][0]["grid_options"]["columns"] = 12
+            section["cards"][0].pop("pi_layout_version", None)
+        config["views"][0]["background"] = "/local/cabin.jpg"
+        personal = {"type": "grid", "column_span": 2, "cards": [{"type": "history-graph", "grid_options": {"columns": 12}}]}
+        config["views"][0]["sections"].insert(2, personal)
+        before = deepcopy(config)
+        fixed = fill_starter_section_cards(config, "entry-a")
+        for section in fixed["views"][0]["sections"]:
+            if section["cards"][0]["type"] in {"custom:pi-wake-summary-card", "custom:pi-wake-calendar-card", "custom:pi-wake-activity-card"}:
+                self.assertEqual(section["cards"][0]["grid_options"], {"columns": "full", "rows": "auto"})
+        self.assertEqual(fixed["views"][0]["sections"][2], personal)
+        self.assertEqual(fixed["views"][0]["background"], before["views"][0]["background"])
+        self.assertEqual(config, before)
+        self.assertEqual(fill_starter_section_cards(fixed, "entry-a"), fixed)
+        fixed["views"][0]["sections"][0]["cards"][0]["grid_options"]["columns"] = 12
+        self.assertEqual(fill_starter_section_cards(fixed, "entry-a"), fixed)
+
+    def test_full_width_repair_keeps_explicit_card_and_section_customizations(self):
+        for change in ("card-size", "row-size", "title", "section-size", "section-title", "mixed", "other-pi", "masonry"):
+            with self.subTest(change=change):
+                section = {"type": "grid", "column_span": 2, "cards": [{"type": "custom:pi-wake-calendar-card", "entry_id": "entry-a", "grid_options": {"columns": 12, "rows": "auto"}}]}
+                config = {"views": [{"type": "sections", "sections": [section]}]}
+                card = section["cards"][0]
+                if change == "card-size": card["grid_options"]["columns"] = 6
+                elif change == "row-size": card["grid_options"]["rows"] = 4
+                elif change == "title": card["title"] = "My calendar"
+                elif change == "section-size": section["column_span"] = 3
+                elif change == "section-title": section["title"] = "My dates"
+                elif change == "mixed": section["cards"].append({"type": "picture"})
+                elif change == "other-pi": card["entry_id"] = "entry-b"
+                else: config["views"][0]["type"] = "masonry"
+                self.assertEqual(fill_starter_section_cards(config, "entry-a"), config)
+
     def test_default_summary_replaces_duplicate_top_controls(self):
         cards = [section["cards"][0]["type"] for section in starter_config("entry-a")["views"][0]["sections"]]
         self.assertEqual(cards[0], "custom:pi-wake-summary-card")
@@ -376,7 +412,7 @@ class CoreDashboardRequests(unittest.TestCase):
         self.core.command.side_effect = [[], {}, [{"url_path": "pi-wake-sleep"}], config, deepcopy(config), {}]
         self.assertFalse(self.supervisor.ensure_dashboard("entry-a")["created"])
         saved = self.core.command.call_args.kwargs["config"]
-        self.assertEqual(saved, compact_dashboard_config(config, "entry-a"))
+        self.assertEqual(saved, fill_starter_section_cards(compact_dashboard_config(config, "entry-a"), "entry-a"))
         self.assertEqual(saved["views"][0]["sections"][-1], config["views"][0]["sections"][-1])
         self.assertEqual([call.args[0] for call in self.core.command.call_args_list].count("lovelace/config"), 2)
 

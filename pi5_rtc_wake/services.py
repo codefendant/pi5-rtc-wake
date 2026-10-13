@@ -147,7 +147,7 @@ class Supervisor:
 
     def ensure_dashboard(self, entry_id, *, add_wake_devices=False):
         """Register our cards and create an editable dashboard without replacing one."""
-        from dashboard import PATH, RESOURCE, starter_config, add_wake_devices_card, compact_dashboard_config
+        from dashboard import PATH, RESOURCE, starter_config, add_wake_devices_card, compact_dashboard_config, fill_starter_section_cards
         version = json.loads((Path(__file__).parent / "companion/pi5_rtc_wake/manifest.json").read_text())["version"]
         resource_url = RESOURCE + "?v=" + version
         try:
@@ -170,7 +170,7 @@ class Supervisor:
                         # An interrupted first install can leave an empty dashboard.
                         # Only a confirmed absence of saved layout allows initialization.
                     else:
-                        updated = compact_dashboard_config(config, entry_id)
+                        updated = fill_starter_section_cards(compact_dashboard_config(config, entry_id), entry_id)
                         if add_wake_devices:
                             updated = add_wake_devices_card(updated, entry_id)
                         if updated != config:

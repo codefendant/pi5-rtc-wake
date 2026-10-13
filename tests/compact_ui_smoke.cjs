@@ -10,8 +10,15 @@ module.exports = async function compactDashboard({browser, start}) {
     await page.goto(ready.url+'native');
     const summary=page.locator('[data-kind="summary"]');
     await summary.getByText('Awake',{exact:true}).waitFor();
-    assert.equal(await page.locator('#cards > *').count(),7);
+    assert.equal(await page.locator('#cards [data-kind]').count(),7);
     assert.equal(await summary.locator('.pi-artwork').count(),1);
+    const wide=page.locator('#cards .section[data-span="3"], #cards .section[data-span="2"]');
+    assert.equal(await wide.count(),3);
+    for(const section of await wide.all()){
+      const card=section.locator('[data-kind]'),outer=await section.boundingBox(),inner=await card.boundingBox();
+      assert(Math.abs(inner.width-outer.width)<2,'Generated card should fill its native section, including multi-column sections');
+    }
+
     assert.equal(await summary.getByText('Raspberry Pi 5',{exact:false}).count(),1);
     assert.equal(await summary.locator('.setup-ready').count(),0);
     assert.equal(await summary.getByRole('button',{name:'Review setup',exact:true}).count(),0);
@@ -81,7 +88,7 @@ module.exports = async function compactDashboard({browser, start}) {
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await page.screenshot({path:'ui-artifacts/compact-settings-mobile.png',fullPage:true});
     await summary.getByRole('button',{name:'Back to dashboard',exact:true}).click();
-    await page.evaluate(()=>{window.previewHass.themes={darkMode:true};for(const card of document.querySelectorAll('#cards > *'))card.hass=window.previewHass;document.body.style.cssText='--ha-card-background:#111827;--primary-text-color:#f1f5f9;--secondary-text-color:#aab7c9;--divider-color:#334155;--secondary-background-color:#1e293b;background:#0f172a;color:#f1f5f9';});
+    await page.evaluate(()=>{window.previewHass.themes={darkMode:true};for(const card of document.querySelectorAll('#cards [data-kind]'))card.hass=window.previewHass;document.body.style.cssText='--ha-card-background:#111827;--primary-text-color:#f1f5f9;--secondary-text-color:#aab7c9;--divider-color:#334155;--secondary-background-color:#1e293b;background:#0f172a;color:#f1f5f9';});
     await page.screenshot({path:'ui-artifacts/compact-dashboard-dark-mobile.png',fullPage:true});
 
     let pending={kind:'ups',emergency:true,remaining_seconds:30};

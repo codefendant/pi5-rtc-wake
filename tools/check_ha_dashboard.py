@@ -178,7 +178,7 @@ async def check():
                 # Upgrade an actual saved earlier starter layout through the
                 # native storage APIs, retaining a personal card and metadata.
                 from test_dashboard import DashboardTests
-                from dashboard import compact_dashboard_config
+                from dashboard import compact_dashboard_config, fill_starter_section_cards
                 legacy = DashboardTests.legacy_layout(entry.entry_id)
                 legacy["views"][0]["background"] = "/local/cabin.jpg"
                 legacy["views"][0]["sections"].insert(2, {"type": "grid", "cards": [{"type": "picture", "image": "/local/cabin.jpg"}]})
@@ -186,7 +186,8 @@ async def check():
                 with patch("services.CoreRegistry", side_effect=lambda token: CoreRegistry(token, connector=local_core)):
                     await hass.async_add_executor_job(lambda: supervisor.ensure_dashboard(entry.entry_id))
                 saved = await command("lovelace/config", url_path="pi-wake-sleep")
-                assert saved == compact_dashboard_config(legacy, entry.entry_id), saved
+                assert saved == fill_starter_section_cards(compact_dashboard_config(legacy, entry.entry_id), entry.entry_id), saved
+                assert all(section["cards"][0]["grid_options"]["columns"] == "full" for section in saved["views"][0]["sections"] if section.get("column_span", 1) > 1)
                 resources = await command("lovelace/resources/list")
                 assert all(row["url"].endswith("?v=" + native.COMPANION_VERSION) for row in resources
                            if row["url"].split("?")[0] == "/pi5_rtc_wake/pi-cards.js"), resources
