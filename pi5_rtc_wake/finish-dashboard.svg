@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="370" viewBox="0 0 620 370" role="img" aria-labelledby="title description">
+  <title id="title">Finish dashboard setup by adding Pi Wake and Sleep</title>
+  <desc id="description">Example discovery card in Home Assistant's Devices and services page. Find Pi Wake and Sleep under Discovered and select its Add button, highlighted with a teal outline and arrow. Then select Submit and Finish. The card icon may differ.</desc>
+  <rect width="620" height="370" rx="20" fill="#f1faf8"/>
+  <g font-family="DejaVu Sans,Arial,sans-serif">
+    <text x="24" y="36" font-size="16" font-weight="700" fill="#087d87">Settings → Devices &amp; services → Discovered</text>
+    <rect x="17" y="54" width="586" height="265" rx="18" fill="#fff" stroke="#dce2e5"/>
+    <rect x="285" y="76" width="50" height="50" rx="5" fill="#f1f3f4"/>
+    <g transform="translate(299 88)" fill="none" stroke="#87959f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 0v12m-6-8a10 10 0 1 0 12 0"/></g>
+    <g fill="#617078"><circle cx="561" cy="89" r="2.5"/><circle cx="561" cy="98" r="2.5"/><circle cx="561" cy="107" r="2.5"/></g>
+    <text x="310" y="166" text-anchor="middle" font-size="24" fill="#16212d">Pi Wake &amp; Sleep</text>
+    <text x="310" y="199" text-anchor="middle" font-size="20" fill="#16212d">Pi Wake &amp; Sleep</text>
+    <text x="235" y="263" text-anchor="middle" font-size="20" fill="#0099bc">Ignore</text>
+    <rect x="305" y="229" width="85" height="55" rx="28" fill="#def3fb"/>
+    <text x="347.5" y="263" text-anchor="middle" font-size="21" font-weight="700" fill="#0099bc">Add</text>
+    <rect x="296" y="220" width="103" height="73" rx="36" fill="none" stroke="#007e8b" stroke-width="3"/>
+    <path d="M499 276h-80m8-7-8 7 8 7" fill="none" stroke="#007e8b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="451" y="256" font-size="16" font-weight="700" fill="#007e8b">Select Add</text>
+    <text x="310" y="348" text-anchor="middle" font-size="13" fill="#526676">Example only. The icon may differ; match the name Pi Wake &amp; Sleep.</text>
+  </g>
+</svg>

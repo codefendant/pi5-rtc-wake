@@ -21,6 +21,14 @@ No terminal, YAML, personal API token, extra card download, or AI account is nee
 
 Enable **Start on boot**, then select **Start**. If the app is already running, use **Stop → turn Protection mode off → Start**. The graphic is an example; use the actual controls in Home Assistant.
 
+### Finish connecting your dashboard
+
+After **Connect dashboard** and any requested Home Assistant restart, select **Finish in Devices & services**, or open **Settings → Devices & services**. Under **Discovered**, find **Pi Wake & Sleep** and select **Add**, then **Submit → Finish**.
+
+![Example Pi Wake and Sleep discovery card with the Add button highlighted](pi5_rtc_wake/finish-dashboard.svg)
+
+Return to the setup page and select **Check again** if needed. Once **Your dashboard is connected** appears, select **Open Pi Wake & Sleep**, or its sidebar entry. If the integration is already configured, wait for its connection check instead of adding it again. The picture is an example; use the actual card in Home Assistant.
+
 ### If the installation link cannot open Home Assistant
 
 1. Open your Home Assistant and go to its **app store**.

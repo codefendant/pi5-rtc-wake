@@ -18,6 +18,14 @@ The editable **Pi Wake & Sleep** dashboard is the main interface. This app's **O
 4. Once **Your dashboard is connected** appears, open **Pi Wake & Sleep** from the setup page or sidebar. Its setup card guides permissions, Pi checks, preparation/reboot only if needed, and the ten-minute wake test. Confirm whether Home Assistant returned by itself.
 5. On the Calendar card, create **Pi Sleep** or choose an existing calendar. Add timed events in Home Assistant Calendar: start = shutdown, end = wake. For overnight operation choose the next day as the end. Turn All day off, use periods from ten minutes to seven days, and avoid overlaps or touching events. Review and enable scheduling on the card.
 
+### Find the discovery card
+
+After any requested Home Assistant restart, open **Settings → Devices & services**. Under **Discovered**, look for **Pi Wake & Sleep** and select **Add**, then **Submit → Finish**.
+
+![Example Pi Wake and Sleep discovery card with the Add button highlighted](https://raw.githubusercontent.com/codefendant/pi5-rtc-wake/main/pi5_rtc_wake/finish-dashboard.svg)
+
+Return to Setup & maintenance and select **Check again** if needed. Wait for **Your dashboard is connected**, then select **Open Pi Wake & Sleep**. If the integration is already configured, allow its connection check to finish instead of adding it again. The picture is an example; use the actual discovery card in Home Assistant.
+
 No terminal, YAML, personal token, or separate card download is needed. Home Assistant Calendar holds every date and repeat. Use Edit dashboard to add your pictures, graphs, and other cards. Completed setup stays compact; Review setup brings it back. The optional app sidebar shortcut can be hidden on Info after the dashboard works; Open Web UI and the dashboard setup area still open maintenance.
 
 Keep main power connected for RTC wake. The RTC battery retains time and cannot power the Pi. Home Assistant and its automations are unavailable while the Pi is off. Keep Protection mode off during normal use so the app can check wake settings and program alarms. Home Assistant handles firmware version updates; this app checks/prepares the low-power wake settings while preserving boot order.
