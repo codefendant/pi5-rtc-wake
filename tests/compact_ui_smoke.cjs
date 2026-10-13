@@ -19,7 +19,8 @@ module.exports = async function compactDashboard({browser, start}) {
     assert.equal(await summary.getByText('Next shutdown',{exact:true}).count(),1);
     assert.equal(await summary.getByText('Next wake',{exact:true}).count(),1);
     assert.equal(await summary.getByRole('button',{name:'Keep awake',exact:true}).isEnabled(),true);
-    assert((await summary.boundingBox()).height < 240,'Ready summary should fit in one compact desktop row');
+    const initialHeight=(await summary.boundingBox()).height;
+    assert(initialHeight < 240,'Ready summary should fit in one compact desktop row');
     const before=(await (await page.request.get(ready.url+'api/status')).json());
     await summary.evaluate(el=>el.style.maxWidth='330px');
     assert.equal(await summary.evaluate(el=>el.shadowRoot.querySelector('ha-card').scrollWidth<=el.getBoundingClientRect().width+1),true,'Summary should also fit a narrow desktop section');
@@ -61,6 +62,7 @@ module.exports = async function compactDashboard({browser, start}) {
     await summary.getByRole('dialog').getByRole('button',{name:'Resume shutdowns',exact:true}).click();
     await summary.getByRole('button',{name:'Keep awake',exact:true}).waitFor();
     assert.equal((await (await page.request.get(ready.url+'api/status')).json()).schedule.enabled,before.schedule.enabled);
+    assert((await summary.boundingBox()).height<=initialHeight+40,'Action feedback should not add a padded empty row to the summary');
 
     const messages=page.locator('[data-kind="messages"]');
     await messages.getByRole('button',{name:'Choose phone',exact:true}).click();
