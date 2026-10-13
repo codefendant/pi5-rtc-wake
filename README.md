@@ -4,7 +4,7 @@ Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assista
 
 **0.10.0-rc.2 · Dashboard connection repair preview · MIT license**
 
-[**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
+[**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
 This preview makes the editable Home Assistant dashboard the main interface, including detailed UPS protection settings. The add-on Web UI becomes **Setup & maintenance** for connection and diagnostics. Update the same app, Stop and Start it, and select **Connect dashboard** on first connection, or **Maintenance and connection repair → Update / reconnect dashboard** when updating. Settings and personal cards are kept; AI access is separate. See [DASHBOARD.md](DASHBOARD.md) for setup and personalization, [VALIDATION.md](VALIDATION.md) for observed results, and [PUBLICATION.md](PUBLICATION.md) for publishing.
 
@@ -16,7 +16,7 @@ This preview makes the editable Home Assistant dashboard the main interface, inc
 4. Select **Create Pi Sleep calendar**, or choose an existing dedicated calendar. Open Home Assistant Calendar to add dates and repeats: **event start = shutdown; event end = wake**.
 5. Review the upcoming list and enable scheduling.
 
-No end-user terminal, API token, YAML automation, or separate card download is needed. Use **Edit dashboard** to add your own pictures, graphs, and other cards. [INSTALL.md](INSTALL.md) gives the screen-by-screen path. The optional [Wake other devices](WAKE_DEVICES.md) card reuses Home Assistant Wake on LAN buttons, with Ping confirmation, manual waking, and opt-in waking after the Pi boots.
+No ZIP download, end-user terminal, API token, YAML automation, or separate card download is needed. If the installation link cannot open Home Assistant, follow the [app-store steps in the installation guide](INSTALL.md#if-the-installation-link-cannot-open-home-assistant). Use **Edit dashboard** to add your own pictures, graphs, and other cards. [INSTALL.md](INSTALL.md) gives the screen-by-screen path. The optional [Wake other devices](WAKE_DEVICES.md) card reuses Home Assistant Wake on LAN buttons, with Ping confirmation, manual waking, and opt-in waking after the Pi boots.
 
 ## Everyday use
 
