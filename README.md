@@ -2,7 +2,7 @@
 
 Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
 
-**0.10.0-rc.4 · Restart reminders and phone choices preview · MIT license**
+**0.10.0-rc.5 · Compact dashboard preview · MIT license**
 
 [**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
 
@@ -22,8 +22,7 @@ No ZIP download, end-user terminal, API token, YAML automation, or separate card
 
 | Dashboard card | What you do |
 |---|---|
-| Pi status / controls | Check uptime, Keep awake or resume saved shutdowns, and confirm a reboot. |
-| Next shutdown / wake | See the next active Calendar times. |
+| Pi status | See Awake, uptime, next shutdown/wake, and Keep awake / Resume; open Settings for setup, maintenance, or a confirmed reboot. |
 | Calendar | Select/create the calendar, review dates, and open native Calendar editing. |
 | UPS power | Choose the source, view/enable readings, and configure every protection setting on the card. |
 | Messages | Choose a phone/readings, preview drafts, send confirmed status, and enable optional boot messages. |

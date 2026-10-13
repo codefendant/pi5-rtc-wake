@@ -14,19 +14,56 @@ PATH = "pi-wake-sleep"
 RESOURCE = "/pi5_rtc_wake/pi-cards.js"
 DEFAULT_CALENDAR = "Pi Sleep"
 LOG = logging.getLogger("pi5_rtc_wake")
-KINDS = ("setup", "status", "shutdown", "wake", "calendar", "ups", "controls", "devices", "messages", "assist", "activity")
+KINDS = ("summary", "setup", "status", "shutdown", "wake", "calendar", "ups", "controls", "devices", "messages", "assist", "activity")
+DEFAULT_KINDS = ("summary", "calendar", "ups", "devices", "messages", "assist", "activity")
 
 
 def starter_config(entry_id=""):
     """A real storage dashboard; subsequent updates never replace its config."""
     sections = []
-    for kind in KINDS:
-        span = 3 if kind in ("setup", "activity") else 2 if kind in ("calendar", "devices") else 1
+    for kind in DEFAULT_KINDS:
+        span = 3 if kind in ("summary", "activity") else 2 if kind == "calendar" else 1
         sections.append({"type": "grid", "column_span": span, "cards": [
             {"type": f"custom:pi-wake-{kind}-card", "entry_id": entry_id,
              "grid_options": {"columns": 12, "rows": "auto"}}]})
     return {"views": [{"title": "Pi Wake & Sleep", "path": "overview", "type": "sections",
                        "max_columns": 3, "dense_section_placement": True, "sections": sections}]}
+
+
+def compact_dashboard_config(config, entry_id):
+    """Consolidate only the five untouched starter sections for this Pi."""
+    result = deepcopy(config)
+    if not isinstance(result, dict) or not isinstance(result.get("views"), list):
+        return result
+    kinds = {"setup", "status", "shutdown", "wake", "controls"}
+    for view in result["views"]:
+        if not isinstance(view, dict) or view.get("type") != "sections" or not isinstance(view.get("sections"), list):
+            continue
+        sections = view["sections"]
+        expected = {kind: {"type": "grid", "column_span": 3 if kind == "setup" else 1, "cards": [
+            {"type": f"custom:pi-wake-{kind}-card", "entry_id": entry_id,
+             "grid_options": {"columns": 12, "rows": "auto"}}]} for kind in kinds}
+        matches = {kind: [index for index, section in enumerate(sections) if section == template]
+                   for kind, template in expected.items()}
+        # A title, resize, personal card, second Pi, duplicate, or missing card
+        # represents a customized header. Keep it exactly as the user saved it.
+        if not all(len(indices) == 1 for indices in matches.values()):
+            continue
+        def has_summary(value):
+            if isinstance(value, list):
+                return any(has_summary(row) for row in value)
+            if isinstance(value, dict):
+                return (value.get("type") == "custom:pi-wake-summary-card" and value.get("entry_id", "") in ("", entry_id)
+                        or any(has_summary(value.get(key)) for key in ("cards", "sections")))
+            return False
+        if has_summary(view):
+            continue
+        indices = {row[0] for row in matches.values()}
+        first = min(indices)
+        summary = starter_config(entry_id)["views"][0]["sections"][0]
+        view["sections"] = [summary if index == first else section for index, section in enumerate(sections)
+                            if index == first or index not in indices]
+    return result
 
 
 def restore_cards(config, entry_id):

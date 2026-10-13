@@ -1,3 +1,10 @@
+## 0.10.0-rc.5
+
+- Consolidate everyday Pi status, uptime, schedule times, Keep awake, and Settings into one compact summary with the introduction page's Raspberry Pi artwork and Awake indicator.
+- Move occasional setup, maintenance, and confirmed red Reboot Pi controls into Settings; retain first-run/problem guidance and shorter optional-card introductions.
+- Combine only the five untouched earlier starter header sections, preserving personal cards, customized headers, other views, and settings; retain all individual card types.
+- Use the installed companion version in dashboard resource URLs; keep phone edits, dropdown state, confirmations, scheduling, and UPS behavior.
+
 ## 0.10.0-rc.4
 
 - Explain companion restart requirements through a Home Assistant notification immediately after installation/update; persist pending status across app restarts and clear after matching dashboard readiness.

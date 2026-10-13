@@ -147,8 +147,9 @@ class Supervisor:
 
     def ensure_dashboard(self, entry_id, *, add_wake_devices=False):
         """Register our cards and create an editable dashboard without replacing one."""
-        from dashboard import PATH, RESOURCE, starter_config, add_wake_devices_card
-        resource_url = RESOURCE + "?v=0.10.0-rc.2"
+        from dashboard import PATH, RESOURCE, starter_config, add_wake_devices_card, compact_dashboard_config
+        version = json.loads((Path(__file__).parent / "companion/pi5_rtc_wake/manifest.json").read_text())["version"]
+        resource_url = RESOURCE + "?v=" + version
         try:
             with CoreRegistry(self.token) as core:
                 rows = core.command("lovelace/resources/list")
@@ -169,12 +170,13 @@ class Supervisor:
                         # An interrupted first install can leave an empty dashboard.
                         # Only a confirmed absence of saved layout allows initialization.
                     else:
+                        updated = compact_dashboard_config(config, entry_id)
                         if add_wake_devices:
-                            updated = add_wake_devices_card(config, entry_id)
-                            if updated != config:
-                                if core.command("lovelace/config", url_path=PATH) != config:
-                                    raise UserError("Your dashboard was edited while the new card was being added.", "Refresh and reconnect to add the card to the latest layout.")
-                                core.command("lovelace/config/save", url_path=PATH, config=updated)
+                            updated = add_wake_devices_card(updated, entry_id)
+                        if updated != config:
+                            if core.command("lovelace/config", url_path=PATH) != config:
+                                raise UserError("Your dashboard was edited while its Pi cards were being updated.", "Refresh and reconnect to update the cards in the latest layout.")
+                            core.command("lovelace/config/save", url_path=PATH, config=updated)
                         return {"created": False, "path": "/" + PATH, "message": "Your existing dashboard and personal cards were kept."}
                 else:
                     core.command("lovelace/dashboards/create", url_path=PATH, title="Pi Wake & Sleep",

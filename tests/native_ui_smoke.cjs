@@ -40,7 +40,7 @@ async function main() {
     });
     page.on('pageerror', error => errors.push(error.message));
     page.on('request',request=>{if(request.url().endsWith('/demo/ha-ws')&&request.method()==='POST')posts.push(request.postDataJSON());});
-    await page.goto(first.url+'native');
+    await page.goto(first.url+'native?layout=legacy');
     await page.getByRole('heading',{name:'Allow access to your Pi'}).waitFor();
     await page.screenshot({path:'ui-artifacts/setup-desktop.png',fullPage:true});
     await page.getByRole('button',{name:'Back to dashboard',exact:true}).click();
@@ -84,7 +84,7 @@ async function main() {
     const onboarding = await browser.newPage({viewport:{width:1536,height:1050},locale:'en-US'}), testPosts=[];
     onboarding.on('pageerror',error=>errors.push(error.message));
     onboarding.on('request',request=>{if(request.url().endsWith('/demo/ha-ws')&&request.method()==='POST')testPosts.push(request.postDataJSON());});
-    await onboarding.goto(fresh.url+'native');
+    await onboarding.goto(fresh.url+'native?layout=legacy');
     const firstSleep=onboarding.locator('[data-kind="setup"]');
     await firstSleep.getByRole('heading',{name:'Your first sleep & wake cycle',exact:true}).waitFor();
     await firstSleep.getByText('Home Assistant will shut down and be unavailable for roughly ten minutes, plus startup time.',{exact:true}).waitFor();
@@ -130,7 +130,7 @@ async function main() {
     await onboarding.screenshot({path:'ui-artifacts/first-sleep-return-mobile.png',fullPage:true});
     await onboarding.close();
 
-    await page.goto(ready.url+'native');
+    await page.goto(ready.url+'native?layout=legacy');
     await page.getByText('Pi ready · Wake test passed',{exact:true}).waitFor();
     await page.screenshot({path:'ui-artifacts/dashboard-desktop.png',fullPage:true});
     assert.equal(await page.locator('[data-kind="setup"]').getByRole('button',{name:'Review setup'}).isVisible(),true);
@@ -397,6 +397,7 @@ async function main() {
     assert.equal(await devices.getByRole('button',{name:'Wake selected',exact:true}).isDisabled(),true);
     assert.equal(await page.getByRole('link',{name:'Advanced settings ↗'}).count(),0);
     assert.deepEqual(errors,[]);
+    await require('./compact_ui_smoke.cjs')({browser,start});
     console.log('Native cards passed: first sleep-cycle expectations, cancellation and return guidance, dashboard-only UPS commissioning/draft retention/enable-disable confirmations, automatic phone setup/refresh, setup exit, persistent global Keep awake/resume and Pi status icon, preserved settings/dates, dropdown persistence, Calendar bridge/focus, runtime updates, emergency/admin controls, editor, phone setup, confirmations, and mobile fit. Hardware, Calendar frontend bridge, and HA chrome are simulated; real Core APIs are checked separately.');
   } finally {await browser.close();first.child.kill('SIGTERM');fresh.child.kill('SIGTERM');ready.child.kill('SIGTERM');}
 }
