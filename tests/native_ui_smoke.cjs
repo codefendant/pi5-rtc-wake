@@ -118,9 +118,11 @@ async function main() {
     });
     await firstSleep.getByRole('heading',{name:'Sleep & wake test starting',exact:true}).waitFor();
     assert.match(await firstSleep.locator('.sleep-test-guide').innerText(),/The wake alarm is set for/);
+    assert.doesNotMatch(await firstSleep.innerText(),/Run the ten-minute wake test before enabling a schedule/);
     onboardingStatus={pending:null,test_status:'awaiting_confirmation'};
     await firstSleep.getByRole('heading',{name:'Did Home Assistant return by itself?',exact:true}).waitFor();
     await firstSleep.getByText('Welcome back.',{exact:true}).waitFor();
+    assert.doesNotMatch(await firstSleep.innerText(),/Run the ten-minute wake test before enabling a schedule/);
     await firstSleep.getByRole('button',{name:'Yes, it returned by itself',exact:true}).waitFor();
     await firstSleep.getByRole('button',{name:"No / I'm not sure",exact:true}).waitFor();
     assert.equal(await firstSleep.getByRole('button',{name:'Start ten-minute sleep & wake test',exact:true}).count(),0);
