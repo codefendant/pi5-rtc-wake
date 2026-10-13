@@ -1,12 +1,42 @@
 # Pi 5 Wake & Sleep
 
-Schedule shutdown and automatic wake for the Raspberry Pi 5 running Home Assistant OS. Configure it through Home Assistant screens, and keep every date and repeat in Home Assistant Calendar.
+## Home Assistant, on your schedule.
 
-**0.10.0-rc.6 · Dashboard spacing fix preview · MIT license**
+Wake your Raspberry Pi 5, send useful phone updates, and save power between check-ins. Configure everything through Home Assistant screens, with every date and repeat kept in Home Assistant Calendar.
 
-[**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md)
+**Raspberry Pi 5 · Home Assistant OS · 0.10.0 Public Preview · MIT license**
 
-This preview makes the editable Home Assistant dashboard the main interface, including detailed UPS protection settings. The add-on Web UI becomes **Setup & maintenance** for connection and diagnostics. Update the same app, Stop and Start it, and select **Connect dashboard** on first connection, or **Maintenance and connection repair → Update / reconnect dashboard** when updating. Settings and personal cards are kept; AI access is separate. See [DASHBOARD.md](DASHBOARD.md) for setup and personalization, [VALIDATION.md](VALIDATION.md) for observed results, and [PUBLICATION.md](PUBLICATION.md) for publishing.
+[**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md) · [Feedback](SUPPORT.md)
+
+<table>
+<tr>
+<td width="33%"><img src="docs/images/remote-check-ins.webp" alt="A camper beside a cabin at a mountain lake"></td>
+<td width="33%"><img src="docs/images/battery-solar.webp" alt="A portable solar panel and battery beside a lake"></td>
+<td width="33%"><img src="docs/images/remote-access.webp" alt="A laptop and coffee on a sunny desk"></td>
+</tr>
+<tr>
+<td valign="top"><strong>Remote check-ins</strong><p>Stay informed from your RV, cabin, or remote setup.</p></td>
+<td valign="top"><strong>Battery &amp; solar</strong><p>Reduce power use between monitoring windows.</p></td>
+<td valign="top"><strong>Remote access</strong><p>Get notified, keep your Pi awake, and work on your terms.</p></td>
+</tr>
+</table>
+
+### Fits the Home Assistant you already use
+
+- **Home Assistant Calendar:** one calendar for sleep and wake dates, including repeating times.
+- **Network UPS Tools (NUT):** monitor your UPS and configure optional shutdown protection and conditional RTC retries.
+- **Messages:** send Pi uptime, next shutdown/wake times, and selected battery, temperature, or other readings to your Companion app phone.
+- **Assist:** ask about Pi status and review requested schedule changes through your existing AI integration.
+- **Wake other devices:** reuse Home Assistant Wake on LAN buttons when your Pi starts.
+- **Your dashboard:** add personal pictures, graphs, and other Home Assistant cards around the Pi cards.
+
+Use **Keep awake** when you need more time, then **Resume shutdowns** when you are ready. Home Assistant pauses while the Pi sleeps. Main power must remain available for RTC wake.
+
+![Pi Wake and Sleep dashboard showing the compact Pi status, Calendar, UPS, Messages, Assist, and Wake other devices cards](docs/images/dashboard-preview.png)
+
+*Example rendered from the app's dashboard cards using sample data and simulated Home Assistant chrome. Your dates, readings, theme, and personal cards will differ.*
+
+The dashboard is the main interface. The add-on Web UI is **Setup & maintenance** for initial connection, repairs, and diagnostics. See [DASHBOARD.md](DASHBOARD.md) for personalization and [VALIDATION.md](VALIDATION.md) for the tested preview's evidence and limits.
 
 ## Install and set up
 
@@ -25,6 +55,7 @@ No ZIP download, end-user terminal, API token, YAML automation, or separate card
 | Pi status | See Awake, uptime, next shutdown/wake, and Keep awake / Resume; open Settings for setup, maintenance, or a confirmed reboot. |
 | Calendar | Select/create the calendar, review dates, and open native Calendar editing. |
 | UPS power | Choose the source, view/enable readings, and configure every protection setting on the card. |
+| Wake other devices | Choose and test existing Wake on LAN buttons; optionally confirm devices are online and enable waking after a Pi boot. |
 | Messages | Choose a phone/readings, preview drafts, send confirmed status, and enable optional boot messages. |
 | Assist | Enable status access, configure reviewed requests, and approve/dismiss them. |
 | Pi setup | Review checks and wake-test evidence; completed setup stays compact. |
@@ -70,7 +101,7 @@ Keep this app's **Protection mode off** during use so it can check the host wake
 
 ## Validation and development
 
-**368 simulated backend tests** pass, including persistent Keep awake, suspension of emergency UPS shutdowns, saved-policy resume, and runtime display in monitoring mode. Release gates additionally cover Chromium desktop/phone interactions, actual Home Assistant 2026.10.1 APIs, arm64 builds, anonymous image download, and production imports. [VALIDATION.md](VALIDATION.md) records verified publication results. The maintainer reports the native dashboard working on their Pi 5; full UPS power-loss and return behavior depends on the hardware.
+The tested baseline passes **418 simulated backend tests**, including persistent Keep awake, saved-policy resume, runtime display, dashboard upgrades, and preservation of customized cards. Release gates additionally cover Chromium desktop/phone interactions, actual Home Assistant Core 2026.10.1 APIs, arm64 builds, anonymous image download, and production imports. The maintainer reports successful repeated fresh installs after removing both the app and dashboard on their Pi 5. [VALIDATION.md](VALIDATION.md) distinguishes automated results from hardware observations. Broader novice, boot-device, and UPS output-return validation remains part of the later stable-release work in [ACCEPTANCE.md](ACCEPTANCE.md).
 
 [VALIDATION.md](VALIDATION.md) separates observed results from remaining checks. [ACCEPTANCE.md](ACCEPTANCE.md) records novice installation/update and physical checks required before removing the preview label. [PUBLICATION.md](PUBLICATION.md) describes the public-release process.
 

@@ -1,3 +1,21 @@
+# Validation — 0.10.0 Public Preview
+
+## Maintainer hardware report
+
+On **13 October 2026**, the maintainer reports several successful clean-install tests after deleting both the app and dashboard on their Raspberry Pi 5, reinstalling, and completing setup. They report the duplicate app-store listing is resolved and authorize a formal public preview. Earlier reports confirmed a physical ten-minute RTC wake and functioning feature/dashboard use. No exact trial count or independently measured cycle timing is claimed.
+
+Fresh reinstall tests establish a working fresh-install path on that test system. They do not establish physical in-place update preservation, every boot medium, an independent novice session, or the full UPS output-return path.
+
+## Release verification
+
+Version **0.10.0** retains the tested **0.10.0-rc.6** application behavior. Only application/companion version metadata, packaged documentation, public presentation, feedback forms, and the workflow's permitted version syntax change. Schema 11 and scheduling, RTC, UPS, Messages, Assist, device waking, Keep awake, and dashboard-layout behavior are unchanged.
+
+The baseline below passed **418 simulated backend tests**, Chromium/native-grid browser checks, real Home Assistant Core 2026.10.1 API checks, arm64 build, and anonymous public-image verification. The formal preview's candidate and publishing workflows repeat those gates; their exact source and image results are recorded after successful publication. Hardware and phone operations in automated tests are simulated. A dashboard example in the public introduction uses sample data and simulated Home Assistant chrome.
+
+Settings, Calendar dates, personal cards, and valid wake evidence are covered by automated preservation checks. [ACCEPTANCE.md](ACCEPTANCE.md) keeps the remaining physical and independent-user validation explicit.
+
+## Earlier release evidence
+
 # Validation — 0.10.0-rc.6 full section width
 
 The maintainer's native Home Assistant screenshots exposed a gap that the earlier flat browser preview missed: wide sections reserved two or three dashboard columns while their Pi cards used only twelve inner columns. Generated cards now use the native Full width card option. Only unchanged earlier wide starter sections are repaired, and a durable card-layout marker preserves later explicit resizing. Personal cards, custom sizes/titles, positions, view metadata, settings, and Calendar dates are kept.

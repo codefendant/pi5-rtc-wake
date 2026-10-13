@@ -1,50 +1,46 @@
-# Stable beginner-release requirement
+# Preview and stable-release acceptance
 
 **A person with no technical background can install, test, and enable this app entirely through Home Assistant screens. Updates preserve their settings. Every error explains the next action in plain language.**
 
-The maintainer reports rc.3 functionality and the native interface working on their Pi 5. The rc.4 cleanup acceptance requirement is that a new user can install/activate features through Home Assistant screens and an existing user can manage every feature from the dashboard without choosing between two interfaces. The 0.9 interface requires a fresh usability observation, including dashboard setup with AI off, mobile use, default Calendar creation, and custom-card retention through updates. Version 0.7.0-rc.1 adds opt-in phone messages; actual phone delivery still needs observation. Passing automated tests or one maintainer installation alone does not establish the beginner-release requirement. Complete the remaining checks below before removing the preview label or promising unattended UPS recovery.
+## 0.10.0 Public Preview
 
-| Check | Current evidence | Release gate |
-|---|---|---|
-| No end-user YAML, token, terminal, or dashboard setup | Implemented in source | Verify on a real HAOS installation |
-| One Add to Home Assistant link | Local metadata/link generator included | Publish a real repository and test the link |
-| Prebuilt aarch64 image | Build/publish workflow included | Build, make public, and verify an anonymous pull |
-| Protection mode step is discoverable | Info-page instructions and error action included | Observe a novice completing it without help |
-| Pi / OS / RTC / firmware checks | Simulated-service tests pass | Test current stable HAOS on Pi 5 |
-| Stock Home Assistant firmware update path | Reused for versions; custom settings handled separately | Test update then reboot then setup on real hardware |
-| Preserve boot order and unrelated settings | Parser/patch/guards tested | Compare actual EEPROM readback before/after on SD, USB SSD, and NVMe |
-| No downgrade / no overlapping pending update | Version and pending-image guards tested | Test actual pending-update and mismatched-version cases |
-| Concurrent updater safety | UI asks users not to run another firmware update during preparation | Audit serialization with the stock updater before a stable beginner release; the app cannot lock a separate native update through the current API |
-| Prepare button and reboot | Implemented with backed-up configuration; rc.4 repairs the missing permission; user subsequently reports a successful ten-minute wake test | Validate EEPROM readback and boot-order preservation across supported boot devices |
-| Automatic wake after shutdown | Maintainer reports the rc.4 ten-minute test succeeded and that 0.6.0-rc.1 checks out on their Pi 5 | Independently observe and record power-off and RTC-triggered boot |
-| Calendar is the only schedule store | Separate daily engine/fields removed; old daily schedules pause with migration instructions | Upgrade a legacy daily installation and a Calendar installation; verify no duplicated events or hidden scheduler |
-| Saved dates and Calendar access are visible | Prominent native-calendar link, upcoming list, separate draft indicator; user reports Calendar summaries | Verify Overview list and native repeating-event editing on desktop/mobile HA ingress |
-| Completed setup stays out of everyday use | Dashboard ready strip and feature cards; full UPS settings migrated; add-on reduced to connection/diagnostics; connected instructions hidden; automated draft/dropdown checks | Observe a novice completing setup, finding Calendar/UPS/phone tasks, and resolving a later setup problem without lost edits |
-| Optional phone wake/status delivery | Simulated discovery, selection, preview, persistence, consent, boot claims, stale-data labels, and blocked-delivery/shutdown isolation pass | On a real phone, confirm manual status, actual RTC-wake message, local/cloud behavior during outages, same-boot app restart without duplicates, selected values/units, and Calendar dates |
-| Native Assist setup and control | Bundled companion, screen-only discovery/confirmation, read-only defaults, app-reviewed writes, and native-interface test implemented | Observe fresh HAOS connection through screens, real Ollama/voice tool calls, dates/time zones, approval/cancellation, revocation, companion update/restart, and settings retention |
-| Native reboot reminder | Scoped persistent notification lifecycle tested; reboot controls are red | Verify reminder creation/clearing on live HA; it is Notifications, not a custom Settings repair card |
-| Native Calendar and repeating dates | Core API reader, exact event-end RTC alarm, and occurrence guards tested | Verify Local Calendar recurrence, DST, edits/cancellation/outage during countdown, and real wake at event end |
-| UPS discovery and optional notices | NUT device grouping plus versioned generic data hook; NUT discovery is user-observed in 0.4; simulated/backend/HTTP cases pass | Verify live NUT template execution, enabled Status data, actual power source selection, battery/utility transitions, unavailable data, and notice create/clear in HAOS |
-| Additional NUT readings can be enabled | Native registry list/get/update, same-device guards, disabled-device handling, reload/restart guidance, outage block; fake WebSocket and DOM interaction tests pass | Enable real default-disabled runtime/Status data from HA ingress, confirm reload/fresh readings, and test insufficient admin/device/integration permissions |
-| Auxiliary NUT flags do not hide devices | OL TEST and bounded auxiliary flags pass; conflicting flags remain Unknown | Observe real self-test/power transitions and status freshness on the user's UPS |
-| Third-party power hooks | Version 1 data contract documented and validated; no external executable or control callback loaded | Have an independent provider publish a sensor and complete discovery/setup entirely through HA screens |
-| Graceful UPS shutdown and RTC recovery | Opt-in; simulated threshold, Calendar readback, reserve/critical stop, boot freshness, backoff/limits, persistence and uncertainty cases pass | Verify Calendar creation and conditional retries on the actual continuous supply path with sufficient reserve; measure shutdown/boot time and test unavailable readings |
-| Cancelling retries preserves emergency protection | Separate controls; failed RTC/Calendar and cancelled retries followed by low battery pass in simulations; explicit disable confirmation covered | Confirm emergency graceful host shutdown after retry cancellation, unavailable RTC, missing runtime with low battery, and lost readings during a controlled outage |
-| Retry requirements are understandable | Dynamic 24/39/69-minute default table and conditional-sequence warning; DOM checks pass | Ask a novice to explain why a 30-minute threshold does not normally fund all three attempts |
-| Shutdown ownership is reviewed | Community NUT settings/state read-only; conflicts/unknown checks block RTC; user confirms restart/other controllers | Verify actual NUT app startup/option change/restart, external-controller conflicts, and complete shutdown ordering; explicit NUT handoff remains unimplemented |
-| UPS output-off/return recovery | Not implemented; no UPS output command is sent | Future driver/outlet executor needs exact supported command, late-cut delay, physical output-off/return, and Pi boot verification |
-| Overnight operation | Scheduling logic tested with simulated time | Observe multiple overnight cycles with the actual power accessories |
-| Power accessories | User-facing continuous-power explanation | Test the user's Geekworm module, SSD, and powered USB hub as connected |
-| Settings survive app update | Replacement/restart/migration/recovery tests pass | Upgrade the same published app in HAOS and compare all settings |
-| Firmware changes pause timed wake operations | Simulated firmware/boot changes require a retest; commissioned emergency protection remains available | Upgrade native Pi firmware, verify retest screen, and test an emergency stop with RTC retries paused |
-| Cancel and ambiguous shutdown failures | Failure-path tests pass | Test countdown cancellation and network loss on HAOS |
-| Accessibility and responsive UI | Accessible labels and responsive layout implemented | Check desktop/mobile rendering and novice comprehension |
-| Actionable errors | UI/API errors include a next action | Try disabled protection, old OS, missing RTC, clock drift, pending update, invalid config, and storage failure |
+On **13 October 2026**, the maintainer reports several successful clean-install tests on their Pi 5 after deleting both the app and dashboard, reinstalling, and completing setup. Earlier reports include a successful physical ten-minute wake test, functioning Calendar/UPS/phone/Assist features, and the working native dashboard. The duplicate app-store listing was resolved on the test system. These are maintainer reports; no exact cycle count, timing measurement, or independent observation is claimed.
 
-Novice session: use a fresh supported Pi and the public install link. Give only the user installation steps in README.md. The person must complete setup, test, schedule, cancellation, and a later app update without developer intervention or a terminal. Record mistakes, completion time, and any screen that required explanation. Fix the flow and repeat before removing the preview label.
+The formal preview preserves the tested 0.10.0-rc.6 behavior. It remains **experimental** in Home Assistant and **pre-release** on GitHub. User-reported results and automated/simulated results are recorded separately in [VALIDATION.md](VALIDATION.md).
 
-Hardware testing must use a stable connected power supply. Back up Home Assistant before the maintainer's first EEPROM trial. Firmware preparation must never be tested by interrupting EEPROM writes; simulate failures at the service boundary instead. Keep a recovery image available during maintainer tests.
+| Public preview check | Evidence |
+|---|---|
+| Fresh installation and dashboard recreation through Home Assistant screens | Maintainer reports repeated successful clean reinstalls. Automated native Core checks create the dashboard and exercise discovery and reconnection. |
+| Permissions and first-cycle guidance | Info-page Protection mode illustration, actionable host-access errors, ten-minute outage explanation, and return confirmation are implemented. |
+| Everyday dashboard usability | Maintainer reports the improved interface works. Chromium desktop/mobile/narrow/dark checks cover cards, details, forms, and section widths. |
+| Automatic RTC wake | Maintainer previously confirmed the ten-minute physical test returned automatically. New version metadata does not change RTC behavior. |
+| Settings and personal-card preservation | Backend and real Core checks exercise persistence, migrations, reconnection, legacy layout upgrades, and customized-card retention. A physical same-app update is not established by fresh reinstall testing. |
+| Public installation package | The publication pipeline must verify the arm64 image through an anonymous pull and production imports before creating the preview release. |
+| Public docs and feedback | Current install/update instructions, sample dashboard, approved use-case artwork, bug-report form, and suggestion form. |
 
-For 0.6, a novice must enable default-disabled Battery runtime from UPS, select it, review host-shutdown ownership, understand conditional reserve and final-stop limits, and enable protection without YAML or a terminal. Run real Calendar write/readback and increasing retry cycles only with adequate reserve, plus utility-return, missing-runtime/status, low battery after cancellation/RTC failure, restart during countdown, and uncertain shutdown cases. Upgrade an enabled 0.5 policy and verify settings are preserved while all protection waits for ownership review. Test emergency-only mode and ordinary Calendar scheduling on stable utility power.
+## Before a stable beginner release
 
-UPS output restoration and explicit NUT shutdown handoff remain unpassed control phases. Test a long-outage final stop and the actual output-off/return/boot path on the user's UPS before relying on unattended recovery. A final stop must never be labelled as a verified timed wake; restored utility power cannot boot a continuously supplied halted Pi by itself.
+A successful maintainer installation and automated tests alone do not establish the beginner-release requirement. These checks remain separate from preview publication:
+
+| Check | Required observation |
+|---|---|
+| Independent novice session | A person unfamiliar with the project completes installation, Protection mode, dashboard discovery, wake test, feature activation, cancellation, and an ordinary update using only the public instructions. Record confusing screens and fix them. |
+| Physical in-place update | Update the same published app in HAOS; compare Calendar selection/dates, valid wake evidence, UPS, phone/readings, Assist and device-waking settings, Keep awake, and personal cards. |
+| Firmware preparation across supported boot media | Compare actual EEPROM readback and boot order on SD, USB SSD, and NVMe; test pending/mismatched updates without interrupting a firmware write. Audit coordination with the stock updater. |
+| Repeated overnight RTC cycles | Observe shutdown, automatic boot, Calendar recurrence/edits/cancellation, and time-zone/DST behavior with the actual connected power accessories. |
+| Real phone delivery | Confirm manual status, RTC-wake delivery, selected values/units, app-restart deduplication, and behavior during network or power outages. |
+| Real Assist operation | Observe fresh connection, local Ollama/voice status and reviewed changes, approval/cancellation, revocation, and companion update/restart. |
+| Live restart reminders | Confirm first-install notification and later Settings repair reminder, including correct clearance after matching companion readiness. |
+| Live UPS commissioning | Confirm the actual supplying UPS, enabled readings, freshness, auxiliary status flags, shutdown ownership, thresholds, conditional retries, low battery, unavailable data, and preservation of emergency protection when retries alone are cancelled. Explicit Keep awake intentionally suspends app emergency shutdowns too. |
+| Third-party power data hooks | Have an independent provider publish a compatible sensor and complete selection/setup through Home Assistant screens. |
+| Accessibility and actionable errors | Observe mobile/desktop use and test permission, unsupported host, missing RTC, clock, pending update, unavailable Calendar, and storage failures. |
+
+A novice session should use the public install link and a fresh supported Pi. Give only the installation guide; do not supply a terminal, YAML, or developer coaching. Record completion time, mistakes, and any screen that required explanation. Repeat after fixes before removing the preview label.
+
+## UPS recovery boundary
+
+UPS output-off/return control and an explicit NUT shutdown handoff are **not implemented**. RTC retries require continuous main input power and sufficient reserve. A final stop has no verified timed wake; utility power returning cannot boot a continuously supplied halted Pi by itself.
+
+Test the actual UPS output-return/boot path before promising unattended long-outage recovery. Future output-control support requires an exact supported command, late-cut delay, physical output-off/return, and Pi boot verification. [UPS_RECOVERY.md](UPS_RECOVERY.md) describes the current policy.
+
+Hardware tests must use stable connected power. Firmware preparation must never be tested by interrupting EEPROM writes; simulate failures at the service boundary instead and retain a recovery path during maintainer trials.
