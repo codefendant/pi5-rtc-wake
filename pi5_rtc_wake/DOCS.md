@@ -1,5 +1,15 @@
 # Getting started
 
+## Before you select Start
+
+**On the Info tab, turn Protection mode OFF in the Controls card before starting this app.** This lets Pi Wake & Sleep access the Raspberry Pi's wake alarm. Keep it off while using the app.
+
+![Example Controls card showing Protection mode switched off before selecting Start](https://raw.githubusercontent.com/codefendant/pi5-rtc-wake/main/pi5_rtc_wake/protection-mode.svg)
+
+Enable **Start on boot**, then select **Start**. If the app is already running with Protection mode on, select **Stop → turn Protection mode off → Start**. Home Assistant displays its standard permission warning once protection is disabled.
+
+## Connect your dashboard
+
 The editable **Pi Wake & Sleep** dashboard is the main interface. This app's **Open Web UI** opens **Setup & maintenance** for installation, companion updates/reconnection, and diagnostics.
 
 1. On this app's Info page turn **Protection mode off**, enable **Start on boot**, and start the app. If it is already running, select Stop before changing Protection mode and Start afterward.

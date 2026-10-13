@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="590" height="332" viewBox="475 10 590 332" role="img" aria-labelledby="title description">
+  <title id="title">Before starting Pi Wake and Sleep, turn Protection mode off</title>
+  <desc id="description">Example of Home Assistant's Info tab Controls card. Protection mode is off, with a grey switch and its thumb on the left. First turn Protection mode off, then enable Start on boot and select Start.</desc>
+  <rect x="475" y="10" width="590" height="332" rx="20" fill="#f1faf8"/>
+  <g font-family="DejaVu Sans,Arial,sans-serif" fill="#102538">
+    <g transform="translate(490 25)">
+      <rect x="0" y="0" width="557" height="299" rx="16" fill="#ffffff" stroke="#e0e8eb"/>
+      <text x="21" y="35" font-size="18" font-weight="700">Controls</text>
+      <text x="518" y="35" font-size="26" fill="#617381">⋮</text>
+      <rect x="22" y="53" width="91" height="39" rx="20" fill="#00899b"/>
+      <path d="m41 65 9 8-9 8Z" fill="#fff"/>
+      <text x="58" y="79" font-size="14" font-weight="700" fill="#fff">Start</text>
+      <path d="M21 111h515" stroke="#edf1f3"/>
+      <text x="23" y="142" font-size="16">Start on boot</text>
+      <text x="23" y="165" font-size="12" fill="#647582">Automatically start this app when Home Assistant starts.</text>
+      <rect x="470" y="133" width="57" height="28" rx="14" fill="#87d6ed" stroke="#46b8d8"/>
+      <circle cx="513" cy="147" r="10" fill="#009ec3"/>
+      <rect x="13" y="185" width="531" height="81" rx="12" fill="#f2faf7" stroke="#007e8b" stroke-width="2.5"/>
+      <text x="26" y="215" font-size="17" font-weight="700">Protection mode</text>
+      <text x="26" y="240" font-size="12" fill="#586d79">Turn this switch off before starting the app.</text>
+      <rect x="420" y="206" width="34" height="23" rx="6" fill="#def3ec"/>
+      <text x="437" y="222" text-anchor="middle" font-size="10" font-weight="700" fill="#056c58">OFF</text>
+      <rect x="470" y="203" width="57" height="28" rx="14" fill="#f0f1f2" stroke="#b9c0c4" stroke-width="1.5"/>
+      <circle cx="484" cy="217" r="10" fill="#646c72"/>
+      <path d="M484 275v-38m-5 5 5-5 5 5" fill="none" stroke="#007e8b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="463" y="289" text-anchor="end" font-size="12" font-weight="700" fill="#007e8b">Grey switch · thumb on the left</text>
+    </g>
+  </g>
+</svg>

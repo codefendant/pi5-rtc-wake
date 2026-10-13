@@ -13,6 +13,14 @@
 
 No terminal, YAML, personal API token, extra card download, or AI account is needed. The dashboard works with AI access off.
 
+### Before you select Start
+
+**Turn Protection mode OFF in the Controls card on the app's Info tab.** Keep it off while using Pi Wake & Sleep so the app can access the Raspberry Pi's wake alarm.
+
+![Example Controls card showing Protection mode switched off before selecting Start](pi5_rtc_wake/protection-mode.svg)
+
+Enable **Start on boot**, then select **Start**. If the app is already running, use **Stop → turn Protection mode off → Start**. The graphic is an example; use the actual controls in Home Assistant.
+
 ### If the installation link cannot open Home Assistant
 
 1. Open your Home Assistant and go to its **app store**.

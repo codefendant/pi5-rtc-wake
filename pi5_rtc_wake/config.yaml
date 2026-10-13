@@ -1,7 +1,7 @@
 name: Pi 5 Wake & Sleep
 version: "0.10.0-rc.2"
 slug: pi5_rtc_wake
-description: Pi 5 Calendar scheduling, guided RTC setup, UPS protection, and optional phone wake/status messages.
+description: "Schedule Pi 5 sleep/wake with Home Assistant Calendar. BEFORE STARTING: turn Protection mode OFF on this Info tab."
 arch:
   - aarch64
 machine:
