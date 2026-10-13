@@ -111,6 +111,7 @@ async def check():
                 assert status["test_status"] == "passed" and not status["enabled"]
                 assert status["dashboard"]["active"], "Authenticated companion contact must be visible to setup UI"
                 assert "csrf" not in status and owner._secret() not in json.dumps(status)
+                power_operations = (fixture.supervisor.reboots, fixture.supervisor.shutdowns)
                 notice_calls = []
                 notifier = Supervisor()
                 with patch.object(notifier, "request", side_effect=lambda path, payload: notice_calls.append((path, payload))):
@@ -146,7 +147,7 @@ async def check():
                 await entry.runtime_data.async_refresh()
                 assert registry.async_get_issue("pi5_rtc_wake", restart_id) is None
                 assert not fixture.app.assistant.installer.restart_required()
-                assert fixture.supervisor.reboots == 0 and fixture.supervisor.shutdowns == 0
+                assert (fixture.supervisor.reboots, fixture.supervisor.shutdowns) == power_operations
                 original_schedule = dict(status["schedule"])
                 await command("pi5_rtc_wake/action", entry_id=entry.entry_id, action="keep-awake", payload={"active": True, "confirmed": True})
                 paused = await command("pi5_rtc_wake/status", entry_id=entry.entry_id)

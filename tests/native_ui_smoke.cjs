@@ -279,7 +279,7 @@ async function main() {
     };
     await page.route('**/demo/ha-ws',missingPhone);
     await page.getByRole('button',{name:'Refresh phones and readings',exact:true}).click();
-    await phoneCard.getByText('Saved phone (currently unavailable)',{exact:true}).waitFor();
+    await phoneCard.getByText('Selected phone (currently unavailable)',{exact:true}).waitFor();
     assert.equal(await phoneChoice().isChecked(),true,'A missing saved/draft phone must not be replaced');
     await phoneCard.getByText(/No connected phone was found/).waitFor();
     await page.unroute('**/demo/ha-ws',missingPhone);
