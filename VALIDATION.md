@@ -1,3 +1,17 @@
+# Validation — 0.10.0-rc.3 first sleep & wake guidance
+
+The maintainer is repeating fresh installation on their test Pi and requested a clear explanation of the first sleep and wake cycle. The setup card now makes the expected Home Assistant outage visible before the test button, repeats the 30-second countdown and roughly ten minutes plus startup time in confirmation, shows the armed wake time during countdown, and explains automatic-return confirmation and continuing onboarding. The earlier pre-test prompt is hidden during countdown and return confirmation.
+
+Both the [candidate run 38345022896](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38345022896) and [publishing run 38345447005](https://github.com/codefendant/pi5-rtc-wake/actions/runs/38345447005) passed every required gate: 405 simulated backend tests, JavaScript/DOM checks, RTC ABI, Chromium desktop/phone, actual Home Assistant Core 2026.10.1 checks, and the arm64 build. Desktop, mobile confirmation, and return captures were inspected. New browser coverage verifies visible first-cycle guidance, mobile cancellation without a test request, countdown/return wording, and a distinct repeat-test heading. All four app/companion version fields agree.
+
+- [Published preview v0.10.0-rc.3](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.10.0-rc.3) is non-draft and marked pre-release, published at **04:18:07 UTC on 13 October 2026**. Its tag points to `3d595ddb83e230daf8d86abc1b15510232709ca0`, tree `de788ac438ba9f5f468b891ab76f715290759c13`, identical to the verified candidate tree at `b47e5b89df10745c5aa7bff762c68891482e7039`.
+- Public image: `ghcr.io/codefendant/pi5-rtc-wake-pi5-rtc-wake-aarch64:0.10.0-rc.3`; pushed and anonymously pulled digest `sha256:5819e05cfbeb41503378b472b25f359f2b2410731b5d074655240e9cb7ea46b4`. The publishing run verified arm64, the production version, and production imports before creating the release.
+- The existing v0.10.0-rc.2 tag remains at `9186e87aedc1f096762fb6a145fd9a9bdea73fac`.
+
+The test alarm is still 600 seconds from the test start with a 30-second shutdown countdown. The outage wording allows for that countdown and Home Assistant startup time. Only interface wording and release metadata change: power guards, cancellation, wake evidence, schema 11, saved settings, Calendar dates, and personal cards remain as tested. An existing valid wake test is retained on update. Automated checks simulate Pi/UPS/phone services and do not perform a new physical sleep and wake cycle or establish novice acceptance on an actual HAOS installation.
+
+## Earlier release evidence
+
 # Validation — 0.10.0-rc.2 dashboard connection repair
 
 The maintainer’s fresh-install screenshot shows **404: Not Found** at `/pi-wake-sleep`, with the app running and Protection mode off. The setup page exposed the dashboard link on saved installation consent before the integration had created a dashboard. Authenticated companion contact also did not establish successful registration.
