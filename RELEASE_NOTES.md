@@ -2,6 +2,8 @@
 
 **Home Assistant, on your schedule.** Schedule shutdown and automatic RTC wake for the Raspberry Pi 5 running Home Assistant OS, send useful phone updates, and manage everything from an editable Home Assistant dashboard.
 
+[**Visit the Pi Wake & Sleep website**](https://pi-wake-sleep.humblejam3.chatgpt.site/) for the introduction, examples, and Add to Home Assistant button.
+
 This formal public preview packages the behavior tested in **0.10.0-rc.6**. It includes guided setup, the compact Pi status card, native Calendar dates and repeats, optional Network UPS Tools (NUT) monitoring/protection, phone status messages, native Assist tools, and Wake other devices using Home Assistant Wake on LAN buttons. Add personal pictures, graphs, and other cards around the Pi cards.
 
 The public introduction now uses the approved use-case artwork and a current dashboard example. Installation and update guides are current, and simple bug-report and suggestion forms are available.

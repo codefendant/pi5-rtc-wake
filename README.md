@@ -6,7 +6,7 @@ Wake your Raspberry Pi 5, send useful phone updates, and save power between chec
 
 **Raspberry Pi 5 · Home Assistant OS · 0.10.0 Public Preview · MIT license**
 
-[**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md) · [Feedback](SUPPORT.md) · [Introduction](https://pi-wake-sleep.humblejam3.chatgpt.site/)
+[**Add to Home Assistant**](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcodefendant%2Fpi5-rtc-wake) · [Website](https://pi-wake-sleep.humblejam3.chatgpt.site/) · [Installation guide](INSTALL.md) · [Updates](UPDATE.md) · [Release notes](RELEASE_NOTES.md) · [Feedback](SUPPORT.md)
 
 <table>
 <tr>

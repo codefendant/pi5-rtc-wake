@@ -2,6 +2,8 @@
 
 Home Assistant, on your schedule.
 
+[**Visit the Pi Wake & Sleep website**](https://pi-wake-sleep.humblejam3.chatgpt.site/) for the introduction, examples, and Add to Home Assistant button.
+
 Pi 5 Wake & Sleep lets the Raspberry Pi 5 running Home Assistant OS shut down on a schedule and boot again using its built-in RTC. Set dates and repeats in Home Assistant Calendar, then manage everyday tasks from an editable dashboard.
 
 It is useful for an RV, cabin, battery/solar setup, or a remote installation that needs to check in at selected times. Send your phone Pi uptime, next shutdown/wake times, and existing readings such as battery levels and temperatures. Select Keep awake when you need time to connect and work, then resume your saved shutdown schedule.
@@ -14,7 +16,7 @@ Home Assistant and its automations are unavailable while the Pi sleeps. UPS retr
 
 **0.10.0 is a public preview**, tested by the maintainer on a Pi 5, with automated backend, browser, native Home Assistant, and public-image checks. Feedback on installation and everyday use is welcome.
 
-[Project and screenshots](https://github.com/codefendant/pi5-rtc-wake) · [Installation guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/INSTALL.md) · [Preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.10.0) · [Report a problem or suggest an improvement](https://github.com/codefendant/pi5-rtc-wake/issues/new/choose)
+[Website](https://pi-wake-sleep.humblejam3.chatgpt.site/) · [Project and screenshots](https://github.com/codefendant/pi5-rtc-wake) · [Installation guide](https://github.com/codefendant/pi5-rtc-wake/blob/main/INSTALL.md) · [Preview release](https://github.com/codefendant/pi5-rtc-wake/releases/tag/v0.10.0) · [Report a problem or suggest an improvement](https://github.com/codefendant/pi5-rtc-wake/issues/new/choose)
 
 MIT licensed.
 
